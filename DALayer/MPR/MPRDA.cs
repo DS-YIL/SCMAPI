@@ -645,8 +645,8 @@ Review Date :<<>>   Reviewed By :<<>>
 							item.MfgPartNo = mPRItemInfo.MfgPartNo;
 							item.TargetSpend = mPRItemInfo.TargetSpend;
 							item.RepeatOrderRefId = mPRItemInfo.RepeatOrderRefId;
-                            item.PreviousItemdetailsid = mPRItemInfo.Itemdetailsid;
-                            DB.MPRItemInfoes.Add(item);
+							item.PreviousItemdetailsid = mPRItemInfo.Itemdetailsid;
+							DB.MPRItemInfoes.Add(item);
 							DB.SaveChanges();
 						}
 
@@ -2323,7 +2323,7 @@ Review Date :<<>>   Reviewed By :<<>>
 
 					if (typeOfuser == "Intiator")
 					{
-						if (LocalRegApprovalProcessDetails.IntiatorStatus == "Approved")
+						if (model.IntiatorStatus == "Approved")
 							LocalRegApprovalProcessDetails.CheckerStatus = "Pending";
 
 						LocalRegApprovalProcessDetails.InitiatorStatusChangedOn = DateTime.Now;
@@ -2335,10 +2335,13 @@ Review Date :<<>>   Reviewed By :<<>>
 					}
 					if (typeOfuser == "Checker")
 					{
-						if (LocalRegApprovalProcessDetails.CheckerStatus == "Approved")
+						if (model.CheckerStatus == "Approved")
 							LocalRegApprovalProcessDetails.ApprovalStatus = "Pending";
 
-						//LocalRegApprovalProcessDetails.CheckedBy = model.CheckedBy;
+						if (model.CheckerStatus != "Approved")
+						{
+							LocalRegApprovalProcessDetails.IntiatorStatus = "Pending";
+						}
 						LocalRegApprovalProcessDetails.CheckedOn = DateTime.Now;
 						LocalRegApprovalProcessDetails.CheckerStatus = model.CheckerStatus;
 						LocalRegApprovalProcessDetails.CheckerRemarks = model.CheckerRemarks;
@@ -2348,9 +2351,14 @@ Review Date :<<>>   Reviewed By :<<>>
 					}
 					if (typeOfuser == "Approver")
 					{
-						if (LocalRegApprovalProcessDetails.ApprovalStatus == "Approved")
+						if (model.ApprovalStatus == "Approved")
 							LocalRegApprovalProcessDetails.VerifiedStatus = "Pending";
-						//LocalRegApprovalProcessDetails.ApprovedBy = model.ApprovedBy;
+						if (model.ApprovalStatus != "Approved")
+						{
+							LocalRegApprovalProcessDetails.IntiatorStatus = "Pending";
+							LocalRegApprovalProcessDetails.CheckerStatus = "Pending";
+						}
+
 						LocalRegApprovalProcessDetails.ApprovedOn = DateTime.Now;
 						LocalRegApprovalProcessDetails.ApprovalStatus = model.ApprovalStatus;
 						LocalRegApprovalProcessDetails.ApproverRemarks = model.ApproverRemarks;
@@ -2361,7 +2369,7 @@ Review Date :<<>>   Reviewed By :<<>>
 					}
 					if (typeOfuser == "Verifier")
 					{
-						if (LocalRegApprovalProcessDetails.VerifiedStatus == "Approved")
+						if (model.VerifiedStatus == "Approved")
 							LocalRegApprovalProcessDetails.FinanceApprovedStatus = "Pending";
 
 						if (model.VerifiedStatus != "Approved")
@@ -3066,26 +3074,26 @@ Review Date :<<>>   Reviewed By :<<>>
 			return true;
 		}
 
-        public DataTable Getoldrevisionitems(List<int> itemdetailsid)
-        {
-            DataTable table = new DataTable();
-            var data = string.Join(" ',' ", itemdetailsid);
-            try
-            {
-                var query = "";
-                query = "select * from itemsMapping where Itemdetailsid in ('" + data + "') ";
-                var cmd = DB.Database.Connection.CreateCommand();
-                cmd.CommandText = query;
+		public DataTable Getoldrevisionitems(List<int> itemdetailsid)
+		{
+			DataTable table = new DataTable();
+			var data = string.Join(" ',' ", itemdetailsid);
+			try
+			{
+				var query = "";
+				query = "select * from itemsMapping where Itemdetailsid in ('" + data + "') ";
+				var cmd = DB.Database.Connection.CreateCommand();
+				cmd.CommandText = query;
 
-                cmd.Connection.Open();
-                table.Load(cmd.ExecuteReader());
-                cmd.Connection.Close();
-                return table;
-            }
-            catch (Exception ex)
-            {
-                throw;
-            }
-        }
-    }
+				cmd.Connection.Open();
+				table.Load(cmd.ExecuteReader());
+				cmd.Connection.Close();
+				return table;
+			}
+			catch (Exception ex)
+			{
+				throw;
+			}
+		}
+	}
 }
