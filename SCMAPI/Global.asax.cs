@@ -18,6 +18,9 @@ using BALayer.RFQ;
 using BALayer.PurchaseAuthorization;
 using DALayer.PurchaseAuthorization;
 using DALayer.PAEmailDA;
+using BALayer.ASN;
+using DALayer.ASN;
+
 namespace SCMAPI
 {
 	public class WebApiApplication : System.Web.HttpApplication
@@ -44,7 +47,9 @@ namespace SCMAPI
             container.Register<IPurchaseAuthorizationBA, PurchaseAuthorizationBA>();
             container.Register<IPurchaseAuthorizationDA, PurchaseAuthorizationDA>();
             container.Register<IPAEmailDA, PAEmailDA>();
-            GlobalConfiguration.Configuration.DependencyResolver = new SimpleInjectorWebApiDependencyResolver(container);
+			container.Register<IASNBA, ASNBA>();
+			container.Register<IASNDA, ASNDA>();
+			GlobalConfiguration.Configuration.DependencyResolver = new SimpleInjectorWebApiDependencyResolver(container);
         }
 	}
 }

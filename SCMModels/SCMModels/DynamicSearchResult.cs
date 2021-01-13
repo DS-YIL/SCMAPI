@@ -287,4 +287,14 @@ namespace SCMModels
 
 	}
 
+	public partial class ASNfilters
+	{
+		public string FromDate { get; set; }
+		public string ToDate { get; set; }
+		public string ASNNo { get; set; }
+		public string Vendorid { get; set; }
+		public string VendorName { get; set; }
+		public string IntiatedBy { get; set; }
+	}
+
 }
