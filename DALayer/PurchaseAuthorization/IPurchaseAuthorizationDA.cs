@@ -79,5 +79,6 @@ namespace DALayer.PurchaseAuthorization
         List<jobcodes> Loadjobcodes();
         DataTable GETApprovernamesbydepartmentid(int departmentid);
         List<Saleorderno> Loadsaleorder();
+       Task<List<loadpastatsreport>> getPaValueReport(PADetailsModel model);
     }
 }

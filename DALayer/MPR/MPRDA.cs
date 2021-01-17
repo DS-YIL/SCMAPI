@@ -1165,7 +1165,7 @@ Review Date :<<>>   Reviewed By :<<>>
 			DB.Configuration.ProxyCreationEnabled = false;
 
 			MPRRevision mprRevisionDetails = new MPRRevision();
-			mprRevisionDetails = DB.MPRRevisions.Where(li => li.RevisionId == RevisionId).FirstOrDefault<MPRRevision>();
+			mprRevisionDetails = DB.MPRRevisions.Where(li => li.RevisionId == RevisionId).Include(li => li.MPR_Assignment).FirstOrDefault<MPRRevision>();
 			//mprRevisionDetails = DB.MPRRevisions.Include(x => x.MPRDetail).Include(x => x.MPRDepartment).Include(x => x.MPRProcurementSource)
 			//	 .Include(x => x.MPRCustomsDuty).Include(x => x.MPRProjectDutyApplicable).Include(x => x.MPRBuyerGroup).Include(x => x.MPRItemInfoes)
 			//	 .Include(x => x.MPRDocuments).Include(x => x.MPRDocumentations).Include(x => x.MPRVendorDetails).Include(x => x.MPRIncharges)
@@ -3081,7 +3081,7 @@ Review Date :<<>>   Reviewed By :<<>>
 			try
 			{
 				var query = "";
-				query = "select * from itemsMapping where Itemdetailsid in ('" + data + "') ";
+				query = "select * from RevisedItemsmapping where previousitemdetails in ('" + data + "') ";
 				var cmd = DB.Database.Connection.CreateCommand();
 				cmd.CommandText = query;
 

@@ -857,5 +857,110 @@ namespace SCMAPI.Controllers
 
             return "/";
         }
+        [HttpPost]
+        [Route("getPaValueReport")]
+        [ResponseType(typeof(List<loadpastatsreport>))]
+        public async Task<IHttpActionResult> getPaValueReport(PADetailsModel model)
+        {
+            List<loadpastatsreport> details = new List<loadpastatsreport>();
+            details = await _paBusenessAcess.getPaValueReport(model);
+            return Ok(details);
+        }
+        [HttpPost]
+        [Route("uploadItemData")]
+        public IHttpActionResult uploadItemData()
+        {
+            var Revisionid = "";
+            int documentid = 0;
+            var httpRequest = HttpContext.Current.Request;
+            var serverPath = HttpContext.Current.Server.MapPath("~/VendorDocuments");
+            string parsedFileName = "";
+            string filename = "";
+
+            if (httpRequest.Files.Count > 0)
+            {
+                Revisionid = httpRequest.Files.AllKeys[0];
+                //string employeeno = httpRequest.Files.AllKeys[1];
+                var postedFile = httpRequest.Files[0];
+                parsedFileName = string.Format(DateTime.Now.Year.ToString() + "\\" + DateTime.Now.ToString("MMM") + "\\" + Revisionid + "\\" + ToValidFileName(postedFile.FileName));
+                serverPath = serverPath + string.Format("\\" + DateTime.Now.Year.ToString() + "\\" + DateTime.Now.ToString("MMM")) + "\\" + Revisionid;
+                var filePath = Path.Combine(serverPath, ToValidFileName(postedFile.FileName));
+                if (!Directory.Exists(serverPath))
+                    Directory.CreateDirectory(serverPath);
+                postedFile.SaveAs(filePath);
+                try
+                {
+                    YSCMEntities entities = new YSCMEntities();
+
+                    var data = new RFQDocument();
+                    data.DocumentName = postedFile.FileName;
+                    data.Path = parsedFileName;
+                    data.UploadedDate = System.DateTime.Now;
+                    data.rfqRevisionId = Convert.ToInt32(Revisionid);
+                    data.DeleteFlag = false;
+                    entities.RFQDocuments.Add(data);
+                    entities.SaveChanges();
+                    documentid = data.RfqDocId;
+                    filename = data.DocumentName;
+
+                    DataTable dtexcel = new DataTable();
+                    bool hasHeaders = false;
+                    string HDR = hasHeaders ? "Yes" : "No";
+                    string strConn;
+                    if (filePath.Substring(filePath.LastIndexOf('.')).ToLower() == ".xlsx")
+                        strConn = "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" + filePath + ";Extended Properties=\"Excel 12.0;HDR=" + HDR + ";IMEX=0\"";
+                    else
+                        strConn = "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" + Path.GetDirectoryName(filePath) + ";Extended Properties='Text;HDR=YES;FMT=Delimited;'";
+
+                    OleDbConnection conn = new OleDbConnection(strConn);
+                    conn.Open();
+                    DataTable schemaTable = conn.GetOleDbSchemaTable(OleDbSchemaGuid.Tables, new object[] { null, null, null, "TABLE" });
+
+                    DataRow schemaRow = schemaTable.Rows[0];
+                    string sheet = schemaRow["TABLE_NAME"].ToString();
+                    if (!sheet.EndsWith("_"))
+                    {
+                        string query = " SELECT  * FROM [" + sheet + "]";
+                        OleDbDataAdapter daexcel = new OleDbDataAdapter(query, conn);
+                        dtexcel.Locale = CultureInfo.CurrentCulture;
+                        daexcel.Fill(dtexcel);
+                    }
+
+                    conn.Close();
+                    int iSucceRows = 0;
+                    System.Web.HttpContext.Current.Response.ContentEncoding = System.Text.Encoding.UTF8;
+                    foreach (DataRow row in dtexcel.Rows)
+                    {
+                        entities.RFQItems_N.Add(new RFQItems_N
+                        {
+                            FreightAmount= Convert.ToDecimal(row["FreightAmount"].ToString()),
+                            FreightPercentage = Convert.ToDecimal(row["FreightPercentage"].ToString()),
+                            PFAmount = Convert.ToDecimal(row["P & F Amount"].ToString()),
+                            PFPercentage = Convert.ToDecimal(row["P & F Percentage"].ToString()),
+                            CGSTPercentage = Convert.ToDecimal(row["CGST  Percentage"].ToString()),
+                            SGSTPercentage = Convert.ToDecimal(row["SGST  Percentage"].ToString()),
+                            IGSTPercentage = Convert.ToDecimal(row["IGST  Percentage"].ToString()),
+                        });
+                    }
+
+                    foreach (DataRow row in dtexcel.Rows)
+                    {
+                        entities.RFQItemsInfo_N.Add(new RFQItemsInfo_N
+                        {
+                            UnitPrice = Convert.ToDecimal(row["UnitPrice"].ToString()),
+                            Discount = Convert.ToDecimal(row["Discount"].ToString()),
+                            DiscountPercentage = Convert.ToDecimal(row["DiscountPercentage"].ToString()),
+                        });
+                    }
+                }
+                catch (Exception e)
+                {
+                    throw e;
+                }
+                
+            }
+            return Ok(filename);
+
+        }
     }
 }

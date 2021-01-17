@@ -2808,5 +2808,89 @@ Review Date :<<>>   Reviewed By :<<>>*/
 				throw;
 			}
 		}
-	}
+
+        public async Task<List<loadpastatsreport>> getPaValueReport(PADetailsModel model)
+        {
+            string data = "";
+            if (model.OrgDepartmentId != 0)
+            {
+                List<int> departments = obj.MPRDepartments.Where(x => x.ORgDepartmentid == model.OrgDepartmentId).Select(x => (int)x.DepartmentId).ToList();
+                data = string.Join(" ',' ", departments);
+            }
+
+            int mprno = 0;
+            int rfqno = 0;
+            if (model.DocumentNumber != null && model.DocumentNumber != "")
+            {
+                if (model.DocumentNumber.StartsWith("MPR", StringComparison.CurrentCultureIgnoreCase))
+                {
+                    model.DocumentNumber = model.DocumentNumber;
+                }
+                else
+                {
+                    mprno = Convert.ToInt32(model.DocumentNumber);
+                    model.DocumentNumber = null;
+                }
+            }
+            if (model.rfqnumber != null && model.rfqnumber != null)
+            {
+                if (model.rfqnumber.StartsWith("RFQ", StringComparison.CurrentCultureIgnoreCase))
+                {
+                    model.rfqnumber = model.rfqnumber;
+                }
+                else
+                {
+                    rfqno = Convert.ToInt32(model.rfqnumber);
+                    model.rfqnumber = null;
+                }
+            }
+            List<loadpastatsreport> filter = new List<loadpastatsreport>();
+            try
+            {
+                var sqlquery = "";
+                sqlquery = "select * from loadpastatsreport  where PAStatus in ('Pending','rejected','Approved','Submitted') and DeleteFlag=0 ";
+                if (model.DocumentNumber != null && model.DocumentNumber != "")
+                    sqlquery += " and  DocumentNo='" + model.DocumentNumber + "'";
+                if (model.OrgDepartmentId != 0)
+                    sqlquery += " and DepartmentId in ('" + data + "')";
+                if (model.PONO != null)
+                    sqlquery += " and PONO like '%" + model.PONO + "%'";
+                if (model.Paid != 0)
+                    sqlquery += " and PAId='" + model.Paid + "'";
+                if (model.POdate != null)
+                    sqlquery += " and PODate='" + model.POdate + "'";
+                if (model.fromDate != null && model.toDate != null)
+                    sqlquery += " and RequestedOn between '" + model.fromDate + "' and '" + model.toDate + "'";
+                if (model.BuyerGroupId != 0)
+                    sqlquery += " and BuyerGroupId='" + model.BuyerGroupId + "'";
+                if (model.VendorId != 0)
+                    sqlquery += " and VendorId='" + model.VendorId + "'";
+                if (model.PAStatus != null)
+                    sqlquery += " and PAStatus='" + model.PAStatus + "'";
+                if (model.POStatus != null)
+                    sqlquery += " and POStatus='" + model.POStatus + "'";
+                if (mprno != 0)
+                    sqlquery += " and MPRSeqNo = '" + mprno + "'";
+                if (model.rfqnumber != null && model.rfqnumber != "")
+                    sqlquery += " and RFQNo ='" + model.rfqnumber + "'";
+                if (rfqno != 0)
+                    sqlquery += " and RFQUniqueNo ='" + rfqno + "'";
+                if (!string.IsNullOrEmpty(model.Approvername))
+                    sqlquery += " and approvers1 like '% " + model.Approvername + "%'";
+                if (!string.IsNullOrEmpty(model.Approverstatus))
+                    sqlquery += " and PAStatus not in ('Rejected') and DeleteFlag=0 and ApprovalStatus like '% " + model.Approverstatus + "%'";
+
+                sqlquery += " order by PAId desc ";
+                //if (model.FromDate != null && model.ToDate != null)
+                //    sqlquery += " and RequestedOn between '" + model.FromDate + "' and '" + model.ToDate + "'";
+
+                filter = obj.Database.SqlQuery<loadpastatsreport>(sqlquery).ToList();
+                return filter;
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+        }
+    }
 }

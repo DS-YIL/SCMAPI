@@ -320,5 +320,10 @@ namespace BALayer.PurchaseAuthorization
         {
             return _purchaseDataAcess.Loadsaleorder();
         }
+
+        public async Task<List<loadpastatsreport>> getPaValueReport(PADetailsModel model)
+        {
+            return await _purchaseDataAcess.getPaValueReport(model);
+        }
     }
 }
