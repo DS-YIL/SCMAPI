@@ -2163,7 +2163,7 @@ Review Date :<<>>   Reviewed By :<<>>
 			try
 			{
 				VSCMEntities vscmObj = new VSCMEntities();
-				var vendorMaster = DB.VendorUserMasters.Where(li => li.VendorId == model.Vendorid).FirstOrDefault();
+				var vendorMaster = DB.VendorUserMasters.Where(li => li.VendorId == model.Vendorid && li.Vuserid==model.VendorEmailId).FirstOrDefault();
 				if (vendorMaster != null && model.IsExistVendor == false)
 					Vendorid = vendorMaster.VendorId;
 
