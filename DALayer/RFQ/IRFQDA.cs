@@ -38,6 +38,7 @@ namespace DALayer.RFQ
         statuscheckmodel CommunicationAdd(RfqCommunicationModel model);
         string UpdateVendorCommunication(RfqCommunicationModel model);
         int addNewRfqRevision(int rfqrevisionId);
+        int RecreateNewRfqRevision(int rfqRevisionId, string recreate);
         Task<List<RfqItemModel>> GetItemsByRevisionId(int revisionid);
         Task<List<RfqRevisionModel>> GetAllrevisionRFQs();
         Task<RfqItemModel> GetItemsByItemId(int id);

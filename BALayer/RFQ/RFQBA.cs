@@ -594,5 +594,10 @@ namespace BALayer.RFQ
 		{
 			return _rfqDataAcess.updateHandlingCharges(rfqItems);
 		}
-	}
+
+        public int RecreateNewRfqRevision(int rfqRevisionId, string recreate)
+        {
+            return _rfqDataAcess.RecreateNewRfqRevision(rfqRevisionId, recreate);
+        }
+    }
 }

@@ -325,5 +325,10 @@ namespace BALayer.PurchaseAuthorization
         {
             return await _purchaseDataAcess.getPaValueReport(model);
         }
+
+        public Task<List<statuscheckmodel>> InsertMappingItems(List<MappingItemModel> model)
+        {
+			return _purchaseDataAcess.InsertMappingItems(model);
+		}
     }
 }

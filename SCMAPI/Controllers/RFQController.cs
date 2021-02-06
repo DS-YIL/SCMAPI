@@ -115,6 +115,12 @@ namespace SCMAPI.Controllers
 		{
 			return Ok(_rfqBusenessAcess.addNewRfqRevision(revisionId));
 		}
+		[HttpPost]
+		[Route("RecreateNewRfqRevision/{revisionId}/{recreate}")]
+		public IHttpActionResult RecreateNewRfqRevision(int revisionId,string recreate)
+		{
+			return Ok(_rfqBusenessAcess.RecreateNewRfqRevision(revisionId,recreate));
+		}
 
 		[Route("GetItemsByItemId")]
 		[ResponseType(typeof(RfqItemModel))]

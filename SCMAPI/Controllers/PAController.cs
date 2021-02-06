@@ -962,5 +962,14 @@ namespace SCMAPI.Controllers
             return Ok(filename);
 
         }
+        [HttpPost]
+        [Route("InsertMappingItems")]
+        [ResponseType(typeof(List<List<statuscheckmodel>>))]
+        public async Task<IHttpActionResult> InsertMappingItems(List<MappingItemModel> model)
+        {
+            List<statuscheckmodel> status = new List<statuscheckmodel>();
+            status = await _paBusenessAcess.InsertMappingItems(model);
+            return Ok(status);
+        }
     }
 }

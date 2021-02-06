@@ -2892,5 +2892,41 @@ Review Date :<<>>   Reviewed By :<<>>*/
                 throw;
             }
         }
-    }
+		public async Task<List<statuscheckmodel>> InsertMappingItems(List<MappingItemModel> model)
+		{
+			List<statuscheckmodel> status = new List<statuscheckmodel>();
+			try
+			{
+				foreach (var item in model)
+				{
+					var rfqdata = new MPRRfqItem()
+					{
+						MPRItemDetailsid = item.previousitemdetails,
+						MPRRevisionId = item.itemrevision,
+						RfqItemsid = item.RFQItemsId,
+						DeleteFlag = false
+					};
+					obj.MPRRfqItems.Add(rfqdata);
+					obj.SaveChanges();
+					statuscheckmodel status1 = new statuscheckmodel();
+					status1.Sid = rfqdata.MPRRFQitemId;
+					status1.rfqitemid = rfqdata.RfqItemsid;
+					status.Add(status1);
+
+					var iteminfo = new MPRRfqItemInfo();
+					iteminfo.rfqsplititemid = item.RFQSplitItemId;
+					iteminfo.MPRRFQitemId = status1.Sid;
+					obj.MPRRfqItemInfos.Add(iteminfo);
+					obj.SaveChanges();
+					var mprrfqid = iteminfo.MPRRFQitemId;
+				}
+				return status;
+			}
+			catch (Exception ex)
+			{
+
+				throw;
+			}
+		}
+	}
 }

@@ -79,5 +79,6 @@ namespace BALayer.PurchaseAuthorization
         DataTable GETApprovernamesbydepartmentid(int departmentid);
         List<Saleorderno> Loadsaleorder();
         Task<List<loadpastatsreport>> getPaValueReport(PADetailsModel model);
+        Task<List<statuscheckmodel>> InsertMappingItems(List<MappingItemModel> model);
     }
 }

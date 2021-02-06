@@ -103,7 +103,11 @@ namespace SCMModels.RFQModels
         public string ShipToParty { get; set; }
         public string SoldToParty { get; set; }
         public string EndUser { get; set; }
-    }
+        public string itemtypesupplier { get; set; }
+		public string itemtypematerial { get; set; }
+        public string PODescription { get; set; }
+		public string POText { get; set; }
+	}
 	public class PADetailsModel
 	{
 		public string rfqnumber { get; set; }
