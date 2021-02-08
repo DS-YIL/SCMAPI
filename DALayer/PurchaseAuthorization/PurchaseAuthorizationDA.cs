@@ -1060,7 +1060,10 @@ Review Date :<<>>   Reviewed By :<<>>*/
 							PAID = status.Sid,
 							RfqSplitItemId = Convert.ToInt32(splitdata),
 							Mprrfqsplititemid = items.Mprrfqsplititemid,
-							MPRItemDetailsId = items.MPRItemDetailsid
+							MPRItemDetailsId = items.MPRItemDetailsid,
+							PODescription = items.PODescription,
+							POText = items.POText,
+							POItemType = items.itemtypesupplier
 						};
 						obj.PAItems.Add(paitem);
 						obj.SaveChanges();

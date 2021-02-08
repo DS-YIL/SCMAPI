@@ -645,7 +645,10 @@ Review Date :<<>>   Reviewed By :<<>>
 							item.MfgPartNo = mPRItemInfo.MfgPartNo;
 							item.TargetSpend = mPRItemInfo.TargetSpend;
 							item.RepeatOrderRefId = mPRItemInfo.RepeatOrderRefId;
-							item.PreviousItemdetailsid = mPRItemInfo.Itemdetailsid;
+                            if (revise == true)
+                            {
+								item.PreviousItemdetailsid = mPRItemInfo.Itemdetailsid;
+							}
 							DB.MPRItemInfoes.Add(item);
 							DB.SaveChanges();
 						}
@@ -1878,7 +1881,7 @@ Review Date :<<>>   Reviewed By :<<>>
 
 				foreach (MPRItemInfo item in list)
 				{
-					List<MPRRfqItem> mprItems = Context.MPRRfqItems.Where(li => li.MPRItemDetailsid == item.RepeatOrderRefId).ToList();
+					List<MPRRfqItem> mprItems = Context.MPRRfqItems.Where(li => li.MPRItemDetailsid == item.RepeatOrderRefId &&  item.RepeatOrderRefId != null).ToList();
 					foreach (MPRRfqItem mprrfqItem in mprItems)
 					{
 						if (mprrfqItem != null)
