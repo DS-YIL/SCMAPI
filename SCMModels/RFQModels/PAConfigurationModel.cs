@@ -96,4 +96,5 @@ namespace SCMModels.RFQModels
         public string SaleOrderNo { get; set; }
         public int ID { get; set; }
     }
+    
 }

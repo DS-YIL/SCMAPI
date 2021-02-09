@@ -13,6 +13,7 @@ namespace SCMModels.RFQModels
         public Nullable<int> RfqItemsId { get; set; }
         public string DocumentName { get; set; }
         public int DocumentType { get; set; }
+        public string DocumentTypeName { get; set; }
         public string Path { get; set; }
         public string UploadedBy { get; set; }
         public DateTime UploadedDate { get; set; }

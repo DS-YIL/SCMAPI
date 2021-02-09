@@ -19,7 +19,6 @@ namespace SCMModels.RFQModels
 			//rfqCommunications = new List<RFQCommunicationsDetail>();
 			RfqDocuments = new List<MPRRFQDocument>();
 			RFQStatusTrackDetails = new List<RFQStatusTrackDetail>();
-
 		}
 		public int RfqRevisionId { get; set; }
 		public int RfqMasterId { get; set; }

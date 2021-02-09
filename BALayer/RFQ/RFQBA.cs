@@ -599,5 +599,18 @@ namespace BALayer.RFQ
         {
             return _rfqDataAcess.RecreateNewRfqRevision(rfqRevisionId, recreate);
         }
+        public int MappingRfqMissedItems(List<RfqItemModel> rfqItemModel, List<MPRRFQDocument> mPRRFQDocuments)
+        {
+            return _rfqDataAcess.MappingRfqMissedItems(rfqItemModel, mPRRFQDocuments);
+        }
+
+        public int MappingMPRDocumentToRFQDocument(MPRDocument mPRDocument)
+        {
+            return _rfqDataAcess.MappingMPRDocumentToRFQDocument(mPRDocument);
+        }
+        public int UnMappingRFQDocument(RFQDocument rFQDocument)
+        {
+            return _rfqDataAcess.UnMappingRFQDocument(rFQDocument);
+        }
     }
 }

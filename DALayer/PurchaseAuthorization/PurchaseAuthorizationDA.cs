@@ -2931,5 +2931,247 @@ Review Date :<<>>   Reviewed By :<<>>*/
 				throw;
 			}
 		}
+		public async Task<MSAMasterConfirmation> updateMSAConfirmation(MSAMasterConfirmation model)
+		{
+			MSAMasterConfirmation status = new MSAMasterConfirmation();
+			try
+			{
+				var data = obj.MSAMasterConfirmations.Where(x => x.PAID == model.PAID && x.Deleteflag == false && x.Confirmationflag == false).FirstOrDefault();
+				if (data != null)
+				{
+					data.Confirmationflag = model.Confirmationflag;
+					data.ConfirmedBy = model.UploadedBy;
+					data.ConfirmedDate = DateTime.Now;
+					obj.SaveChanges();
+					model.StatusRemarks = "1";
+				}
+
+				else
+				{
+					var alreadyConfirmed = obj.MSAMasterConfirmations.Where(x => x.PAID == model.PAID && x.Deleteflag == false && x.Confirmationflag == true).FirstOrDefault();
+					if (alreadyConfirmed != null)
+					{
+						model.StatusRemarks = "2";
+					}
+					else
+					{       // If User are ok with record than he can directly click on confirm. 
+							//So Automatically based on PAID records will take from View and Insert MSALineItemTable,
+							//MSAMasterConfirmationTable and Update Confirmation flag is Yes.
+
+						//need to take data from View and dump into MSALineItem and MSAMasterConfirmation
+						var RPAViewData = obj.RPALoadItemForMSAs.Where(li => li.paid == model.PAID).ToList();
+						if (IsPAVaild(model.PAID, RPAViewData))
+						{
+							foreach (var item in RPAViewData)
+							{
+								if (item.PAItemID != null)
+								{
+									MSALineItem mSALineItem1 = new MSALineItem();
+									mSALineItem1.Item_No_ = item.Item_No_;
+									mSALineItem1.deletionflag = false;
+									mSALineItem1.mscode = item.mscode;
+									mSALineItem1.ItemDescription = item.ItemDescription;
+									mSALineItem1.WBS = item.WBS;
+									mSALineItem1.wbsdesc = item.wbsdesc;
+									mSALineItem1.Quantity = Convert.ToInt32(item.Quantity);
+									mSALineItem1.unit = item.unit;
+									mSALineItem1.RequirementDate = item.RequirementDate;
+									mSALineItem1.Project = item.Project;
+									mSALineItem1.projectdesc = item.projectdesc;
+									mSALineItem1.TokuchuNo = item.TokuchuNo;
+									mSALineItem1.tokchuno = item.tokchuno;
+									mSALineItem1.bupfl = item.bupfl;
+									mSALineItem1.bupfldesc = item.bupfldesc;
+									mSALineItem1.UnitPrice = item.UnitPrice.ToString();
+									mSALineItem1.Currency = item.Currency;
+									mSALineItem1.priceunit = item.priceunit;
+									mSALineItem1.costelement = item.costelement;
+									mSALineItem1.costelementdesc = item.costelementdesc;
+
+									mSALineItem1.plant = item.plant;
+									mSALineItem1.plantname = item.plantname;
+									mSALineItem1.StorageLocation = item.StorageLocation;
+									mSALineItem1.storagelocationname = item.storagelocationname;
+									mSALineItem1.VendorCode = item.VendorCode;
+									mSALineItem1.VendorName = item.VendorName;
+									mSALineItem1.VendorModelNo = item.VendorModelNo;
+									mSALineItem1.sortstring1 = item.sortstring1;
+									mSALineItem1.ProjectManager = item.ProjectManager;
+									mSALineItem1.note1 = item.note1;
+									mSALineItem1.note2 = item.note2.ToString();
+									mSALineItem1.note3 = item.note3.ToString();
+									mSALineItem1.note4 = item.note4;
+									mSALineItem1.lt = item.lt;
+									mSALineItem1.deadline = item.deadline;
+									mSALineItem1.deliverydate = item.deliverydate;
+									mSALineItem1.text = item.text;
+									mSALineItem1.Direct_Shipping = item.Direct_Shipping;
+									mSALineItem1.Ship_to_Party = item.Ship_to_Party;
+									mSALineItem1.Ship_to_Party_seq__No_ = item.Ship_to_Party_seq__No_;
+
+									mSALineItem1.Ship_to_Party_Name = item.Ship_to_Party_Name;
+									mSALineItem1.Ship_to_Party_Address = item.Ship_to_Party_Address;
+									mSALineItem1.Ship_to_Party_Phone = item.Ship_to_Party_Phone;
+									mSALineItem1.Nuclear_Spec_Code = item.Nuclear_Spec_Code;
+									mSALineItem1.QW_Box_No_ = item.QW_Box_No_;
+									mSALineItem1.Safe_Proof_ID = item.Safe_Proof_ID;
+									mSALineItem1.XJNo_ = item.XJNo_;
+									mSALineItem1.Product_career_code = item.Product_career_code;
+									mSALineItem1.QIC_Language = item.QIC_Language;
+									mSALineItem1.QIC_Delivery_style = item.QIC_Delivery_style;
+									mSALineItem1.Document_Quantity = item.Document_Quantity;
+									mSALineItem1.Document_Item_No_ = item.Document_Item_No_;
+									mSALineItem1.IM_Language = item.IM_Language;
+									mSALineItem1.IM_Attach_Style = item.IM_Attach_Style;
+									mSALineItem1.Tokuchu_IM_No_ = item.Tokuchu_IM_No_;
+									mSALineItem1.Parts_Instrument_Model = item.Parts_Instrument_Model;
+									mSALineItem1.Serial_Information_Flag = item.Serial_Information_Flag;
+									mSALineItem1.System_Model = item.System_Model;
+									mSALineItem1.Additional_work_code_1 = item.Additional_work_code_1;
+									mSALineItem1.Additional_work_code_2 = item.Additional_work_code_2;
+
+									mSALineItem1.Additional_work_code_3 = item.Additional_work_code_3;
+									mSALineItem1.Additional_work_code_4 = item.Additional_work_code_4;
+									mSALineItem1.Additional_work_code_5 = item.Additional_work_code_5;
+									mSALineItem1.Work_sheet_flag = item.Work_sheet_flag;
+									mSALineItem1.Work_sheet_Rev = item.Work_sheet_Rev;
+									mSALineItem1.Work_sheet_No_ = item.Work_sheet_No_;
+									mSALineItem1.Freight_RSP__JPY_ = item.Freight_RSP__JPY_;
+									mSALineItem1.Freight_RSP__USD_ = item.Freight_RSP__USD_;
+									mSALineItem1.Freight_RSP__EUR_ = item.Freight_RSP__EUR_;
+									mSALineItem1.Combined_MS_Code_Indicator = item.Combined_MS_Code_Control_Number;
+									mSALineItem1.Combined_MS_Code_Control_Number = item.Combined_MS_Code_Control_Number;
+									mSALineItem1.Comp__No_ = item.Comp__No_;
+									mSALineItem1.Order_Instruction_Title_code = item.Order_Instruction_Title_code;
+									mSALineItem1.Order_Instruction_Title = item.Order_Instruction_Title;
+									mSALineItem1.Input_Type = item.Input_Type;
+									mSALineItem1.Min_ = item.Min_;
+									mSALineItem1.Max_ = item.Min_;
+
+									mSALineItem1.Unitno = item.Unitno;
+									mSALineItem1.Sensor = item.Sensor;
+									mSALineItem1.Factor = item.Factor;
+									mSALineItem1.Feature = item.Feature;
+									mSALineItem1.Free_Text = item.Free_Text;
+									mSALineItem1.Inquiry_ID = item.Inquiry_ID;
+									mSALineItem1.Process_flag_INT_for_internal = item.Process_flag_INT_for_internal;
+
+									mSALineItem1.paid = item.paid;
+									mSALineItem1.PAItemID = item.PAItemID;
+									obj.MSALineItems.Add(mSALineItem1);
+									obj.SaveChanges();
+									model.StatusRemarks = "3";
+								}
+
+							}
+
+							var MSAMasterConfirmation1 = obj.MSAMasterConfirmations.Where(li => li.PAID == model.PAID && li.Deleteflag == false).FirstOrDefault();
+							if (MSAMasterConfirmation1 == null)
+							{
+								MSAMasterConfirmation mSAMasterConfirmation = new MSAMasterConfirmation();
+								mSAMasterConfirmation.Deleteflag = model.Deleteflag;
+								mSAMasterConfirmation.Confirmationflag = model.Confirmationflag;
+								mSAMasterConfirmation.PAID = model.PAID;
+								mSAMasterConfirmation.ConfirmedBy = model.UploadedBy;
+								mSAMasterConfirmation.ConfirmedDate = DateTime.Now;
+								mSAMasterConfirmation.UploadedBy = model.UploadedBy;
+								mSAMasterConfirmation.UplaodedDate = DateTime.Now;
+								obj.MSAMasterConfirmations.Add(mSAMasterConfirmation);
+								obj.SaveChanges();
+								model.StatusRemarks = "4";
+							}
+
+						}
+						else
+						{
+							model.StatusRemarks = "-2";
+						}
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				model.StatusRemarks = "-1";
+				throw;
+			}
+			status = model;
+			return status;
+		}
+		private bool IsPAVaild(int? paid, List<RPALoadItemForMSA> RPAViewData)
+		{
+			bool result = false;
+			try
+			{
+				foreach (var item in RPAViewData)
+				{
+					if (paid != item.paid)
+					{
+						return false;
+					}
+					if (string.IsNullOrEmpty(item.Item_No_) || string.IsNullOrEmpty(item.mscode) || string.IsNullOrEmpty(item.ItemDescription))
+					{
+						return false;
+					}
+					if (string.IsNullOrEmpty(item.WBS) || string.IsNullOrEmpty(item.Quantity.ToString()) || string.IsNullOrEmpty(item.RequirementDate) || string.IsNullOrEmpty(item.Project))
+					{
+						return false;
+					}
+					if (string.IsNullOrEmpty(item.UnitPrice.ToString()) || string.IsNullOrEmpty(item.Currency) || string.IsNullOrEmpty(item.StorageLocation) || string.IsNullOrEmpty(item.text))
+					{
+						return false;
+					}
+					if (string.IsNullOrEmpty(item.TokuchuNo) || string.IsNullOrEmpty(item.PAItemID.ToString()))
+					{
+						return false;
+					}
+
+					else
+					{
+						result = true;
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				result = false;
+			}
+			return result;
+		}
+		public async Task<MSAMasterConfirmation> clearMSAConfirmation(MSAMasterConfirmation model)
+		{
+			try
+			{
+				var data = obj.MSAMasterConfirmations.Where(x => x.PAID == model.PAID && x.Deleteflag == false && x.Confirmationflag == true).FirstOrDefault();
+				if (data != null)
+				{
+					data.Deleteflag = model.Deleteflag;
+					data.DeletedBy = model.DeletedBy;
+					data.DeletedRemarks = model.DeletedRemarks;
+					data.DeletedDate = DateTime.Now;
+					obj.SaveChanges();
+					model.StatusRemarks = "1";
+					var msalintItem = obj.MSALineItems.Where(x => x.paid == model.PAID && x.deletionflag == false).ToList();
+					if (msalintItem.Count > 0)
+					{
+						foreach (var item in msalintItem)
+						{
+							item.deletionflag = true;
+							obj.SaveChanges();
+						}
+						model.StatusRemarks = "2";
+					}
+				}
+				else
+				{
+					model.StatusRemarks = "0";
+				}
+			}
+			catch (Exception ex)
+			{
+				model.StatusRemarks = "-1";
+				throw;
+			}
+			return model;
+		}
 	}
 }

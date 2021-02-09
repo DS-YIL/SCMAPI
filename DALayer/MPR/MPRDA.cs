@@ -81,7 +81,12 @@ Review Date :<<>>   Reviewed By :<<>>
 		Review Date :<<>>   Reviewed By :<<>>*/
 		public bool addDataToDBMasters(DynamicSearchResult Result)
 		{
-			string query = "insert into " + Result.tableName + "(" + Result.columnNames + ")values('" + Result.columnValues + "')";
+			string query = "";
+			if (Result.query != "")
+				query = Result.query;
+			else
+				query = "insert into " + Result.tableName + "(" + Result.columnNames + ")values('" + Result.columnValues + "')";
+		
 
 			SqlConnection con = new SqlConnection(DB.Database.Connection.ConnectionString);
 			SqlCommand cmd = new SqlCommand(query, con);

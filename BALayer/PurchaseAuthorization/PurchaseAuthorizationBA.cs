@@ -330,5 +330,15 @@ namespace BALayer.PurchaseAuthorization
         {
 			return _purchaseDataAcess.InsertMappingItems(model);
 		}
-    }
+		public async Task<MSAMasterConfirmation> updateMSAConfirmation(MSAMasterConfirmation model)
+		{
+			return await _purchaseDataAcess.updateMSAConfirmation(model);
+
+		}
+		public async Task<MSAMasterConfirmation> ClearMSAConfirmation(MSAMasterConfirmation model)
+		{
+			return await _purchaseDataAcess.clearMSAConfirmation(model);
+
+		}
+	}
 }

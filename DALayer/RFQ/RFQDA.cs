@@ -3527,9 +3527,34 @@ namespace DALayer.RFQ
                             rfqDocs.Status = items.Status;
                             rfqDocs.StatusBy = items.StatusBy;
                             rfqDocs.Statusdate = items.StatusDate;
+                            rfqDocs.DocumentTypeName = obj.DocumentTypeMasters.Where(li => li.DocumenTypeId == items.DocumentType).FirstOrDefault().DocumentTypeName;
                             rfqitems.RFQDocuments.Add(rfqDocs);
                         }
+                        #region Get All MPR Doucment Item wise
+                        /*Name of Function : <<GetRfqDetailsById>>  Author :<<Rahul>>  
+		                  Date of Creation <<25-01-2021>>
+		                  Purpose : <<Need to get All MPR Document based on items wise >>
+		                  Review Date :<<>>   Reviewed By :<<>>*/
+                        var scmMPRdocs = obj.MPRDocuments.Where(li => li.ItemDetailsId == item.MPRItemDetailsid && item.RFQRevisionId == revisionId && li.Deleteflag != true).ToList();
+
+                        foreach (var items in scmMPRdocs)
+                        {
+                            MPRDocument rfqDocs = new MPRDocument();
+                            rfqDocs.MprDocId = items.MprDocId;
+                            rfqDocs.RevisionId = items.RevisionId;
+                            rfqDocs.ItemDetailsId = items.ItemDetailsId;
+                            rfqDocs.DocumentTypeid = items.DocumentTypeid;
+                            rfqDocs.DocumentName = items.DocumentName;
+                            rfqDocs.Path = items.Path;
+                            rfqDocs.UploadedBy = items.UploadedBy;
+                            rfqDocs.UplaodedDate = items.UplaodedDate;
+                            rfqDocs.CanShareWithVendor = items.CanShareWithVendor;
+                            rfqDocs.DocumentTypeid = items.DocumentTypeid;
+                            rfqDocs.DocumentTypeName = obj.DocumentTypeMasters.Where(li => li.DocumenTypeId == items.DocumentTypeid).FirstOrDefault().DocumentTypeName;
+                            rfqitems.MPRDocuments.Add(rfqDocs);
+                        }
                         revision.rfqitem.Add(rfqitems);
+                        #endregion
 
                     }
                     var rfqterms = obj.RFQTerms.Where(x => x.RFQrevisionId == revisionId).ToList();
@@ -6607,5 +6632,278 @@ namespace DALayer.RFQ
             }
             return true;
         }
+
+        #region Mapped RFQ Missed Itm
+        /*Name of Function : <<MappingRfqMissedItems>>  Author :<<Rahul>>  
+		  Date of Creation <<22-01-2021>>
+		  Purpose : <<Need to Mapped Missing item in RFQ before vendor qoute >>
+		  Review Date :<<>>   Reviewed By :<<>>*/
+        public int MappingRfqMissedItems(List<RfqItemModel> rfqItemModel, List<MPRRFQDocument> mPRRFQDocuments)
+        {
+            try
+            {
+                foreach (var data in rfqItemModel)
+                {
+                    var rfqItemdata = vscm.RemoteRFQItems_N.Where(li => li.RFQRevisionId == data.RFQRevisionId && li.MPRItemDetailsid == data.MPRItemDetailsid && li.DeleteFlag == false).FirstOrDefault();
+                    if (rfqItemdata == null)
+                    {
+                        rfqItemdata = new RemoteRFQItems_N()
+                        {
+                            RFQRevisionId = data.RFQRevisionId,
+                            ItemId = data.ItemId,
+                            MPRItemDetailsid = data.MRPItemsDetailsID,
+                            QuotationQty = data.QuotationQty,
+                            VendorModelNo = data.VendorModelNo,
+                            HSNCode = data.HSNCode,
+                            FreightPercentage = data.FreightPercentage,
+                            FreightAmount = data.FreightAmount,
+                            PFPercentage = data.PFPercentage,
+                            PFAmount = data.PFAmount,
+                            IGSTPercentage = data.IGSTPercentage,
+                            CGSTPercentage = data.CGSTPercentage,
+                            SGSTPercentage = data.SGSTPercentage,
+                            MfgModelNo = data.MfgModelNo,
+                            MfgPartNo = data.MfgPartNo,
+                            ManufacturerName = data.ManufacturerName,
+                            RequestRemarks = data.RequestRemarks,
+                            ItemName = obj.MaterialMasterYGS.Where(li => li.Material == data.ItemId).FirstOrDefault().Materialdescription,
+                            ItemDescription = data.ItemDescription,
+
+                        };
+                        vscm.RemoteRFQItems_N.Add(rfqItemdata);
+                        vscm.SaveChanges();
+                    }
+
+                    if (mPRRFQDocuments.Count > 0)
+                    {
+                        List<MPRRFQDocument> mprdocumnts = mPRRFQDocuments.Where(li => li.ItemDetailsId == data.MRPItemsDetailsID || li.ItemDetailsId == null).ToList();
+                        foreach (var item in mprdocumnts)
+                        {
+                            RemoteRFQDocument rfqDoc = new RemoteRFQDocument();
+                            rfqDoc.rfqRevisionId = data.RFQRevisionId;
+                            if (item.ItemDetailsId != null)
+                                rfqDoc.rfqItemsid = rfqItemdata.RFQItemsId;
+                            else
+                                rfqDoc.rfqItemsid = null;
+                            rfqDoc.DocumentName = item.DocumentName;
+                            rfqDoc.DocumentType = item.DocumentTypeid;
+                            rfqDoc.Path = item.Path;
+                            rfqDoc.UploadedBy = item.UploadedBy;
+                            rfqDoc.uploadedDate = DateTime.Now;
+                            try
+                            {
+                                if (rfqDoc.rfqItemsid != null)
+                                {
+                                    if (vscm.RemoteRFQDocuments.Where(li => li.rfqRevisionId == data.RFQRevisionId && li.rfqItemsid == rfqItemdata.RFQItemsId && li.DocumentName == item.DocumentName && li.DeleteFlag == false).Count() == 0)
+                                    {
+                                        vscm.RemoteRFQDocuments.Add(rfqDoc);
+                                        vscm.SaveChanges();
+                                    }
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                log.ErrorMessage("RFQController", "MappingRfqMissedItems", ex.Message + "; " + ex.StackTrace.ToString());
+                                return -1;
+                            }
+                        }
+                    }
+                }
+
+                //revisionid = revision.rfqRevisionId;
+                int rfqrevisionId = rfqItemModel[0].RFQRevisionId;
+                var rfqitems = vscm.RemoteRFQItems_N.Where(li => li.RFQRevisionId == rfqrevisionId && li.DeleteFlag == false).ToList();
+                foreach (var data in rfqitems)
+                {
+                    try
+                    {
+                        var rfqitemLocal = obj.RFQItems_N.Where(li => li.RFQItemsId == data.RFQItemsId).FirstOrDefault();
+                        if (rfqitemLocal == null)
+                        {
+
+                            try
+                            {
+                                rfqitemLocal = new RFQItems_N()
+                                {
+                                    RFQItemsId = data.RFQItemsId,
+                                    RFQRevisionId = data.RFQRevisionId,
+                                    ItemId = data.ItemId,
+                                    MPRItemDetailsid = data.MPRItemDetailsid,
+                                    QuotationQty = data.QuotationQty,
+                                    VendorModelNo = data.VendorModelNo,
+                                    HSNCode = data.HSNCode,
+                                    FreightPercentage = data.FreightPercentage,
+                                    FreightAmount = data.FreightAmount,
+                                    PFPercentage = data.PFPercentage,
+                                    PFAmount = data.PFAmount,
+                                    IGSTPercentage = data.IGSTPercentage,
+                                    CGSTPercentage = data.CGSTPercentage,
+                                    SGSTPercentage = data.SGSTPercentage,
+                                    MfgModelNo = data.MfgModelNo,
+                                    MfgPartNo = data.MfgPartNo,
+                                    ManufacturerName = data.ManufacturerName,
+                                    RequestRemarks = data.RequestRemarks,
+                                    DeleteFlag = false
+                                };
+                                obj.RFQItems_N.Add(rfqitemLocal);
+                                obj.SaveChanges();
+                            }
+                            catch (Exception ex)
+                            {
+                                log.ErrorMessage("RFQController", "MappingRfqMissedItems", ex.Message + "; " + ex.StackTrace.ToString());
+                            }
+                        }
+                        List<MPRDocument> mprdocumnts = obj.MPRDocuments.Where(li => li.ItemDetailsId == data.MPRItemDetailsid).ToList();
+                        var rfqdocs = vscm.RemoteRFQDocuments.Where(li => li.rfqRevisionId == rfqitemLocal.RFQRevisionId && li.DeleteFlag == false).ToList();
+                        foreach (var item in rfqdocs)
+                        {
+                            RFQDocument rfqdocss = obj.RFQDocuments.Where(li => li.RfqDocId == item.RfqDocId && li.DeleteFlag == false).FirstOrDefault();
+                            try
+                            {
+                                if (rfqdocss == null)
+                                {
+                                    RFQDocument rfqDoc = new RFQDocument();
+                                    rfqDoc.RfqDocId = item.RfqDocId;
+                                    rfqDoc.rfqRevisionId = item.rfqRevisionId;
+                                    rfqDoc.rfqItemsid = item.rfqItemsid;
+                                    rfqDoc.DocumentName = item.DocumentName;
+                                    rfqDoc.DocumentType = item.DocumentType;
+                                    rfqDoc.Path = item.Path;
+                                    rfqDoc.UploadedBy = item.UploadedBy;
+                                    rfqDoc.UploadedDate = item.uploadedDate;
+                                    obj.RFQDocuments.Add(rfqDoc);
+                                }
+                                obj.SaveChanges();
+                            }
+                            catch (Exception ex)
+                            {
+                                log.ErrorMessage("RFQController", "MappingRfqMissedItems", ex.Message + "; " + ex.StackTrace.ToString());
+                                return -1;
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        log.ErrorMessage("RFQController", "MappingRfqMissedItems", ex.Message + "; " + ex.StackTrace.ToString());
+                        return -1;
+                    }
+                }
+                return 1;
+            }
+            catch (Exception ex)
+            {
+                return -1;
+            }
+        }
+
+        public int MappingMPRDocumentToRFQDocument(MPRDocument mPRDocument)
+        {
+            int result = 0;
+            try
+            {
+                MPRDocument item = obj.MPRDocuments.Where(li => li.MprDocId == mPRDocument.MprDocId && li.Deleteflag != true).FirstOrDefault();
+                RemoteRFQDocument rfqDoc = new RemoteRFQDocument();
+                int RFqItemsId = vscm.RemoteRFQItems_N.Where(li => li.MPRItemDetailsid == item.ItemDetailsId).FirstOrDefault().RFQItemsId;
+                rfqDoc.rfqRevisionId = mPRDocument.RfqRevisionId;
+                if (item.ItemDetailsId != null)
+                    rfqDoc.rfqItemsid = RFqItemsId;
+                else
+                    rfqDoc.rfqItemsid = null;
+                rfqDoc.DocumentName = item.DocumentName;
+                rfqDoc.DocumentType = item.DocumentTypeid;
+                rfqDoc.Path = item.Path;
+                rfqDoc.UploadedBy = mPRDocument.UploadedBy;
+                rfqDoc.uploadedDate = DateTime.Now;
+                try
+                {
+                    if (rfqDoc.rfqItemsid != null)
+                    {
+                        if (vscm.RemoteRFQDocuments.Where(li => li.rfqRevisionId == mPRDocument.RfqRevisionId && li.rfqItemsid == RFqItemsId && li.DocumentName == item.DocumentName && li.DeleteFlag == false).Count() == 0)
+                        {
+                            vscm.RemoteRFQDocuments.Add(rfqDoc);
+                            vscm.SaveChanges();
+                            result = 1;
+                        }
+                        else
+                        {
+                            result = 2;
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    log.ErrorMessage("RFQController", "MappedMPRDocumnetToRFQDocumnet", ex.Message + "; " + ex.StackTrace.ToString());
+                    return -1;
+                }
+
+                // MPRDocument mprdocumntss = obj.MPRDocuments.Where(li => li.ItemDetailsId == mPRDocument.ItemDetailsId).FirstOrDefault();
+                var rfqdocs = vscm.RemoteRFQDocuments.Where(li => li.rfqRevisionId == mPRDocument.RfqRevisionId && li.DeleteFlag == false).ToList();
+                foreach (var items in rfqdocs)
+                {
+                    RFQDocument rfqdocss = obj.RFQDocuments.Where(li => li.RfqDocId == items.RfqDocId && li.DeleteFlag == false).FirstOrDefault();
+                    try
+                    {
+                        if (rfqdocss == null)
+                        {
+                            RFQDocument rfqDocc = new RFQDocument();
+                            rfqDocc.RfqDocId = items.RfqDocId;
+                            rfqDocc.rfqRevisionId = items.rfqRevisionId;
+                            rfqDocc.rfqItemsid = items.rfqItemsid;
+                            rfqDocc.DocumentName = items.DocumentName;
+                            rfqDocc.DocumentType = items.DocumentType;
+                            rfqDocc.Path = items.Path;
+                            rfqDocc.UploadedBy = items.UploadedBy;
+                            rfqDocc.UploadedDate = items.uploadedDate;
+                            obj.RFQDocuments.Add(rfqDocc);
+                        }
+                        obj.SaveChanges();
+                    }
+                    catch (Exception ex)
+                    {
+                        log.ErrorMessage("RFQController", "MappedMPRDocumnetToRFQDocumnet", ex.Message + "; " + ex.StackTrace.ToString());
+                        return -1;
+                    }
+                }
+                return result;
+            }
+            catch (Exception ex)
+            {
+                log.ErrorMessage("RFQController", "MappedMPRDocumnetToRFQDocumnet", ex.Message + "; " + ex.StackTrace.ToString());
+                return -1;
+            }
+        }
+
+        public int UnMappingRFQDocument(RFQDocument rFQDocument)
+        {
+            int result = 0;
+            try
+            {
+                var remoteRFQDocuments = vscm.RemoteRFQDocuments.Where(x => x.RfqDocId == rFQDocument.RfqDocId).FirstOrDefault();
+                if (remoteRFQDocuments != null)
+                {
+                    remoteRFQDocuments.DeleteFlag = true;
+                    remoteRFQDocuments.UploadedBy = rFQDocument.UploadedBy;
+                    remoteRFQDocuments.uploadedDate = DateTime.Now;
+                    vscm.SaveChanges();
+                    result = 1;
+                }
+                var rFQDocumentss = obj.RFQDocuments.Where(x => x.RfqDocId == rFQDocument.RfqDocId).FirstOrDefault();
+                if (rFQDocumentss != null)
+                {
+                    rFQDocumentss.DeleteFlag = true;
+                    rFQDocumentss.UploadedBy = rFQDocument.UploadedBy;
+                    rFQDocumentss.UploadedDate = DateTime.Now;
+                    obj.SaveChanges();
+                    result = 1;
+                }
+                return result;
+            }
+            catch (Exception ex)
+            {
+                log.ErrorMessage("RFQController", "UnMappingRFQDocument", ex.Message + "; " + ex.StackTrace.ToString());
+                return -1;
+            }
+        }
+        #endregion
     }
 }

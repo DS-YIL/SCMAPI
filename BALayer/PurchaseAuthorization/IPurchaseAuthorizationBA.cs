@@ -80,5 +80,7 @@ namespace BALayer.PurchaseAuthorization
         List<Saleorderno> Loadsaleorder();
         Task<List<loadpastatsreport>> getPaValueReport(PADetailsModel model);
         Task<List<statuscheckmodel>> InsertMappingItems(List<MappingItemModel> model);
+        Task<MSAMasterConfirmation> updateMSAConfirmation(MSAMasterConfirmation model);
+        Task<MSAMasterConfirmation> ClearMSAConfirmation(MSAMasterConfirmation model);
     }
 }

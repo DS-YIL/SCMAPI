@@ -434,6 +434,38 @@ namespace SCMAPI.Controllers
 		{
 			return Ok(this.emailTemplateDA.prepareRFQGeneratedEmail(Remindermaster.FrmEmailId, Remindermaster.VendorId, Remindermaster.rfqno, Remindermaster.Reminder));
 		}
+		#region Mapped RFQ Missed Itm
+		/*Name of Function : <<MappedRfqMissedItem>>  Author :<<Rahul>>  
+		  Date of Creation <<22-01-2021>>
+		  Purpose : <<Need to Mapped Missing item in RFQ before vendor qoute >>
+		  Review Date :<<>>   Reviewed By :<<>>*/
+		[HttpPost]
+		[Route("MappedRfqMissedItem")]
+		public IHttpActionResult MappedRfqMissedItem([FromBody] UnmappedModel unmappedModel)
+		{
+			return Ok(this._rfqBusenessAcess.MappingRfqMissedItems(unmappedModel.rfqItemModel, unmappedModel.mPRRFQDocuments));
+		}
+		#endregion
+
+		#region Mapped MPR Doc to RFQ 
+		/*Name of Function : <<MappedRfqMissedItem>>  Author :<<Rahul>>  
+		  Date of Creation <<25-01-2021>>
+		  Purpose : <<Need to Mapped MPR Document to RFQ >>
+		  Review Date :<<>>   Reviewed By :<<>>*/
+		[HttpPost]
+		[Route("MappedMPRDocumnetToRFQDocumnet")]
+		public IHttpActionResult MappedMPRDocumnetToRFQDocumnet(MPRDocument mPRDocument)
+		{
+			return Ok(this._rfqBusenessAcess.MappingMPRDocumentToRFQDocument(mPRDocument));
+		}
+		[HttpPost]
+		[Route("UNMappedRFQDocumnet")]
+		public IHttpActionResult UnMappedRFQDocumnet(RFQDocument rFQDocument)
+		{
+			return Ok(this._rfqBusenessAcess.UnMappingRFQDocument(rFQDocument));
+		}
+		#endregion
+
 
 	}
 }

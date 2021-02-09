@@ -133,5 +133,8 @@ namespace BALayer.RFQ
         Task<List<GetMprPaDetailsByFilter>> getMprPaDetailsBySearch(PADetailsModel model);
         bool PreviouPriceUpdate(MPRItemInfo previousprice);
 		bool updateHandlingCharges(List<RFQItems_N> rfqItems);
-	}
+        int MappingRfqMissedItems(List<RfqItemModel> rfqItemModel, List<MPRRFQDocument> mPRRFQDocuments);
+        int MappingMPRDocumentToRFQDocument(MPRDocument mPRDocument);
+        int UnMappingRFQDocument(RFQDocument rFQDocument);
+    }
 }
