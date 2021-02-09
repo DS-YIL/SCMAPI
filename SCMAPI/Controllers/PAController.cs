@@ -971,5 +971,331 @@ namespace SCMAPI.Controllers
             status = await _paBusenessAcess.InsertMappingItems(model);
             return Ok(status);
         }
+
+        [HttpPost]
+        [Route("uploadMSA")]
+        public IHttpActionResult uploadMSALineItem()
+        {
+            var paid = ""; var Uploadby = "";
+            int documentid = 0;
+            var httpRequest = HttpContext.Current.Request;
+            var serverPath = HttpContext.Current.Server.MapPath("~/PADocuments");
+            string parsedFileName = "";
+
+
+            statuscheckmodel status = new statuscheckmodel();
+            if (httpRequest.Files.Count > 0)
+            {
+                paid = httpRequest.Files.AllKeys[0];
+                Uploadby = httpRequest.Files.AllKeys[1];
+                //string employeeno = httpRequest.Files.AllKeys[1];
+                var postedFile = httpRequest.Files[0];
+                parsedFileName = string.Format(DateTime.Now.Year.ToString() + "\\" + DateTime.Now.ToString("MMM") + "\\" + paid + "\\" + ToValidFileName(postedFile.FileName));
+                serverPath = serverPath + string.Format("\\" + DateTime.Now.Year.ToString() + "\\" + DateTime.Now.ToString("MMM")) + "\\" + paid;
+                var filePath = Path.Combine(serverPath, ToValidFileName(postedFile.FileName));
+                if (!Directory.Exists(serverPath))
+                    Directory.CreateDirectory(serverPath);
+                postedFile.SaveAs(filePath);
+                try
+                {
+                    DataTable dtexcel = new DataTable();
+                    bool hasHeaders = false;
+                    string HDR = hasHeaders ? "Yes" : "No";
+                    string strConn;
+                    if (filePath.Substring(filePath.LastIndexOf('.')).ToLower() == ".xlsx")
+                        strConn = "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" + filePath + ";Extended Properties=\"Excel 12.0;HDR=" + HDR + ";IMEX=0\"";
+                    else
+                        strConn = "Provider=Microsoft.Jet.OLEDB.4.0;Data Source=" + filePath + ";Extended Properties=\"Excel 8.0;HDR=" + HDR + ";IMEX=0\"";
+
+                    OleDbConnection conn = new OleDbConnection(strConn);
+                    conn.Open();
+                    DataTable schemaTable = conn.GetOleDbSchemaTable(OleDbSchemaGuid.Tables, new object[] { null, null, null, "TABLE" });
+
+                    DataRow schemaRow = schemaTable.Rows[0];
+                    string sheet = schemaRow["TABLE_NAME"].ToString();
+                    if (!sheet.EndsWith("_"))
+                    {
+                        string query = "SELECT  * FROM [data$]";
+                        OleDbDataAdapter daexcel = new OleDbDataAdapter(query, conn);
+                        dtexcel.Locale = CultureInfo.CurrentCulture;
+                        daexcel.Fill(dtexcel);
+                    }
+
+                    conn.Close();
+                    int iSucceRows = 0;
+                    int paidCn = Convert.ToInt32(paid);
+
+                    if (IsPaIdMatch(paidCn, dtexcel, out string outputMsg))
+                    {
+                        YSCMEntities obj = new YSCMEntities();
+                        var ConfirmationFlag = obj.MSAMasterConfirmations.Where(li => li.PAID == paidCn && li.Deleteflag == false && li.Confirmationflag == true).FirstOrDefault();
+
+                        if (ConfirmationFlag == null)
+                        {
+                            foreach (DataRow row in dtexcel.Rows)
+                            {
+                                int paids = Convert.ToInt32(row["paid"]);
+                                int paitemid = Convert.ToInt32(row["PAItemID"]);
+
+                                MSALineItem mSALineItem1 = new MSALineItem();
+                                mSALineItem1.Item_No_ = string.IsNullOrWhiteSpace(row["Item No#"].ToString()) ? DBNull.Value.ToString() : row["Item No#"].ToString();
+                                mSALineItem1.deletionflag = false;
+                                mSALineItem1.mscode = row["mscode"].ToString();
+                                mSALineItem1.ItemDescription = row["ItemDescription"].ToString();
+                                mSALineItem1.WBS = row["WBS"].ToString();
+                                mSALineItem1.wbsdesc = string.IsNullOrWhiteSpace(row["wbsdesc"].ToString()) ? null : row["wbsdesc"].ToString();
+                                mSALineItem1.Quantity = Convert.ToInt32(row["Quantity"].ToString());
+                                mSALineItem1.unit = string.IsNullOrWhiteSpace(row["unit"].ToString()) ? null : row["unit"].ToString();
+                                mSALineItem1.RequirementDate = row["RequirementDate"].ToString();
+                                mSALineItem1.Project = row["Project"].ToString();
+                                mSALineItem1.projectdesc = string.IsNullOrWhiteSpace(row["projectdesc"].ToString()) ? null : row["projectdesc"].ToString();
+                                mSALineItem1.TokuchuNo = row["TokuchuNo"].ToString();
+                                mSALineItem1.tokchuno = string.IsNullOrWhiteSpace(row["tokchuno"].ToString()) ? null : row["tokchuno"].ToString();
+                                mSALineItem1.bupfl = string.IsNullOrWhiteSpace(row["bupfl"].ToString()) ? null : row["bupfl"].ToString();
+                                mSALineItem1.bupfldesc = string.IsNullOrWhiteSpace(row["bupfldesc"].ToString()) ? null : row["bupfldesc"].ToString();
+                                mSALineItem1.UnitPrice = string.IsNullOrWhiteSpace(row["UnitPrice"].ToString()) ? null : row["UnitPrice"].ToString();
+                                mSALineItem1.Currency = string.IsNullOrWhiteSpace(row["Currency"].ToString()) ? null : row["Currency"].ToString();
+                                mSALineItem1.priceunit = string.IsNullOrWhiteSpace(row["priceunit"].ToString()) ? null : row["priceunit"].ToString();
+                                mSALineItem1.costelement = string.IsNullOrWhiteSpace(row["costelement"].ToString()) ? null : row["costelement"].ToString();
+                                mSALineItem1.costelementdesc = string.IsNullOrWhiteSpace(row["costelementdesc"].ToString()) ? null : row["costelementdesc"].ToString();
+
+                                mSALineItem1.plant = string.IsNullOrWhiteSpace(row["plant"].ToString()) ? null : row["plant"].ToString();
+                                mSALineItem1.plantname = string.IsNullOrWhiteSpace(row["plantname"].ToString()) ? null : row["plantname"].ToString();
+                                mSALineItem1.StorageLocation = string.IsNullOrWhiteSpace(row["StorageLocation"].ToString()) ? null : row["StorageLocation"].ToString();
+                                mSALineItem1.storagelocationname = string.IsNullOrWhiteSpace(row["storagelocationname"].ToString()) ? null : row["storagelocationname"].ToString();
+                                mSALineItem1.VendorCode = string.IsNullOrWhiteSpace(row["VendorCode"].ToString()) ? null : row["VendorCode"].ToString();
+                                mSALineItem1.VendorName = string.IsNullOrWhiteSpace(row["VendorName"].ToString()) ? null : row["VendorName"].ToString();
+                                mSALineItem1.VendorModelNo = string.IsNullOrWhiteSpace(row["VendorModelNo"].ToString()) ? null : row["VendorModelNo"].ToString();
+                                mSALineItem1.sortstring1 = string.IsNullOrWhiteSpace(row["sortstring1"].ToString()) ? null : row["sortstring1"].ToString();
+                                mSALineItem1.ProjectManager = string.IsNullOrWhiteSpace(row["ProjectManager"].ToString()) ? null : row["ProjectManager"].ToString();
+                                mSALineItem1.note1 = string.IsNullOrWhiteSpace(row["note1"].ToString()) ? null : row["note1"].ToString();
+                                mSALineItem1.note2 = string.IsNullOrWhiteSpace(row["note2"].ToString()) ? null : row["note2"].ToString();
+                                mSALineItem1.note3 = string.IsNullOrWhiteSpace(row["note3"].ToString()) ? null : row["note3"].ToString();
+                                mSALineItem1.note4 = string.IsNullOrWhiteSpace(row["note4"].ToString()) ? null : row["note4"].ToString();
+                                mSALineItem1.lt = string.IsNullOrWhiteSpace(row["lt"].ToString()) ? null : row["lt"].ToString();
+                                mSALineItem1.deadline = string.IsNullOrWhiteSpace(row["deadline"].ToString()) ? null : row["deadline"].ToString();
+                                mSALineItem1.deliverydate = string.IsNullOrWhiteSpace(row["deliverydate"].ToString()) ? null : row["deliverydate"].ToString();
+                                mSALineItem1.text = string.IsNullOrWhiteSpace(row["text"].ToString()) ? null : row["text"].ToString();
+                                mSALineItem1.Direct_Shipping = string.IsNullOrWhiteSpace(row["Direct Shipping"].ToString()) ? null : row["Direct Shipping"].ToString();
+                                mSALineItem1.Ship_to_Party = string.IsNullOrWhiteSpace(row["Ship to Party"].ToString()) ? null : row["Ship to Party"].ToString();
+                                mSALineItem1.Ship_to_Party_seq__No_ = string.IsNullOrWhiteSpace(row["Ship to Party seq# No#"].ToString()) ? null : row["Ship to Party seq# No#"].ToString();
+
+                                mSALineItem1.Ship_to_Party_Name = string.IsNullOrWhiteSpace(row["Ship to Party Name"].ToString()) ? null : row["Ship to Party Name"].ToString();
+                                mSALineItem1.Ship_to_Party_Address = string.IsNullOrWhiteSpace(row["Ship to Party Address"].ToString()) ? null : row["Ship to Party Address"].ToString();
+                                mSALineItem1.Ship_to_Party_Phone = string.IsNullOrWhiteSpace(row["Ship to Party Phone"].ToString()) ? null : row["Ship to Party Phone"].ToString();
+                                mSALineItem1.Nuclear_Spec_Code = string.IsNullOrWhiteSpace(row["Nuclear Spec Code"].ToString()) ? null : row["Nuclear Spec Code"].ToString();
+                                mSALineItem1.QW_Box_No_ = string.IsNullOrWhiteSpace(row["QW Box No#"].ToString()) ? null : row["QW Box No#"].ToString();
+                                mSALineItem1.Safe_Proof_ID = string.IsNullOrWhiteSpace(row["Safe Proof ID"].ToString()) ? null : row["Safe Proof ID"].ToString();
+                                mSALineItem1.XJNo_ = string.IsNullOrWhiteSpace(row["XJNo#"].ToString()) ? null : row["XJNo#"].ToString();
+                                mSALineItem1.Product_career_code = string.IsNullOrWhiteSpace(row["Product career code"].ToString()) ? null : row["Product career code"].ToString();
+                                mSALineItem1.QIC_Language = string.IsNullOrWhiteSpace(row["QIC Language"].ToString()) ? null : row["QIC Language"].ToString();
+                                mSALineItem1.QIC_Delivery_style = string.IsNullOrWhiteSpace(row["QIC Delivery style"].ToString()) ? null : row["QIC Delivery style"].ToString();
+                                mSALineItem1.Document_Quantity = string.IsNullOrWhiteSpace(row["Document Quantity"].ToString()) ? null : row["Document Quantity"].ToString();
+                                mSALineItem1.Document_Item_No_ = string.IsNullOrWhiteSpace(row["Document Item No#"].ToString()) ? null : row["Document Item No#"].ToString();
+                                mSALineItem1.IM_Language = string.IsNullOrWhiteSpace(row["IM Language"].ToString()) ? null : row["IM Language"].ToString(); row["IM Language"].ToString();
+                                mSALineItem1.IM_Attach_Style = string.IsNullOrWhiteSpace(row["IM Attach Style"].ToString()) ? null : row["IM Attach Style"].ToString();
+                                mSALineItem1.Tokuchu_IM_No_ = string.IsNullOrWhiteSpace(row["Tokuchu IM No#"].ToString()) ? null : row["Tokuchu IM No#"].ToString();
+                                mSALineItem1.Parts_Instrument_Model = string.IsNullOrWhiteSpace(row["Parts Instrument Model"].ToString()) ? null : row["Parts Instrument Model"].ToString();
+                                mSALineItem1.Serial_Information_Flag = string.IsNullOrWhiteSpace(row["Serial Information Flag"].ToString()) ? null : row["Serial Information Flag"].ToString();
+                                mSALineItem1.System_Model = string.IsNullOrWhiteSpace(row["System Model"].ToString()) ? null : row["System Model"].ToString(); row["System Model"].ToString();
+                                mSALineItem1.Additional_work_code_1 = string.IsNullOrWhiteSpace(row["Additional work code 1"].ToString()) ? null : row["Additional work code 1"].ToString();
+                                mSALineItem1.Additional_work_code_2 = string.IsNullOrWhiteSpace(row["Additional work code 2"].ToString()) ? null : row["Additional work code 2"].ToString();
+
+                                mSALineItem1.Additional_work_code_3 = string.IsNullOrWhiteSpace(row["Additional work code 3"].ToString()) ? null : row["Additional work code 3"].ToString();
+                                mSALineItem1.Additional_work_code_4 = string.IsNullOrWhiteSpace(row["Additional work code 4"].ToString()) ? null : row["Additional work code 4"].ToString();
+                                mSALineItem1.Additional_work_code_5 = string.IsNullOrWhiteSpace(row["Additional work code 5"].ToString()) ? null : row["Additional work code 5"].ToString();
+                                mSALineItem1.Work_sheet_flag = string.IsNullOrWhiteSpace(row["Work sheet flag"].ToString()) ? null : row["Work sheet flag"].ToString();
+                                mSALineItem1.Work_sheet_Rev = string.IsNullOrWhiteSpace(row["Work sheet Rev"].ToString()) ? null : row["Work sheet Rev"].ToString();
+                                mSALineItem1.Work_sheet_No_ = string.IsNullOrWhiteSpace(row["Work sheet No#"].ToString()) ? null : row["Work sheet No#"].ToString();
+                                mSALineItem1.Freight_RSP__JPY_ = string.IsNullOrWhiteSpace(row["Freight RSP (JPY)"].ToString()) ? null : row["Freight RSP (JPY)"].ToString();
+                                mSALineItem1.Freight_RSP__USD_ = string.IsNullOrWhiteSpace(row["Freight RSP (USD)"].ToString()) ? null : row["Freight RSP (USD)"].ToString();
+                                mSALineItem1.Freight_RSP__EUR_ = string.IsNullOrWhiteSpace(row["Freight RSP (EUR)"].ToString()) ? null : row["Freight RSP (EUR)"].ToString();
+                                mSALineItem1.Combined_MS_Code_Indicator = string.IsNullOrWhiteSpace(row["Combined MS-Code Indicator"].ToString()) ? null : row["Combined MS-Code Indicator"].ToString();
+                                mSALineItem1.Combined_MS_Code_Control_Number = string.IsNullOrWhiteSpace(row["Combined MS-Code Control Number"].ToString()) ? null : row["Combined MS-Code Control Number"].ToString();
+                                mSALineItem1.Comp__No_ = string.IsNullOrWhiteSpace(row["Comp# No#"].ToString()) ? null : row["Comp# No#"].ToString();
+                                mSALineItem1.Order_Instruction_Title_code = string.IsNullOrWhiteSpace(row["Order Instruction Title code"].ToString()) ? null : row["Order Instruction Title code"].ToString();
+                                mSALineItem1.Order_Instruction_Title = string.IsNullOrWhiteSpace(row["Order Instruction Title"].ToString()) ? null : row["Order Instruction Title"].ToString();
+                                mSALineItem1.Input_Type = string.IsNullOrWhiteSpace(row["Input Type"].ToString()) ? null : row["Input Type"].ToString();
+                                mSALineItem1.Min_ = string.IsNullOrWhiteSpace(row["Min#"].ToString()) ? null : row["Min#"].ToString();
+                                mSALineItem1.Max_ = string.IsNullOrWhiteSpace(row["Max#"].ToString()) ? null : row["Max#"].ToString();
+
+                                mSALineItem1.Unitno = string.IsNullOrWhiteSpace(row["Unitno"].ToString()) ? null : row["Unitno"].ToString();
+                                mSALineItem1.Sensor = string.IsNullOrWhiteSpace(row["Sensor"].ToString()) ? null : row["Sensor"].ToString();
+                                mSALineItem1.Factor = string.IsNullOrWhiteSpace(row["Factor"].ToString()) ? null : row["Factor"].ToString();
+                                mSALineItem1.Feature = string.IsNullOrWhiteSpace(row["Feature"].ToString()) ? null : row["Feature"].ToString();
+                                mSALineItem1.Free_Text = string.IsNullOrWhiteSpace(row["Free Text"].ToString()) ? null : row["Free Text"].ToString();
+                                mSALineItem1.Inquiry_ID = string.IsNullOrWhiteSpace(row["Inquiry ID"].ToString()) ? null : row["Inquiry ID"].ToString();
+                                mSALineItem1.Process_flag_INT_for_internal = string.IsNullOrWhiteSpace(row["Process flag INT for internal"].ToString()) ? null : row["Process flag INT for internal"].ToString();
+                                mSALineItem1.paid = paids;
+                                mSALineItem1.PAItemID = paitemid;
+
+
+                                MSALineItem mSALineItem = obj.MSALineItems.Where(li => li.paid == paids && li.PAItemID == paitemid && li.deletionflag == false).FirstOrDefault();
+                                if (mSALineItem == null)
+                                {
+                                    obj.MSALineItems.Add(mSALineItem1);
+                                    obj.SaveChanges();
+
+                                }
+                                else
+                                {
+                                    //Delete than new reocrd insterd
+
+                                    mSALineItem.deletionflag = true;
+                                    obj.SaveChanges();
+                                    obj.MSALineItems.Add(mSALineItem1);
+                                    obj.SaveChanges();
+                                }
+
+                            }
+                            status.StatusMesssage = "Successfull Inserted";
+                            status.Sid = 1;
+                            //output = "Successfull Inserted";
+                            //result = 1;
+                        }
+                        else
+                        {
+                            status.StatusMesssage = "It is already confirmed. Please click on reset and process it again";
+                            status.Sid = 2;
+
+                        }
+                        var MSAMasterConfirmation1 = obj.MSAMasterConfirmations.Where(li => li.PAID == paidCn && li.Deleteflag == false).FirstOrDefault();
+                        if (MSAMasterConfirmation1 == null)
+                        {
+                            MSAMasterConfirmation mSAMasterConfirmation = new MSAMasterConfirmation();
+                            mSAMasterConfirmation.Deleteflag = false;
+                            mSAMasterConfirmation.Confirmationflag = false;
+                            mSAMasterConfirmation.PAID = paidCn;
+                            mSAMasterConfirmation.UploadedBy = Uploadby.ToString();
+                            mSAMasterConfirmation.UplaodedDate = DateTime.Now;
+                            obj.MSAMasterConfirmations.Add(mSAMasterConfirmation);
+                            obj.SaveChanges();
+                        }
+                    }
+                    else
+                    {
+                        status.StatusMesssage = outputMsg;
+                        status.Sid = -2;
+
+                        //output = outputMsg;
+                        //result = -2;
+                    }
+                }
+                catch (Exception e)
+                {
+                    status.StatusMesssage = "Error while upload.Please check with developer";
+                    status.Sid = -1;
+                    throw e;
+                }
+            }
+            return Ok(status);
+        }
+
+        [HttpPost]
+        [Route("UpdateMSAConfirmation")]
+        public async Task<IHttpActionResult> UpdateMSAMasterConfirmation(MSAMasterConfirmation model)
+        {
+            return Ok(await _paBusenessAcess.updateMSAConfirmation(model));
+        }
+        [HttpPost]
+        [Route("ClearMSAConfirmation")]
+        public async Task<IHttpActionResult> ClearMSAMasterConfirmation(MSAMasterConfirmation model)
+        {
+            return Ok(await _paBusenessAcess.ClearMSAConfirmation(model));
+        }
+
+        private bool IsPaIdMatch(int paid, DataTable dtexcel, out string errorMsg)
+        {
+            bool result = false;
+            try
+            {
+                foreach (DataRow row in dtexcel.Rows)
+                {
+                    if (paid != Convert.ToInt32(row["paid"]))
+                    {
+                        errorMsg = "PAID mismatched with excel data";
+                        return false;
+                    }
+                    if (string.IsNullOrEmpty(row["Item No#"].ToString()))
+                    {
+                        errorMsg = "Item No should not be Empty in excel sheet";
+                        return false;
+                    }
+                    if (string.IsNullOrEmpty(row["mscode"].ToString()))
+                    {
+                        errorMsg = "MS Code should not be Empty in excel sheet"; ;
+                        return false;
+                    }
+                    if (string.IsNullOrEmpty(row["ItemDescription"].ToString()))
+                    {
+                        errorMsg = "Item Description should not be Empty in excel sheet";
+                        return false;
+                    }
+                    if (string.IsNullOrEmpty(row["WBS"].ToString()))
+                    {
+                        errorMsg = "WBS should not be Empty in excel sheet"; ;
+                        return false;
+                    }
+                    if (string.IsNullOrEmpty(row["Quantity"].ToString()))
+                    {
+                        errorMsg = "Quantity should not be Empty in excel sheet"; ;
+                        return false;
+                    }
+                    if (string.IsNullOrEmpty(row["RequirementDate"].ToString()))
+                    {
+                        errorMsg = "Requirement Date should not be Empty in excel sheet"; ;
+                        return false;
+                    }
+
+                    if (string.IsNullOrEmpty(row["Project"].ToString()))
+                    {
+                        errorMsg = "Project should not be Empty in excel sheet"; ;
+                        return false;
+                    }
+                    if (string.IsNullOrEmpty(row["UnitPrice"].ToString()))
+                    {
+                        errorMsg = "Unit Price should not be Empty in excel sheet"; ;
+                        return false;
+                    }
+                    if (string.IsNullOrEmpty(row["Currency"].ToString()))
+                    {
+                        errorMsg = "Currency should not be Empty in excel sheet"; ;
+                        return false;
+                    }
+                    if (string.IsNullOrEmpty(row["StorageLocation"].ToString()))
+                    {
+                        errorMsg = "Storage Location should not be Empty in excel sheet"; ;
+                        return false;
+                    }
+                    if (string.IsNullOrEmpty(row["text"].ToString()))
+                    {
+                        errorMsg = "Text should not be Empty in excel sheet"; ;
+                        return false;
+                    }
+                    if (string.IsNullOrEmpty(row["TokuchuNo"].ToString()))
+                    {
+                        errorMsg = "Tokuchu No should not be Empty in excel sheet"; ;
+                        return false;
+                    }
+                    if (string.IsNullOrEmpty(row["PAItemID"].ToString()))
+                    {
+                        errorMsg = "PA Item ID should not be Empty in excel sheet"; ;
+                        return false;
+                    }
+                    else
+                    {
+                        errorMsg = "No validation error";
+                        return true;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                result = false;
+            }
+
+            errorMsg = null;
+            return result;
+        }
     }
 }
