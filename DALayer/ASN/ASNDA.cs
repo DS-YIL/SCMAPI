@@ -145,6 +145,8 @@ namespace DALayer.ASN
 						query += "  and VendorName like'%" + ASNfilters.VendorName + "%'";
 					if (!string.IsNullOrEmpty(ASNfilters.ASNNo))
 						query += "  and ASNNo = '" + ASNfilters.ASNNo + "'";
+					if (!string.IsNullOrEmpty(ASNfilters.PONo))
+						query += "  and PONos = '" + ASNfilters.PONo + "'";
 					query += " order by ASNId desc ";
 					asnList = Context.ASNShipmentHeaders.SqlQuery(query).ToList<ASNShipmentHeader>();
 				}

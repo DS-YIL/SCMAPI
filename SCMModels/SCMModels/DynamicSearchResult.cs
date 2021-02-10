@@ -295,6 +295,7 @@ namespace SCMModels
 		public string Vendorid { get; set; }
 		public string VendorName { get; set; }
 		public string IntiatedBy { get; set; }
+		public string PONo { get; set; }
 	}
 
 }
