@@ -83,5 +83,6 @@ namespace DALayer.PurchaseAuthorization
        Task<List<statuscheckmodel>> InsertMappingItems(List<MappingItemModel> model);
         Task<MSAMasterConfirmation> updateMSAConfirmation(MSAMasterConfirmation model);
         Task<MSAMasterConfirmation> clearMSAConfirmation(MSAMasterConfirmation model);
+        Task<statuscheckmodel> Unmappingitem(MappingItemModel model);
     }
 }

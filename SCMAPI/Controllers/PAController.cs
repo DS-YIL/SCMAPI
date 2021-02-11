@@ -1297,5 +1297,14 @@ namespace SCMAPI.Controllers
             errorMsg = null;
             return result;
         }
+        [HttpPost]
+        [Route("Unmappingitem")]
+        [ResponseType(typeof(statuscheckmodel))]
+        public async Task<IHttpActionResult> Unmappingitem(MappingItemModel model)
+        {
+            statuscheckmodel status = new statuscheckmodel();
+            status = await _paBusenessAcess.Unmappingitem(model);
+            return Ok(status);
+        }
     }
 }

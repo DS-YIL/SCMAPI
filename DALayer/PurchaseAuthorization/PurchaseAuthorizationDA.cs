@@ -1009,6 +1009,8 @@ Review Date :<<>>   Reviewed By :<<>>*/
 					authorization.VendorId = model.VendorId;
 					authorization.PAStatus = "Inprogress";
 					authorization.DeleteFlag = false;
+					authorization.Aribarequired = model.AribaRequired;
+					authorization.MSArequied = model.msarequired;
 					obj.MPRPADetails.Add(authorization);
 					obj.SaveChanges();
 					status.Sid = authorization.PAId;
@@ -3172,6 +3174,34 @@ Review Date :<<>>   Reviewed By :<<>>*/
 				throw;
 			}
 			return model;
+		}
+		public async Task<statuscheckmodel> Unmappingitem(MappingItemModel model)
+		{
+			statuscheckmodel status = new statuscheckmodel();
+			try
+			{
+				var sqlquery = "update MPRRfqItems set DeleteFlag=1 where MPRItemDetailsid='" + model.previousitemdetails + "' and RfqItemsid='" + model.RFQItemsId + "' and MPRRevisionId='" + model.itemrevision + "'";
+				var cmd = obj.Database.Connection.CreateCommand();
+				cmd.CommandText = sqlquery;
+				cmd.Connection.Open();
+				cmd.ExecuteReader();
+				cmd.Connection.Close();
+
+				var id = obj.MPRRfqItems.Where(x => x.MPRItemDetailsid == model.previousitemdetails && x.RfqItemsid == model.RFQItemsId && x.MPRRevisionId == model.itemrevision).FirstOrDefault()?.MPRRFQitemId;
+
+				var sqlquery1 = "update MPRRfqItemInfos set Deleteflag=1 where MPRRFQitemId='" + id + "'";
+				var cmd1 = obj.Database.Connection.CreateCommand();
+				cmd1.CommandText = sqlquery1;
+				cmd1.Connection.Open();
+				cmd1.ExecuteReader();
+				cmd1.Connection.Close();
+
+				return status;
+			}
+			catch (Exception ex)
+			{
+				throw;
+			}
 		}
 	}
 }

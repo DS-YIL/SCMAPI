@@ -846,7 +846,7 @@ namespace DALayer.RFQ
                             if (addMPRRfq == true)
                             {
                                 MPRRfqItem mprRfq = new MPRRfqItem();
-                                mprRfq.MPRItemDetailsid = rfqitemLocal.MPRItemDetailsid;
+                                mprRfq.MPRItemDetailsid = rfqitemLocal.MPRItemDetailsid;    
                                 mprRfq.MPRRevisionId = model.rfqmaster.MPRRevisionId;
                                 mprRfq.RfqItemsid = Convert.ToInt16(rfqitemLocal.RFQItemsId);
                                 //var splitdata = obj.RateContracts.Where(li => li.ItemId == rfqitemLocal.ItemId && li.VendorId == model.rfqmaster.VendorId && li.RFQType == "Quote").ToList();

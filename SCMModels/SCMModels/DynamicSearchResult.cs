@@ -1,4 +1,5 @@
-﻿using SCMModels.SCMModels;
+﻿using SCMModels.RFQModels;
+using SCMModels.SCMModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -80,6 +81,12 @@ namespace SCMModels
 		public List<RFQQuoteView> RFQQuoteViewList { get; set; }
 		public List<YILTermsandCondition> TermsList { get; set; }
 		public List<MPRRFQDocument> mprfqDocs { get; set; }
+	}
+
+	public class UnmappedModel
+	{
+		public List<RfqItemModel> rfqItemModel { get; set; }
+		public List<MPRRFQDocument> mPRRFQDocuments { get; set; }
 	}
 	public class EmployeeModel
 	{

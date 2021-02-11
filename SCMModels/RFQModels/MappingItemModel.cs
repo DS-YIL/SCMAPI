@@ -17,5 +17,6 @@ namespace SCMModels.RFQModels
         public int RFQSplitItemId { get; set; }
         public int previousitemdetails { get; set; }
         public int itemrevision { get; set; }
+        public string Newitemrevision { get; set; }
     }
 }

@@ -340,5 +340,9 @@ namespace BALayer.PurchaseAuthorization
 			return await _purchaseDataAcess.clearMSAConfirmation(model);
 
 		}
+		public Task<statuscheckmodel> Unmappingitem(MappingItemModel model)
+		{
+			return _purchaseDataAcess.Unmappingitem(model);
+		}
 	}
 }
