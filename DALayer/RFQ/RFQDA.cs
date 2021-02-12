@@ -3535,8 +3535,8 @@ namespace DALayer.RFQ
 		                  Date of Creation <<25-01-2021>>
 		                  Purpose : <<Need to get All MPR Document based on items wise >>
 		                  Review Date :<<>>   Reviewed By :<<>>*/
-                        var scmMPRdocs = obj.MPRDocuments.Where(li => li.ItemDetailsId == item.MPRItemDetailsid && item.RFQRevisionId == revisionId && li.Deleteflag != true).ToList();
-
+                        //var scmMPRdocs = obj.MPRDocuments.Where(li => li.ItemDetailsId == item.MPRItemDetailsid && item.RFQRevisionId == revisionId && li.Deleteflag != true).ToList();
+                        var scmMPRdocs = obj.MPRDocuments.Where(li => li.ItemDetailsId == item.MPRItemDetailsid && li.RevisionId == masters.MPRRevisionId && li.Deleteflag != true).ToList();
                         foreach (var items in scmMPRdocs)
                         {
                             MPRDocument rfqDocs = new MPRDocument();
@@ -6803,7 +6803,8 @@ namespace DALayer.RFQ
             {
                 MPRDocument item = obj.MPRDocuments.Where(li => li.MprDocId == mPRDocument.MprDocId && li.Deleteflag != true).FirstOrDefault();
                 RemoteRFQDocument rfqDoc = new RemoteRFQDocument();
-                int RFqItemsId = vscm.RemoteRFQItems_N.Where(li => li.MPRItemDetailsid == item.ItemDetailsId).FirstOrDefault().RFQItemsId;
+                //int RFqItemsId = vscm.RemoteRFQItems_N.Where(li => li.MPRItemDetailsid == item.ItemDetailsId).FirstOrDefault().RFQItemsId;
+                int RFqItemsId = vscm.RemoteRFQItems_N.Where(li => li.MPRItemDetailsid == item.ItemDetailsId && li.RFQRevisionId == mPRDocument.RfqRevisionId).FirstOrDefault().RFQItemsId;
                 rfqDoc.rfqRevisionId = mPRDocument.RfqRevisionId;
                 if (item.ItemDetailsId != null)
                     rfqDoc.rfqItemsid = RFqItemsId;

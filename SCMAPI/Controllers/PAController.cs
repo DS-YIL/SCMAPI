@@ -17,6 +17,9 @@ using System.Net.Http;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Configuration;
+using System.Net;
+using SCMModels.RemoteModel;
+using System.Net.Http.Headers;
 
 namespace SCMAPI.Controllers
 {
@@ -24,6 +27,7 @@ namespace SCMAPI.Controllers
     public class PAController : ApiController
     {
         private readonly IPurchaseAuthorizationBA _paBusenessAcess;
+        
         public PAController(IPurchaseAuthorizationBA purchase)
         {
             this._paBusenessAcess = purchase;
@@ -776,82 +780,82 @@ namespace SCMAPI.Controllers
         {
             return Ok(this._paBusenessAcess.Loadsaleorder());
         }
-        [HttpGet]
-        [Route("Downloadexcel")]
-        public string Downloadexcel(int revisionid)
-        {
-            try
-            {
-                string sourcePath = "C:\\Users\\developer4\\Desktop\\";
-                string targetpath = ConfigurationManager.AppSettings["DownloadVexcel"];
-                string srcfilename = "Book1.xlsx";
-                string targetfilename = "Akil" + DateTime.Now.ToString("ddMMyyyyhhmmss") + ".xlsx";
-                string sourceFile = System.IO.Path.Combine(sourcePath, srcfilename);
-                string destFile = System.IO.Path.Combine(targetpath, targetfilename);
-                if (!System.IO.Directory.Exists(targetpath))
-                {
-                    System.IO.Directory.CreateDirectory(targetpath);
-                }
-                System.IO.File.Copy(sourceFile, destFile, false);
-                Microsoft.Office.Interop.Excel._Application docExcel = new Microsoft.Office.Interop.Excel.Application();
-                docExcel.Visible = false;
-                docExcel.DisplayAlerts = false;
-                Microsoft.Office.Interop.Excel._Workbook workbooksExcel = docExcel.Workbooks.Open(destFile, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing);
-                Microsoft.Office.Interop.Excel._Worksheet worksheetExcel = (Microsoft.Office.Interop.Excel._Worksheet)workbooksExcel.ActiveSheet;
+        //[HttpGet]
+        //[Route("Downloadexcel")]
+        //public string Downloadexcel(int revisionid)
+        //{
+        //    try
+        //    {
+        //        string sourcePath = "C:\\Users\\developer4\\Desktop\\";
+        //        string targetpath = ConfigurationManager.AppSettings["DownloadVexcel"];
+        //        string srcfilename = "Book1.xlsx";
+        //        string targetfilename = "Akil" + DateTime.Now.ToString("ddMMyyyyhhmmss") + ".xlsx";
+        //        string sourceFile = System.IO.Path.Combine(sourcePath, srcfilename);
+        //        string destFile = System.IO.Path.Combine(targetpath, targetfilename);
+        //        if (!System.IO.Directory.Exists(targetpath))
+        //        {
+        //            System.IO.Directory.CreateDirectory(targetpath);
+        //        }
+        //        System.IO.File.Copy(sourceFile, destFile, false);
+        //        Microsoft.Office.Interop.Excel._Application docExcel = new Microsoft.Office.Interop.Excel.Application();
+        //        docExcel.Visible = false;
+        //        docExcel.DisplayAlerts = false;
+        //        Microsoft.Office.Interop.Excel._Workbook workbooksExcel = docExcel.Workbooks.Open(destFile, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing);
+        //        Microsoft.Office.Interop.Excel._Worksheet worksheetExcel = (Microsoft.Office.Interop.Excel._Worksheet)workbooksExcel.ActiveSheet;
 
-                YSCMEntities obj = new YSCMEntities();
-                var data = obj.RfqForVendorDownloads.Where(x => x.rfqRevisionId == revisionid).ToList();
-                Microsoft.Office.Interop.Excel.Range range = worksheetExcel.UsedRange;
-                //for Headers
-                foreach (var item in data)
-                {
-                    (range.Worksheet.Cells["1", "F"]).Value2 = item.RFQNo;
-                    (range.Worksheet.Cells["1", "L"]).Value2 = item.rfqRevisionId;
-                    (range.Worksheet.Cells["2", "F"]).Value2 = item.RFQValidDate;
-                    (range.Worksheet.Cells["2", "L"]).Value2 = item.ReqRemarks;
-                    (range.Worksheet.Cells["3", "J"]).Value2 = item.RFQValidDate;
-                }
-                //line items
+        //        YSCMEntities obj = new YSCMEntities();
+        //        var data = obj.RfqForVendorDownloads.Where(x => x.rfqRevisionId == revisionid).ToList();
+        //        Microsoft.Office.Interop.Excel.Range range = worksheetExcel.UsedRange;
+        //        //for Headers
+        //        foreach (var item in data)
+        //        {
+        //            (range.Worksheet.Cells["1", "F"]).Value2 = item.RFQNo;
+        //            (range.Worksheet.Cells["1", "L"]).Value2 = item.rfqRevisionId;
+        //            (range.Worksheet.Cells["2", "F"]).Value2 = item.RFQValidDate;
+        //            (range.Worksheet.Cells["2", "L"]).Value2 = item.ReqRemarks;
+        //            (range.Worksheet.Cells["3", "J"]).Value2 = item.RFQValidDate;
+        //        }
+        //        //line items
 
-                int i = 6;
-                foreach (var item1 in data)
-                {
-                    (range.Worksheet.Cells[i, "A"]).Value2 = item1.RFQItemsId;
-                    (range.Worksheet.Cells[i, "B"]).Value2 = item1.ItemId;
-                    (range.Worksheet.Cells[i, "C"]).Value2 = item1.ItemDescription;
-                    (range.Worksheet.Cells[i, "D"]).Value2 = item1.QuotationQty;
-                    (range.Worksheet.Cells[i, "E"]).Value2 = item1.UOM;
-                    (range.Worksheet.Cells[i, "F"]).Value2 = item1.CurrencyValue;
-                    (range.Worksheet.Cells[i, "G"]).Value2 = item1.UnitPrice;
-                    (range.Worksheet.Cells[i, "H"]).Value2 = item1.UnitPrice;
-                    (range.Worksheet.Cells[i, "I"]).Value2 = item1.DiscountPercentage;
-                    (range.Worksheet.Cells[i, "J"]).Value2 = item1.Discount;
-                    (range.Worksheet.Cells[i, "K"]).Value2 = item1.VendorModelNo; 
-                    (range.Worksheet.Cells[i, "L"]).Value2 = item1.MfgPartNo;
-                    (range.Worksheet.Cells[i, "M"]).Value2 = item1.MfgModelNo;
-                    (range.Worksheet.Cells[i, "N"]).Value2 = item1.ManufacturerName;
-                    (range.Worksheet.Cells[i, "O"]).Value2 = item1.CGSTPercentage;
-                    (range.Worksheet.Cells[i, "P"]).Value2 = item1.IGSTPercentage;
-                    (range.Worksheet.Cells[i, "Q"]).Value2 = item1.SGSTPercentage;
-                    (range.Worksheet.Cells[i, "R"]).Value2 = item1.PFAmount;
-                    (range.Worksheet.Cells[i, "S"]).Value2 = item1.PFPercentage;
-                    (range.Worksheet.Cells[i, "T"]).Value2 = item1.FreightAmount;
-                    (range.Worksheet.Cells[i, "U"]).Value2 = item1.FreightPercentage;
-                    (range.Worksheet.Cells[i, "V"]).Value2 = item1.DeliveryDate;
-                    (range.Worksheet.Cells[i, "W"]).Value2 = item1.Remarks;
-                    i++;
-                }
-                workbooksExcel.Save();
-                workbooksExcel.Close(false, Type.Missing, Type.Missing);
-                docExcel.Application.DisplayAlerts = true;
-                docExcel.Application.Quit();
-                return "/";
-            }
-            catch (Exception ex)
-            {
-                throw;
-            }
-        }
+        //        int i = 6;
+        //        foreach (var item1 in data)
+        //        {
+        //            (range.Worksheet.Cells[i, "A"]).Value2 = item1.RFQItemsId;
+        //            (range.Worksheet.Cells[i, "B"]).Value2 = item1.ItemId;
+        //            (range.Worksheet.Cells[i, "C"]).Value2 = item1.ItemDescription;
+        //            (range.Worksheet.Cells[i, "D"]).Value2 = item1.QuotationQty;
+        //            (range.Worksheet.Cells[i, "E"]).Value2 = item1.UOM;
+        //            (range.Worksheet.Cells[i, "F"]).Value2 = item1.CurrencyValue;
+        //            (range.Worksheet.Cells[i, "G"]).Value2 = item1.UnitPrice;
+        //            (range.Worksheet.Cells[i, "H"]).Value2 = item1.UnitPrice;
+        //            (range.Worksheet.Cells[i, "I"]).Value2 = item1.DiscountPercentage;
+        //            (range.Worksheet.Cells[i, "J"]).Value2 = item1.Discount;
+        //            (range.Worksheet.Cells[i, "K"]).Value2 = item1.VendorModelNo; 
+        //            (range.Worksheet.Cells[i, "L"]).Value2 = item1.MfgPartNo;
+        //            (range.Worksheet.Cells[i, "M"]).Value2 = item1.MfgModelNo;
+        //            (range.Worksheet.Cells[i, "N"]).Value2 = item1.ManufacturerName;
+        //            (range.Worksheet.Cells[i, "O"]).Value2 = item1.CGSTPercentage;
+        //            (range.Worksheet.Cells[i, "P"]).Value2 = item1.IGSTPercentage;
+        //            (range.Worksheet.Cells[i, "Q"]).Value2 = item1.SGSTPercentage;
+        //            (range.Worksheet.Cells[i, "R"]).Value2 = item1.PFAmount;
+        //            (range.Worksheet.Cells[i, "S"]).Value2 = item1.PFPercentage;
+        //            (range.Worksheet.Cells[i, "T"]).Value2 = item1.FreightAmount;
+        //            (range.Worksheet.Cells[i, "U"]).Value2 = item1.FreightPercentage;
+        //            (range.Worksheet.Cells[i, "V"]).Value2 = item1.DeliveryDate;
+        //            (range.Worksheet.Cells[i, "W"]).Value2 = item1.Remarks;
+        //            i++;
+        //        }
+        //        workbooksExcel.Save();
+        //        workbooksExcel.Close(false, Type.Missing, Type.Missing);
+        //        docExcel.Application.DisplayAlerts = true;
+        //        docExcel.Application.Quit();
+        //        return "/";
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        throw;
+        //    }
+        //}
         public string UploadingvendorExcel()
         {
 
@@ -1306,5 +1310,336 @@ namespace SCMAPI.Controllers
             status = await _paBusenessAcess.Unmappingitem(model);
             return Ok(status);
         }
+        [HttpGet]
+        [Route("Downloadexcel/{revisionid}")]
+        public HttpResponseMessage Downloadexcel(int revisionid)
+        {
+            try
+            {
+                string sourcePath = "C:\\Users\\developer4\\Desktop\\test\\";
+                string targetpath = ConfigurationManager.AppSettings["DownloadVexcel"];
+                string srcfilename = "Book1.xlsx";
+                string targetfilename = "Akil" + DateTime.Now.ToString("ddMMyyyyhhmmss") + ".xlsx";
+                string sourceFile = System.IO.Path.Combine(sourcePath, srcfilename);
+                string destFile = System.IO.Path.Combine(targetpath, targetfilename);
+                if (!System.IO.Directory.Exists(targetpath))
+                {
+                    System.IO.Directory.CreateDirectory(targetpath);
+                }
+                System.IO.File.Copy(sourceFile, destFile, false);
+                Microsoft.Office.Interop.Excel._Application docExcel = new Microsoft.Office.Interop.Excel.Application();
+                docExcel.Visible = false;
+                docExcel.DisplayAlerts = false;
+                Microsoft.Office.Interop.Excel._Workbook workbooksExcel = docExcel.Workbooks.Open(destFile, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing);
+                Microsoft.Office.Interop.Excel._Worksheet worksheetExcel = (Microsoft.Office.Interop.Excel._Worksheet)workbooksExcel.ActiveSheet;
+
+                YSCMEntities obj = new YSCMEntities();
+                var data = obj.RfqForVendorDownloads.Where(x => x.rfqRevisionId == revisionid).ToList();
+                Microsoft.Office.Interop.Excel.Range range = worksheetExcel.UsedRange;
+                foreach (var item in data)
+                {
+                    (range.Worksheet.Cells["1", "F"]).Value2 = item.RFQNo;
+                    (range.Worksheet.Cells["1", "L"]).Value2 = item.rfqRevisionId;
+                    (range.Worksheet.Cells["2", "F"]).Value2 = item.RFQValidDate;
+                    (range.Worksheet.Cells["2", "L"]).Value2 = item.ReqRemarks;
+                    (range.Worksheet.Cells["3", "J"]).Value2 = item.RFQValidDate;
+                }
+                //line items
+
+                int i = 6;
+                foreach (var item1 in data)
+                {
+                    (range.Worksheet.Cells[i, "A"]).Value2 = item1.RFQItemsId;
+                    (range.Worksheet.Cells[i, "B"]).Value2 = item1.ItemId;
+                    (range.Worksheet.Cells[i, "C"]).Value2 = item1.ItemDescription;
+                    (range.Worksheet.Cells[i, "D"]).Value2 = item1.QuotationQty;
+                    if (item1.UOM != null)
+                        (range.Worksheet.Cells[i, "E"]).Value2 = item1.UOM;
+                    else
+                        (range.Worksheet.Cells[i, "E"]).Value2 = "";
+                    (range.Worksheet.Cells[i, "F"]).Value2 = item1.CurrencyValue;
+                    (range.Worksheet.Cells[i, "G"]).Value2 = item1.UnitPrice;
+                    (range.Worksheet.Cells[i, "H"]).Value2 = item1.UnitPrice;
+                    (range.Worksheet.Cells[i, "I"]).Value2 = item1.DiscountPercentage;
+                    (range.Worksheet.Cells[i, "J"]).Value2 = item1.Discount;
+                    (range.Worksheet.Cells[i, "K"]).Value2 = item1.VendorModelNo;
+                    (range.Worksheet.Cells[i, "L"]).Value2 = item1.MfgPartNo;
+                    (range.Worksheet.Cells[i, "M"]).Value2 = item1.MfgModelNo;
+                    (range.Worksheet.Cells[i, "N"]).Value2 = item1.ManufacturerName;
+                    (range.Worksheet.Cells[i, "O"]).Value2 = item1.CGSTPercentage;
+                    (range.Worksheet.Cells[i, "P"]).Value2 = item1.IGSTPercentage;
+                    (range.Worksheet.Cells[i, "Q"]).Value2 = item1.SGSTPercentage;
+                    (range.Worksheet.Cells[i, "R"]).Value2 = item1.PFAmount;
+                    (range.Worksheet.Cells[i, "S"]).Value2 = item1.PFPercentage;
+                    (range.Worksheet.Cells[i, "T"]).Value2 = item1.FreightAmount;
+                    (range.Worksheet.Cells[i, "U"]).Value2 = item1.FreightPercentage;
+                    if (!string.IsNullOrEmpty(item1.DeliveryDate.ToString()))
+                        (range.Worksheet.Cells[i, "V"]).Value2 = Convert.ToDateTime(item1.DeliveryDate).ToString("dd/mm/yyyy");
+                    (range.Worksheet.Cells[i, "W"]).Value2 = item1.Remarks;
+                    (range.Worksheet.Cells[i, "X"]).Value2 = item1.RFQSplitItemId;
+                    i++;
+                }
+                workbooksExcel.Save();
+                workbooksExcel.Close(false, Type.Missing, Type.Missing);
+                docExcel.Application.DisplayAlerts = true;
+                docExcel.Application.Quit();
+                return getGenetatedExcel(destFile);
+
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+        }
+        public HttpResponseMessage getGenetatedExcel(string filepath)
+        {
+            var path = filepath;
+            HttpResponseMessage result = new HttpResponseMessage(HttpStatusCode.OK);
+            var stream = new FileStream(path, FileMode.Open, FileAccess.Read);
+            result.Content = new StreamContent(stream);
+            //result.Content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
+            result.Content.Headers.ContentType = new MediaTypeHeaderValue("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            return (result);
+        }
+
+
+        /*
+            Name of Function : <<UploadRfqData>>  Author :<<Fayaz>>  
+            Date of Creation <<7-2-2021>>
+            Purpose : <<Loading and Updating RfqData through excel>>
+            Review Date :<<>>   Reviewed By :<<>>
+            Version : 0.1 <change version only if there is major change - new release etc>
+            Sourcecode Copyright : Yokogawa India Limited
+       */
+        [HttpPost]
+        [Route("UpLoadRFQData/{revisionId}")]
+        public IHttpActionResult UploadRfqData(int revisionId)
+        {
+            try
+            {
+                var httpRequest = HttpContext.Current.Request;
+                var serverPath = HttpContext.Current.Server.MapPath("~/SCMDocs");
+                string parsedFileName = "";
+                if (httpRequest.Files.Count > 0)
+                {
+                    var Id = httpRequest.Files.AllKeys[0];
+                    var postedFile = httpRequest.Files[0];
+                    parsedFileName = string.Format(DateTime.Now.Year.ToString() + "\\" + DateTime.Now.ToString("MMM") + "\\" + Id + "\\" + ToValidFileName(postedFile.FileName));
+                    serverPath = serverPath + string.Format("\\" + DateTime.Now.Year.ToString() + "\\" + DateTime.Now.ToString("MMM")) + "\\" + Id;
+                    var filePath = Path.Combine(serverPath, ToValidFileName(postedFile.FileName));
+                    if (!Directory.Exists(serverPath))
+                        Directory.CreateDirectory(serverPath);
+                    postedFile.SaveAs(filePath);
+
+
+                    DataTable dtexcel = new DataTable();
+                    bool hasHeaders = false;
+                    string HDR = hasHeaders ? "Yes" : "No";
+                    string strConn;
+                    if (filePath.Substring(filePath.LastIndexOf('.')).ToLower() == ".xlsx")
+                        strConn = "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" + filePath + ";Extended Properties=\"Excel 12.0;HDR=" + HDR + ";IMEX=0\"";
+                    else
+                        strConn = "Provider=Microsoft.Jet.OLEDB.4.0;Data Source=" + filePath + ";Extended Properties=\"Excel 8.0;HDR=" + HDR + ";IMEX=0\"";
+
+                    OleDbConnection conn = new OleDbConnection(strConn);
+                    conn.Open();
+                    DataTable schemaTable = conn.GetOleDbSchemaTable(OleDbSchemaGuid.Tables, new object[] { null, null, null, "TABLE" });
+
+                    DataRow schemaRow = schemaTable.Rows[0];
+                    string sheet = schemaRow["TABLE_NAME"].ToString();
+                    if (!sheet.EndsWith("_"))
+                    {
+                        string query = "SELECT  * FROM [Sheet1$]";
+                        OleDbDataAdapter daexcel = new OleDbDataAdapter(query, conn);
+                        dtexcel.Locale = CultureInfo.CurrentCulture;
+                        daexcel.Fill(dtexcel);
+                    }
+
+                    conn.Close();
+                    int iSucceRows = 0;
+                    YSCMEntities obj = new YSCMEntities();
+                    VSCMEntities remoteObj = new VSCMEntities();
+
+                    int i = 0;
+                    foreach (DataRow row in dtexcel.Rows)
+                    {
+
+                        if (i > 3 && row[0] != null && !string.IsNullOrEmpty((row[0]).ToString()))
+                        {
+                            int itemsid = Convert.ToInt32(row[0]);
+                            RemoteRFQItems_N remoteRFQItems_N = remoteObj.RemoteRFQItems_N.Where(x => x.RFQItemsId == itemsid).FirstOrDefault();
+                            remoteRFQItems_N.ItemId = row[1].ToString();
+                            if (!string.IsNullOrEmpty(row[3].ToString()))
+                                remoteRFQItems_N.QuotationQty = Convert.ToDouble(row[3]);
+                            if (!string.IsNullOrEmpty(row[10].ToString()))
+                                remoteRFQItems_N.VendorModelNo = (row[10].ToString());
+                            if (!string.IsNullOrEmpty(row[11].ToString()))
+                                remoteRFQItems_N.MfgPartNo = row[11].ToString();
+                            if (!string.IsNullOrEmpty(row[12].ToString()))
+                                remoteRFQItems_N.MfgModelNo = row[12].ToString();
+                            if (!string.IsNullOrEmpty(row[13].ToString()))
+                                remoteRFQItems_N.ManufacturerName = row[13].ToString();
+                            if (!string.IsNullOrEmpty(row[14].ToString()))
+                                remoteRFQItems_N.CGSTPercentage = Convert.ToDecimal(row[14]);
+                            if (!string.IsNullOrEmpty(row[15].ToString()))
+                                remoteRFQItems_N.IGSTPercentage = Convert.ToDecimal(row[15]);
+                            if (!string.IsNullOrEmpty(row[16].ToString()))
+                                remoteRFQItems_N.SGSTPercentage = Convert.ToDecimal(row[16]);
+                            if (!string.IsNullOrEmpty(row[17].ToString()))
+                                remoteRFQItems_N.PFAmount = Convert.ToDecimal(row[17]);
+                            if (!string.IsNullOrEmpty(row[18].ToString()))
+                                remoteRFQItems_N.PFPercentage = Convert.ToDecimal(row[18]);
+                            if (!string.IsNullOrEmpty(row[19].ToString()))
+                                remoteRFQItems_N.FreightAmount = Convert.ToDecimal(row[19]);
+                            if (!string.IsNullOrEmpty(row[20].ToString()))
+                                remoteRFQItems_N.FreightPercentage = Convert.ToDecimal(row[20]);
+                            if (!string.IsNullOrEmpty(row[7].ToString()))
+                                remoteRFQItems_N.HSNCode = row[7].ToString();
+                            remoteObj.SaveChanges();
+
+                            RemoteRFQItemsInfo_N remoteitemsInfo_N = remoteObj.RemoteRFQItemsInfo_N.Where(x => x.RFQItemsId == itemsid && x.DeleteFlag == false).FirstOrDefault();
+                            if (remoteitemsInfo_N != null)
+                            {
+
+                                if (!string.IsNullOrEmpty(row[4].ToString()))
+                                    remoteitemsInfo_N.UOM = Convert.ToInt32(row[4]);
+                                if (!string.IsNullOrEmpty(row[5].ToString()))
+                                    remoteitemsInfo_N.CurrencyValue = Convert.ToDecimal(row[5]);
+                                if (!string.IsNullOrEmpty(row[6].ToString()))
+                                    remoteitemsInfo_N.UnitPrice = Convert.ToDecimal(row[6]);
+                                if (!string.IsNullOrEmpty(row[8].ToString()))
+                                    remoteitemsInfo_N.DiscountPercentage = Convert.ToDecimal(row[8]);
+                                if (!string.IsNullOrEmpty(row[9].ToString()))
+                                    remoteitemsInfo_N.Discount = Convert.ToDecimal(row[9]);
+                                if (!string.IsNullOrEmpty(row[21].ToString()))
+                                {
+                                    DateTime dt = DateTime.ParseExact(row[21].ToString(), "dd/MM/yyyy", CultureInfo.InvariantCulture);
+                                    remoteitemsInfo_N.DeliveryDate = dt;
+                                }
+                                if (!string.IsNullOrEmpty(row[22].ToString()))
+                                    remoteitemsInfo_N.Remarks = row[22].ToString();
+                                remoteObj.SaveChanges();
+                            }
+                            else
+                            {
+                                RemoteRFQItemsInfo_N newremoteRfqItemsInfon = new RemoteRFQItemsInfo_N();
+                                int rfqsplititemid = obj.RFQItemsInfo_N.Max(li => li.RFQSplitItemId);
+                                newremoteRfqItemsInfon.RFQSplitItemId = rfqsplititemid + 1;
+                                if (!string.IsNullOrEmpty(row[4].ToString()))
+                                    newremoteRfqItemsInfon.UOM = Convert.ToInt32(row[4]);
+                                newremoteRfqItemsInfon.RFQItemsId = itemsid;
+                                if (!string.IsNullOrEmpty(row[5].ToString()))
+                                    newremoteRfqItemsInfon.CurrencyValue = Convert.ToDecimal(row[5]);
+                                if (!string.IsNullOrEmpty(row[6].ToString()))
+                                    newremoteRfqItemsInfon.UnitPrice = Convert.ToDecimal(row[6]);
+                                if (!string.IsNullOrEmpty(row[8].ToString()))
+                                    newremoteRfqItemsInfon.DiscountPercentage = Convert.ToDecimal(row[8]);
+                                if (!string.IsNullOrEmpty(row[9].ToString()))
+                                    newremoteRfqItemsInfon.Discount = Convert.ToDecimal(row[9]);
+                                if (!string.IsNullOrEmpty(row[21].ToString()))
+                                    newremoteRfqItemsInfon.DeliveryDate = Convert.ToDateTime(row[21]);
+                                if (!string.IsNullOrEmpty(row[22].ToString()))
+                                    newremoteRfqItemsInfon.Remarks = row[22].ToString();
+                                remoteObj.RemoteRFQItemsInfo_N.Add(newremoteRfqItemsInfon);
+                                remoteObj.SaveChanges();
+
+                            }
+
+                            RFQItems_N rFQItems_N = obj.RFQItems_N.Where(x => x.RFQItemsId == itemsid).FirstOrDefault();
+
+                            rFQItems_N.ItemId = row[1].ToString();
+                            if (!string.IsNullOrEmpty(row[3].ToString()))
+                                rFQItems_N.QuotationQty = Convert.ToDouble(row[3]);
+                            if (!string.IsNullOrEmpty(row[10].ToString()))
+                                rFQItems_N.VendorModelNo = (row[10].ToString());
+                            if (!string.IsNullOrEmpty(row[11].ToString()))
+                                rFQItems_N.MfgPartNo = row[11].ToString();
+                            if (!string.IsNullOrEmpty(row[12].ToString()))
+                                rFQItems_N.MfgModelNo = row[12].ToString();
+                            if (!string.IsNullOrEmpty(row[13].ToString()))
+                                rFQItems_N.ManufacturerName = row[13].ToString();
+                            if (!string.IsNullOrEmpty(row[14].ToString()))
+                                rFQItems_N.CGSTPercentage = Convert.ToDecimal(row[14]);
+                            if (!string.IsNullOrEmpty(row[15].ToString()))
+                                rFQItems_N.IGSTPercentage = Convert.ToDecimal(row[15]);
+                            if (!string.IsNullOrEmpty(row[16].ToString()))
+                                rFQItems_N.SGSTPercentage = Convert.ToDecimal(row[16]);
+                            if (!string.IsNullOrEmpty(row[17].ToString()))
+                                rFQItems_N.PFAmount = Convert.ToDecimal(row[17]);
+                            if (!string.IsNullOrEmpty(row[18].ToString()))
+                                rFQItems_N.PFPercentage = Convert.ToDecimal(row[18]);
+                            if (!string.IsNullOrEmpty(row[19].ToString()))
+                                rFQItems_N.FreightAmount = Convert.ToDecimal(row[19]);
+                            if (!string.IsNullOrEmpty(row[20].ToString()))
+                                rFQItems_N.FreightPercentage = Convert.ToDecimal(row[20]);
+                            if (!string.IsNullOrEmpty(row[7].ToString()))
+                                rFQItems_N.HSNCode = row[7].ToString();
+                            obj.SaveChanges();
+
+                            RFQItemsInfo_N itemsInfo_N = obj.RFQItemsInfo_N.Where(x => x.RFQItemsId == itemsid && x.DeleteFlag == false).FirstOrDefault();
+                            if (itemsInfo_N != null)
+                            {
+                                if (!string.IsNullOrEmpty(row[4].ToString()))
+                                    itemsInfo_N.UOM = Convert.ToInt32(row[4]);
+                                if (!string.IsNullOrEmpty(row[5].ToString()))
+                                    itemsInfo_N.CurrencyValue = Convert.ToDecimal(row[5]);
+                                if (!string.IsNullOrEmpty(row[6].ToString()))
+                                    itemsInfo_N.UnitPrice = Convert.ToDecimal(row[6]);
+                                if (!string.IsNullOrEmpty(row[8].ToString()))
+                                    itemsInfo_N.DiscountPercentage = Convert.ToDecimal(row[8]);
+                                if (!string.IsNullOrEmpty(row[9].ToString()))
+                                    itemsInfo_N.Discount = Convert.ToDecimal(row[9]);
+                                if (!string.IsNullOrEmpty(row[21].ToString()))
+                                    itemsInfo_N.DeliveryDate = Convert.ToDateTime(row[21]);
+                                if (!string.IsNullOrEmpty(row[22].ToString()))
+                                    itemsInfo_N.Remarks = row[22].ToString();
+                                obj.SaveChanges();
+                            }
+                            else
+                            {
+                                RFQItemsInfo_N newRfqItemsInfon = new RFQItemsInfo_N();
+                                int rfqsplititemid = obj.RFQItemsInfo_N.Max(li => li.RFQSplitItemId);
+                                newRfqItemsInfon.RFQSplitItemId = rfqsplititemid + 1;
+                                if (!string.IsNullOrEmpty(row[4].ToString()))
+                                    newRfqItemsInfon.UOM = Convert.ToInt32(row[4]);
+                                newRfqItemsInfon.RFQItemsId = itemsid;
+                                if (!string.IsNullOrEmpty(row[5].ToString()))
+                                    newRfqItemsInfon.CurrencyValue = Convert.ToDecimal(row[5]);
+                                if (!string.IsNullOrEmpty(row[6].ToString()))
+                                    newRfqItemsInfon.UnitPrice = Convert.ToDecimal(row[6]);
+                                if (!string.IsNullOrEmpty(row[8].ToString()))
+                                    newRfqItemsInfon.DiscountPercentage = Convert.ToDecimal(row[8]);
+                                if (!string.IsNullOrEmpty(row[9].ToString()))
+                                    newRfqItemsInfon.Discount = Convert.ToDecimal(row[9]);
+                                if (!string.IsNullOrEmpty(row[21].ToString()))
+                                    itemsInfo_N.DeliveryDate = Convert.ToDateTime(row[21]);
+                                if (!string.IsNullOrEmpty(row[22].ToString()))
+                                    newRfqItemsInfon.Remarks = row[22].ToString();
+                                obj.RFQItemsInfo_N.Add(newRfqItemsInfon);
+                                obj.SaveChanges();
+
+                            }
+                            var mPRItemInfo = obj.MPRItemInfoes.Join(obj.RFQItems_N, mpr => mpr.Itemdetailsid, rfq => rfq.MPRItemDetailsid, (mpr, rfq) => new { mpr, rfq }).Where(mpritem => mpritem.rfq.RFQItemsId == itemsid).FirstOrDefault();
+                            MPRItemInfo mpritemsinfor = obj.MPRItemInfoes.Where(x => x.Itemdetailsid == mPRItemInfo.mpr.Itemdetailsid).FirstOrDefault();
+                            if (!string.IsNullOrEmpty(row[2].ToString()))
+                                mpritemsinfor.ItemDescription = row[2].ToString();
+                            obj.SaveChanges();
+                        }
+                        i++;
+                    }
+
+
+                    int succRecs = iSucceRows;
+                }
+                return Ok(parsedFileName);
+
+            }
+            catch (Exception e)
+            {
+                return Ok(e);
+            }
+
+        }
+
     }
 }

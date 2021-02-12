@@ -195,5 +195,54 @@ namespace BALayer.MPR
         {
             return this._mprDataAcess.Getoldrevisionitems(itemdetailsid);
         }
-    }
+
+        public List<Tokuchuinformation> GetTokuchuinformation(int mprrevisionid)
+        {
+			return this._mprDataAcess.GetTokuchuinformation(mprrevisionid);
+        }
+		public List<SCMModels.Models.Vendor> VendorList()
+		{
+			return this._mprDataAcess.VendorList();
+		}
+
+
+
+		public SCMModels.Models.Vendor GetVendorInfo(int vendorid)
+		{
+			return this._mprDataAcess.GetVendorInfo(vendorid);
+		}
+		public List<VendorUserMaster> GetVendorUserInfo(int vendorId)
+		{
+			return this._mprDataAcess.GetVendorUserInfo(vendorId);
+
+
+
+		}
+
+		public bool DeactivateVendor(VendorUserMaster vendorUserMaster)
+		{
+			return this._mprDataAcess.DeactivateVendor(vendorUserMaster);
+
+
+
+		}
+		public bool AddVendorUser(VendorUserMaster vendorUserMaster)
+		{
+			return this._mprDataAcess.AddVendorUser(vendorUserMaster);
+		}
+
+
+
+		public bool DeteteRfqItems(int rfqrevisionId, int mprrevisionid)
+		{
+			return this._mprDataAcess.DeteteRfqItems(rfqrevisionId, mprrevisionid);
+		}
+
+
+
+		public List<SCMModels.Models.RFQ> CheckMprRevision(int mprrevisionId)
+		{
+			return this._mprDataAcess.GetMappedNotMappedRfqItems(mprrevisionId);
+		}
+	}
 }

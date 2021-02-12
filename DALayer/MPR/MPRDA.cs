@@ -433,6 +433,7 @@ Review Date :<<>>   Reviewed By :<<>>
 						mprRevisionDetails.ORemarks = mpr.ORemarks;
 						mprRevisionDetails.ORequestedBy = mpr.ORequestedBy;
 						mprRevisionDetails.ORequestedon = DateTime.Now;
+						mprRevisionDetails.PreviousPORefNumber = mpr.PreviousPORefNumber;
 
 						//mprRevisionDetails.OCheckedBy = mpr.OCheckedBy;
 						//mprRevisionDetails.OCheckedOn = DateTime.Now;
@@ -3103,5 +3104,248 @@ Review Date :<<>>   Reviewed By :<<>>
 				throw;
 			}
 		}
+		public List<Tokuchuinformation> GetTokuchuinformation(int mprrevisionid)
+        {
+			List<Tokuchuinformation> tokuchu = new List<Tokuchuinformation>();
+            try
+            {
+				tokuchu = DB.Tokuchuinformations.Where(x => x.RevisionId == mprrevisionid).ToList();
+				return tokuchu;
+			}
+            catch (Exception ex)
+            {
+                throw;
+            }
+        }
+		/*
+  
+         Name of Function : <<GetVendorInfo>>  Author :<<Fayaz>>  
+             Date of Creation <<17-1-2021>>
+             Purpose : <<This method will access the each vendor details based on vendor Id>>
+             Review Date :<<>>   Reviewed By :<<>>
+            Version : 0.1 <change version only if there is major change - new release etc>
+             Sourcecode Copyright : Yokogawa India Limited
+        */
+		public SCMModels.Models.Vendor GetVendorInfo(int vendorid)
+		{
+			return DB.VendorMasters.Where(vendor => vendor.Vendorid == vendorid)
+				.Select(v => new SCMModels.Models.Vendor
+				{
+					Vendorid = v.Vendorid,
+					VendorName = v.VendorName,
+					VendorCode = v.VendorCode,
+					OldVendorCode = v.OldVendorCode,
+					ContactNo = v.ContactNo,
+					PhoneNo = v.PhoneNo,
+					Street = v.Street,
+					City = v.City,
+					PostalCode = v.PostalCode,
+					RegionCode = v.RegionCode,
+					Blocked = v.Blocked,
+					Deleteflag = v.Deleteflag,
+					Emailid = v.Emailid,
+					FaxNo = v.FaxNo
+
+				}).FirstOrDefault();
+		}
+
+		/*
+             Name of Function : <<VendorList>>  Author :<<Fayaz>>  
+             Date of Creation <<17-1-2021>>
+             Purpose : <<Get all vendors>>
+             Review Date :<<>>   Reviewed By :<<>>
+            Version : 0.1 <change version only if there is major change - new release etc>
+             Sourcecode Copyright : Yokogawa India Limited
+        */
+		public List<SCMModels.Models.Vendor> VendorList()
+		{
+			return DB.VendorMasters.Where(vendor => vendor.Deleteflag == true)
+				.Select(v => new SCMModels.Models.Vendor
+				{
+					Vendorid = v.Vendorid,
+					VendorName = v.VendorName,
+					VendorCode = v.VendorCode,
+					OldVendorCode = v.OldVendorCode,
+					ContactNo = v.ContactNo,
+					PhoneNo = v.PhoneNo,
+					Street = v.Street,
+					City = v.City,
+					PostalCode = v.PostalCode,
+					RegionCode = v.RegionCode,
+					Blocked = v.Blocked,
+					Deleteflag = v.Deleteflag,
+					Emailid = v.Emailid,
+					FaxNo = v.FaxNo
+				}).ToList();
+		}
+
+		/*
+             Name of Function : <<GetVendorUserInfo>>  Author :<<Fayaz>>  
+             Date of Creation <<19-1-2021>>
+             Purpose : <<Getting all the users for one particular Vendor>>
+             Review Date :<<>>   Reviewed By :<<>>
+            Version : 0.1 <change version only if there is major change - new release etc>
+             Sourcecode Copyright : Yokogawa India Limited
+        */
+		public List<VendorUserMaster> GetVendorUserInfo(int vendorId)
+		{
+
+			return DB.VendorUserMasters.Where(v => v.VendorId == vendorId).ToList();
+		}
+		/*
+             Name of Function : <<DeactivateVendor>>  Author :<<Fayaz>>  
+             Date of Creation <<19-1-2021>>
+             Purpose : <<Deactivating user for particular vendor>>
+             Review Date :<<>>   Reviewed By :<<>>
+            Version : 0.1 <change version only if there is major change - new release etc>
+             Sourcecode Copyright : Yokogawa India Limited
+        */
+		public bool DeactivateVendor(VendorUserMaster vendorUserMaster)
+		{
+			using (YSCMEntities Context = new YSCMEntities())
+			{
+				VendorUserMaster vendorUser = Context.VendorUserMasters.Find(vendorUserMaster.VuniqueId);
+				if (vendorUser != null)
+				{
+					vendorUser.Active = false;
+					vendorUser.UpdatedBy = vendorUserMaster.UpdatedBy;
+					vendorUser.UpdatedOn = DateTime.Now;
+				}
+				else
+				{
+					return false;
+				}
+				Context.SaveChanges();
+			}
+			using (VSCMEntities vscm = new VSCMEntities())
+			{
+				RemoteVendorUserMaster rvendorUser = vscm.RemoteVendorUserMasters.Find(vendorUserMaster.VuniqueId);
+				if (rvendorUser != null)
+				{
+					rvendorUser.Active = false;
+					rvendorUser.UpdatedBy = vendorUserMaster.UpdatedBy;
+					rvendorUser.UpdatedOn = DateTime.Now;
+				}
+
+				vscm.SaveChanges();
+			}
+			return true;
+		}
+
+		/*
+            Name of Function : <<DeactivateVendor>>  Author :<<Fayaz>>  
+            Date of Creation <<19-1-2021>>
+            Purpose : <<Adding new user for particular vendor>>
+            Review Date :<<>>   Reviewed By :<<>>
+           Version : 0.1 <change version only if there is major change - new release etc>
+            Sourcecode Copyright : Yokogawa India Limited
+       */
+		public bool AddVendorUser(VendorUserMaster vendorUserMaster)
+		{
+			Int32 sequenceNo = 0;
+			string password = "";
+			var value = "";
+			VSCMEntities vscm = new VSCMEntities();
+			RemoteVendorUserMaster vendorUsermaster = vscm.RemoteVendorUserMasters.Where(li => li.Vuserid == vendorUserMaster.Vuserid && li.VendorId == vendorUserMaster.VendorId).FirstOrDefault();
+
+			if (vendorUsermaster == null && !string.IsNullOrEmpty(vendorUserMaster.Vuserid))
+			{
+				RemoteVendorUserMaster rvendorUsermasters = new RemoteVendorUserMaster();
+				sequenceNo = Convert.ToInt32(vscm.RemoteVendorUserMasters.Max(li => li.SequenceNo));
+				if (sequenceNo == null || sequenceNo == 0)
+					sequenceNo = 1;
+				else
+				{
+					sequenceNo = sequenceNo + 1;
+				}
+				value = DB.SP_sequenceNumber(sequenceNo).FirstOrDefault();
+				rvendorUsermasters.VuniqueId = "C" + value;
+				rvendorUsermasters.SequenceNo = sequenceNo;
+				rvendorUsermasters.Vuserid = vendorUserMaster.Vuserid.Replace(" ", String.Empty);
+				password = GeneratePassword();
+				rvendorUsermasters.pwd = password;
+				rvendorUsermasters.ContactNumber = vendorUserMaster.ContactNumber;
+				rvendorUsermasters.ContactPerson = vendorUserMaster.ContactPerson;
+				rvendorUsermasters.VendorId = vendorUserMaster.VendorId;
+				rvendorUsermasters.Active = true;
+				rvendorUsermasters.SuperUser = true;
+				rvendorUsermasters.UpdatedBy = vendorUserMaster.UpdatedBy;
+				rvendorUsermasters.UpdatedOn = DateTime.Now;
+				vscm.RemoteVendorUserMasters.Add(rvendorUsermasters);
+				vscm.SaveChanges();
+			}
+			else
+				vscm.SaveChanges();
+
+			YSCMEntities Context1 = new YSCMEntities();
+			VendorUserMaster venmaster = Context1.VendorUserMasters.Where(li => li.Vuserid == vendorUserMaster.Vuserid && li.VendorId == vendorUserMaster.VendorId).FirstOrDefault<VendorUserMaster>();
+			if (venmaster == null && !string.IsNullOrEmpty(vendorUserMaster.Vuserid))
+			{
+				VendorUserMaster vendorUsermasters = new VendorUserMaster();
+				value = DB.SP_sequenceNumber(sequenceNo).FirstOrDefault();
+				vendorUserMaster.pwd = password;
+				vendorUserMaster.VendorId = vendorUserMaster.VendorId;
+				vendorUserMaster.Active = true;
+				vendorUserMaster.SuperUser = true;
+				vendorUserMaster.VuniqueId = "C" + value;
+				vendorUserMaster.SequenceNo = sequenceNo;
+				vendorUserMaster.UpdatedOn = DateTime.Now;
+				Context1.VendorUserMasters.Add(vendorUserMaster);
+				Context1.SaveChanges();
+			}
+			else
+				Context1.SaveChanges();
+
+			return true;
+		}
+		/*
+         Name of Function : <<DeteteRfqItems>>  Author :<<Fayaz>>  
+         Date of Creation <<22-1-2021>>
+         Purpose : <<Allow Vendor to Delete RFQItems which are not mapped.>>
+         Review Date :<<>>   Reviewed By :<<>>
+        Version : 0.1 <change version only if there is major change - new release etc>
+         Sourcecode Copyright : Yokogawa India Limited
+    */
+		public bool DeteteRfqItems(int rfqrevisionId, int mprrevisionid)
+		{
+			VSCMEntities remoteDb = new VSCMEntities();
+			remoteDb.sp_deleteRfqDetails_N(rfqrevisionId, mprrevisionid);
+			remoteDb.SaveChanges();
+
+            DB.sp_deleteRfqDetails_N(rfqrevisionId, mprrevisionid);
+            DB.SaveChanges();
+
+            return true;
+		}
+		/*
+           Name of Function : <<GetMappedNotMappedRfqItems>>  Author :<<Fayaz>>  
+           Date of Creation <<25-1-2021>>
+           Purpose : <<Returns list of mapped and not mapped revisions>>
+           Review Date :<<>>   Reviewed By :<<>>
+          Version : 0.1 <change version only if there is major change - new release etc>
+           Sourcecode Copyright : Yokogawa India Limited
+      */
+		public List<SCMModels.Models.RFQ> GetMappedNotMappedRfqItems(int mprrevisionId)
+		{
+			return DB.MPRRfqItems.Join(DB.MPRRevisions, rfq => rfq.MPRRevisionId, mprr => mprr.RevisionId, (rfq, mprr) => new { rfq, mprr })
+			   .Join(DB.RFQItems_N, rfq => rfq.rfq.RfqItemsid, rfq_n => rfq_n.RFQItemsId, (rfq, rfq_n) => new { rfq, rfq_n, rfq.mprr })
+			   .Join(DB.RFQRevisions_N, rfq => rfq.rfq_n.RFQRevisionId, rev_n => rev_n.rfqRevisionId, (rfq, rev_n) => new { rfq, rev_n, rfq.mprr })
+			   .Join(DB.RFQMasters, rfq => rfq.rev_n.rfqMasterId, rfqm => rfqm.RfqMasterId, (rfq, rfqm) => new { rfq, rfqm })
+			   .Where(x => x.rfq.mprr.RevisionId == mprrevisionId && x.rfq.rev_n.DeleteFlag == false)
+			   .Select(v => new SCMModels.Models.RFQ
+			   {
+				   VendorId = v.rfqm.VendorId,
+				   ActiveRevision = v.rfq.rev_n.ActiveRevision,
+				   RFQNo = v.rfqm.RFQNo,
+				   MprRevisionId = v.rfq.mprr.RevisionId,
+				   statusId = v.rfq.rev_n.StatusId,
+				   RevisionNo = v.rfq.rev_n.RevisionNo,
+				   RevisionId = v.rfq.mprr.RevisionId,
+				   rfqRevisionId = v.rfq.rev_n.rfqRevisionId,
+				   Mapping = v.rfqm.MPRRevisionId == v.rfq.mprr.RevisionId ? true : false
+
+			   }).ToList();
+		}
+
 	}
 }

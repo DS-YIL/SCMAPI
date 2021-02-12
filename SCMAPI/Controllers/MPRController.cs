@@ -679,6 +679,73 @@ namespace SCMAPI.Controllers
         {
             return Ok(this._mprBusenessAcess.Getoldrevisionitems(itemdetailsid));
         }
-    }
+		[HttpGet]
+		[Route("GetTokuchuinformation/{mprrevisionid}")]
+		public IHttpActionResult GetTokuchuinformation(int mprrevisionid)
+        {
+			return Ok(this._mprBusenessAcess.GetTokuchuinformation(mprrevisionid));
+		}
+		[HttpGet]
+		[Route("getVendorList")]
+		public IHttpActionResult GetVendorList()
+		{
+			return Ok(this._mprBusenessAcess.VendorList());
+		}
+
+
+
+		[HttpGet]
+		[Route("getVendorInfo/{vendorId}")]
+		public IHttpActionResult GetVendorInfo(int vendorid)
+		{
+			return Ok(this._mprBusenessAcess.GetVendorInfo(vendorid));
+		}
+
+
+
+		[HttpGet]
+		[Route("getVendorUserInfo/{vendorId}")]
+		public IHttpActionResult GetVendorUserInfo(int vendorid)
+		{
+			return Ok(this._mprBusenessAcess.GetVendorUserInfo(vendorid));
+		}
+
+
+
+		[HttpPost]
+		[Route("deactivateVendor")]
+		public IHttpActionResult DeactivateVendor([FromBody] VendorUserMaster vendorUserMaster)
+		{
+			return Ok(this._mprBusenessAcess.DeactivateVendor(vendorUserMaster));
+		}
+
+
+
+		[HttpPost]
+		[Route("AddVendorUser")]
+		public IHttpActionResult AddVendorUser([FromBody] VendorUserMaster vendor)
+		{
+			return Ok(this._mprBusenessAcess.AddVendorUser(vendor));
+		}
+
+
+
+		[HttpDelete]
+		[Route("DeactivateItem/{rfqrevisionId}/{mprRevisionid}")]
+		[AcceptVerbs("DELETE")]
+		public IHttpActionResult SetFlag(int rfqrevisionId, int mprRevisionid)
+		{
+			return Ok(this._mprBusenessAcess.DeteteRfqItems(rfqrevisionId, mprRevisionid));
+		}
+
+
+
+		[HttpGet]
+		[Route("GetMappedNotMappedRfqItems/{mprRevisionId}")]
+		public IHttpActionResult CheckMprRevision(int mprRevisionId)
+		{
+			return Ok(this._mprBusenessAcess.CheckMprRevision(mprRevisionId));
+		}
+	}
 
 }
