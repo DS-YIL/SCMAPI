@@ -2182,7 +2182,7 @@ Review Date :<<>>   Reviewed By :<<>>
 					VendormasterModel vendormastermodel = new VendormasterModel();
 					vendormastermodel.Vendorid = Vendorid;
 					vendormastermodel.VendorName = model.VendorName;
-					vendormastermodel.Emailid = model.VendorEmailId;
+					vendormastermodel.Emailid = model.VendorEmailId.Replace(" ", String.Empty);
 					vendormastermodel.UpdatedBy = model.IntiatedBy;
 					Vendorid = this.addNewVendor(vendormastermodel);
 				}
@@ -2200,13 +2200,13 @@ Review Date :<<>>   Reviewed By :<<>>
 					if (vendorRegMaster == null)
 					{
 
-						remVen.Email = model.VendorEmailId;
+						remVen.Email = model.VendorEmailId.Replace(" ", String.Empty);
 						remVen.Vendorid = Vendorid;
 						remVen.VendorName = model.VendorName;
 						remVen.VendorType = model.VendorType;
 						remVen.IsExistVendor = model.IsExistVendor;
 						remVen.ChangesFor = model.ChangesFor;
-						remVen.Email = model.VendorEmailId;
+						remVen.Email = model.VendorEmailId.Replace(" ", String.Empty);
 						if (model.IsExistVendor == true && vendorRegDetails != null)
 						{
 							remVen.VendorNoInSAP = vendorRegDetails.VendorCode;
@@ -2222,7 +2222,7 @@ Review Date :<<>>   Reviewed By :<<>>
 					}
 					else
 					{
-						vendorRegMaster.Email = model.VendorEmailId;
+						vendorRegMaster.Email = model.VendorEmailId.Replace(" ", String.Empty);
 						vendorRegMaster.ChangesFor = model.ChangesFor;
 
 					}
@@ -2240,7 +2240,7 @@ Review Date :<<>>   Reviewed By :<<>>
 					remoteVendorRegDetails.PaymentTermId = model.PaymentTermId;
 					remoteVendorRegDetails.PaymentTerms = model.PaymentTerms;
 					//remoteVendorRegDetails.VendorType = model.VendorType;
-					remoteVendorRegDetails.Email = model.VendorEmailId;
+					remoteVendorRegDetails.Email = model.VendorEmailId.Replace(" ", String.Empty);
 					//remoteVendorRegDetails.ISExistVendor = model.ISExistVendor;
 					//remoteVendorRegDetails.ChangesFor = model.ChangesFor;
 				}
@@ -2257,7 +2257,7 @@ Review Date :<<>>   Reviewed By :<<>>
 					if (vendorRegMaster == null)
 					{
 						locVen.Id = remVen.Id;
-						locVen.Email = model.VendorEmailId;
+						locVen.Email = model.VendorEmailId.Replace(" ", String.Empty);
 						locVen.VendorName = model.VendorName;
 						locVen.VendorType = model.VendorType;
 						locVen.Vendorid = Vendorid;
@@ -2266,7 +2266,7 @@ Review Date :<<>>   Reviewed By :<<>>
 						if (model.IsExistVendor == true && vendorRegDetails != null)
 						{
 							locVen.VendorNoInSAP = vendorRegDetails.VendorCode;
-							locVen.Email = model.VendorEmailId;
+							locVen.Email = model.VendorEmailId.Replace(" ", String.Empty);
 							locVen.Street = vendorRegDetails.Street;
 							locVen.City = vendorRegDetails.City;
 							locVen.PostalCode = vendorRegDetails.PostalCode;
@@ -2278,7 +2278,7 @@ Review Date :<<>>   Reviewed By :<<>>
 					}
 					else
 					{
-						vendorRegMaster.Email = model.VendorEmailId;
+						vendorRegMaster.Email = model.VendorEmailId.Replace(" ", String.Empty);
 						vendorRegMaster.ChangesFor = model.ChangesFor;
 					}
 					DB.SaveChanges();
@@ -2298,7 +2298,7 @@ Review Date :<<>>   Reviewed By :<<>>
 					VendorRegApprovalProcess LocalRegApprovalProcess = new VendorRegApprovalProcess();
 					//LocalRegApprovalProcess.ProceesId = processId;
 					LocalRegApprovalProcess.Vendorid = Vendorid;
-					LocalRegApprovalProcess.VendorEmailId = model.VendorEmailId;
+					LocalRegApprovalProcess.VendorEmailId = model.VendorEmailId.Replace(" ", String.Empty);
 					LocalRegApprovalProcess.VendorName = model.VendorName;
 					LocalRegApprovalProcess.BuyerGroupId = model.BuyerGroupId;
 					LocalRegApprovalProcess.IntiatedBy = model.IntiatedBy;
@@ -2316,7 +2316,7 @@ Review Date :<<>>   Reviewed By :<<>>
 				}
 				else
 				{
-					LocalRegApprovalProcessDetails.VendorEmailId = model.VendorEmailId;
+					LocalRegApprovalProcessDetails.VendorEmailId = model.VendorEmailId.Replace(" ", String.Empty);
 					VendorRegisterMaster vendorRegDetails = DB.VendorRegisterMasters.Where(li => li.Vendorid == Vendorid).FirstOrDefault();
 					if (vendorRegDetails != null)
 					{
