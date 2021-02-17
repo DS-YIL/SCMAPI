@@ -75,8 +75,9 @@ namespace SCMModels.RFQModels
         public List<parequestedanddeletemodel> request { get; set; }
 		public TokuchuRequest TokuchuRequest { get; set; }
 		public int TokuchRequestid { get; set; }
-        public bool AribaRequired { get; set; }
-        public bool msarequired { get; set; }
+        public Nullable<bool> AribaRequired { get; set; }
+        public Nullable<bool> msarequired { get; set; }
+        public string potype { get; set; }
         //public List<Additionaltaxes> additionaltaxes { get; set; }
     }
     public class PADocumentsmodel

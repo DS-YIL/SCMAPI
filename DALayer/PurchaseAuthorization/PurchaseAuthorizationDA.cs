@@ -496,13 +496,13 @@ Review Date :<<>>   Reviewed By :<<>>*/
 Date of Creation <<>>
 Purpose : <<getting configured employee based on total pa value,target spend and credit days>>
 Review Date :<<>>   Reviewed By :<<>>*/
-		public DataSet GetEmployeeMappings1(PAConfigurationModel model)
+		public DataTable GetEmployeeMappings11(PAConfigurationModel model)
 		{
 			string con = obj.Database.Connection.ConnectionString;
-			//SqlConnection Conn1 = new SqlConnection(@"Data Source=10.29.15.183;User ID=sa;Password=yil@1234;initial catalog=YSCM;Integrated Security=false;");
-			SqlConnection Conn1 = new SqlConnection(con);
+            SqlConnection Conn1 = new SqlConnection(con);
 			EmployeModel employee = new EmployeModel();
 			DataSet Ds = new DataSet();
+			DataTable dt = new DataTable();
 			string data = string.Join(",", model.MPRItemDetailsid);
 			model.PAValue = model.UnitPrice;
 			int Termscode = 0;
@@ -547,11 +547,44 @@ Review Date :<<>>   Reviewed By :<<>>*/
 				Adp.Fill(Ds);
 				cmd.Parameters.Clear();
 				//Ds.Clear();
-				return Ds;
+				return dt;
 			}
 			catch (Exception ex)
 			{
 
+				throw;
+			}
+		}
+		public DataTable GetEmployeeMappings1(PAConfigurationModel model)
+		{
+
+			EmployeModel employee = new EmployeModel();
+			DataTable table = new DataTable();
+			string data = string.Join(",", model.MPRItemDetailsid);
+			model.PAValue = model.UnitPrice;
+			int Termscode = 0;
+			if (model.PAValue > model.TargetSpend)
+				model.LessBudget = false;
+			else
+				model.LessBudget = true;
+			if (model.PaymentTermCode != null && model.Creditdays == 0)
+				Termscode = Convert.ToInt32(model.PaymentTermCode.Substring(model.PaymentTermCode.Length - 3, 3));
+			else if (model.Creditdays != 0)
+				Termscode = Convert.ToInt32(model.Creditdays);
+			else
+				Termscode = 0;
+			try
+			{
+				string spname = "exec PAApprovers "+ data +","+model.PAValue+","+ model.TargetSpend +","+ Termscode +","+ model.DeptId +"";
+				var con = obj.Database.Connection.CreateCommand();
+				con.CommandText = spname;
+				con.Connection.Open();
+				table.Load(con.ExecuteReader());
+				con.Connection.Close();
+				return table;
+			}
+			catch (Exception ex)
+			{
 				throw;
 			}
 		}
@@ -1181,6 +1214,9 @@ Review Date :<<>>   Reviewed By :<<>>*/
 					model.FactorsForImports = data.FactorsForImports;
 					model.SpecialRemarks = data.SpecialRemarks;
 					model.SuppliersReference = data.SuppliersReference;
+					model.potype = data.POtype;
+					model.AribaRequired = data.Aribarequired;
+					model.msarequired = data.MSArequied;
 					model.Deleteflag = data.DeleteFlag;
 
 					var statusdata = obj.ShowAdditionalcharges.Where(x => x.itemstatus == "Approved" && x.PAId == PID).ToList();
@@ -1216,7 +1252,10 @@ Review Date :<<>>   Reviewed By :<<>>*/
 						ImportFreightAmount = x.ImportFreightAmount,
 						DutyAmount = x.DutyAmount,
 						InsuranceAmount = x.InsuranceAmount,
-						MPRRevisionId = Convert.ToInt32(x.MPRRevisionId)
+						MPRRevisionId = Convert.ToInt32(x.MPRRevisionId),
+						POText=x.POText,
+						PODescription=x.PODescription,
+						itemtypesupplier=x.POItemType
 					}).ToList();
 					//var taxes = obj.ShowAdditionalcharges.Where(x => x.PAId == PID).ToList();
 					//model.additionaltaxes = taxes.Select(x => new Additionaltaxes()

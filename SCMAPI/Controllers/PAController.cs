@@ -20,6 +20,7 @@ using System.Configuration;
 using System.Net;
 using SCMModels.RemoteModel;
 using System.Net.Http.Headers;
+using System.Reflection;
 
 namespace SCMAPI.Controllers
 {
@@ -141,10 +142,10 @@ namespace SCMAPI.Controllers
         }
         [HttpPost]
         [Route("GetEmployeeMappings1")]
-        [ResponseType(typeof(DataSet))]
-        public DataSet GetEmployeeMappings1(PAConfigurationModel model)
+        [ResponseType(typeof(DataTable))]
+        public DataTable GetEmployeeMappings1(PAConfigurationModel model)
         {
-            DataSet ds = new DataSet();
+            DataTable ds = new DataTable();
             ds = _paBusenessAcess.GetEmployeeMappings1(model);
             return ds;
         }
@@ -1397,10 +1398,10 @@ namespace SCMAPI.Controllers
         {
             try
             {
-
-                string sourcePath = "C:\\Users\\464_0123\\Desktop\\";
+                //string sourcePath = "C:\\Users\\464_0108\\Desktop\\";
+                string sourcePath = "D:\\Excelpath\\";
                 string targetpath = ConfigurationManager.AppSettings["DownloadVexcel"];
-                string srcfilename = "Book1.xlsx";
+                string srcfilename = "RFQDownloadTemplate.xlsx";
                 string targetfilename = "Akil" + DateTime.Now.ToString("ddMMyyyyhhmmss") + ".xlsx";
                 string sourceFile = System.IO.Path.Combine(sourcePath, srcfilename);
                 string destFile = System.IO.Path.Combine(targetpath, targetfilename);
@@ -1421,15 +1422,15 @@ namespace SCMAPI.Controllers
                 foreach (var item in data)
                 {
                     if (!string.IsNullOrEmpty(item.RFQNo))
-                        (range.Worksheet.Cells["1", "F"]).Value2 = item.RFQNo;
+                        (range.Worksheet.Cells["2", "G"]).Value2 = item.RFQNo;
                     if (!string.IsNullOrEmpty(item.rfqRevisionId.ToString()))
-                        (range.Worksheet.Cells["1", "L"]).Value2 = item.rfqRevisionId;
+                        (range.Worksheet.Cells["2", "O"]).Value2 = item.rfqRevisionId;
                     if (!string.IsNullOrEmpty(item.RFQValidDate.ToString()))
-                        (range.Worksheet.Cells["2", "F"]).Value2 = item.RFQValidDate;
+                        (range.Worksheet.Cells["3", "G"]).Value2 = item.RFQValidDate;
                     if (!string.IsNullOrEmpty(item.ReqRemarks))
-                        (range.Worksheet.Cells["2", "L"]).Value2 = item.ReqRemarks;
+                        (range.Worksheet.Cells["3", "L"]).Value2 = item.ReqRemarks;
                     if (!string.IsNullOrEmpty(item.RFQValidDate.ToString()))
-                        (range.Worksheet.Cells["3", "J"]).Value2 = item.RFQValidDate;
+                        (range.Worksheet.Cells["2", "L"]).Value2 = item.RFQValidDate;
                 }
 
                 int i = 6;
@@ -1440,125 +1441,128 @@ namespace SCMAPI.Controllers
                     else
                         (range.Worksheet.Cells[i, "A"]).Value2 = 0;
 
-                    if (!string.IsNullOrEmpty(item1.ItemId.ToString()))
-                        (range.Worksheet.Cells[i, "B"]).Value2 = item1.ItemId;
-                    else
-                        (range.Worksheet.Cells[i, "B"]).Value2 = "";
+                    (range.Worksheet.Cells[i, "B"]).Value2 = i - 5;
 
-                    if (!string.IsNullOrEmpty(item1.ItemDescription))
-                        (range.Worksheet.Cells[i, "C"]).Value2 = item1.ItemDescription;
+                    if (!string.IsNullOrEmpty(item1.ItemId.ToString()))
+                        (range.Worksheet.Cells[i, "C"]).Value2 = item1.ItemId;
                     else
                         (range.Worksheet.Cells[i, "C"]).Value2 = "";
 
-                    if (!string.IsNullOrEmpty(item1.QuotationQty.ToString()))
-                        (range.Worksheet.Cells[i, "D"]).Value2 = item1.QuotationQty;
+                    if (!string.IsNullOrEmpty(item1.ItemDescription))
+                        (range.Worksheet.Cells[i, "D"]).Value2 = item1.ItemDescription;
                     else
-                        (range.Worksheet.Cells[i, "D"]).Value2 = 0;
+                        (range.Worksheet.Cells[i, "D"]).Value2 = "";
 
-                    if (item1.UOM != null)
-                        (range.Worksheet.Cells[i, "E"]).Value2 = item1.UOM;
+                    if (!string.IsNullOrEmpty(item1.QuotationQty.ToString()))
+                        (range.Worksheet.Cells[i, "E"]).Value2 = item1.QuotationQty;
                     else
                         (range.Worksheet.Cells[i, "E"]).Value2 = 0;
 
-                    if (!string.IsNullOrEmpty(item1.CurrencyValue.ToString()))
-                        (range.Worksheet.Cells[i, "F"]).Value2 = item1.CurrencyValue;
+                    if (item1.UOM != null)
+                        (range.Worksheet.Cells[i, "F"]).Value2 = item1.UOM;
                     else
                         (range.Worksheet.Cells[i, "F"]).Value2 = 0;
 
-                    if (!string.IsNullOrEmpty(item1.UnitPrice.ToString()))
-                        (range.Worksheet.Cells[i, "G"]).Value2 = item1.UnitPrice;
+                    if (!string.IsNullOrEmpty(item1.CurrencyValue.ToString()))
+                        (range.Worksheet.Cells[i, "G"]).Value2 = item1.CurrencyValue;
                     else
                         (range.Worksheet.Cells[i, "G"]).Value2 = 0;
 
-                    if (item1.HSNCode != null)
-                        (range.Worksheet.Cells[i, "H"]).Value2 = item1.HSNCode;
+                    if (!string.IsNullOrEmpty(item1.UnitPrice.ToString()))
+                        (range.Worksheet.Cells[i, "H"]).Value2 = item1.UnitPrice;
                     else
                         (range.Worksheet.Cells[i, "H"]).Value2 = 0;
 
-                    if (!string.IsNullOrEmpty(item1.DiscountPercentage.ToString()))
-                        (range.Worksheet.Cells[i, "I"]).Value2 = item1.DiscountPercentage;
+                    if (item1.HSNCode != null)
+                        (range.Worksheet.Cells[i, "I"]).Value2 = item1.HSNCode;
                     else
                         (range.Worksheet.Cells[i, "I"]).Value2 = 0;
 
-                    if (!string.IsNullOrEmpty(item1.Discount.ToString()))
-                        (range.Worksheet.Cells[i, "J"]).Value2 = item1.Discount;
+                    if (!string.IsNullOrEmpty(item1.DiscountPercentage.ToString()))
+                        (range.Worksheet.Cells[i, "J"]).Value2 = item1.DiscountPercentage;
                     else
                         (range.Worksheet.Cells[i, "J"]).Value2 = 0;
 
-                    if (!string.IsNullOrEmpty(item1.VendorModelNo))
-                        (range.Worksheet.Cells[i, "K"]).Value2 = item1.VendorModelNo;
+                    if (!string.IsNullOrEmpty(item1.Discount.ToString()))
+                        (range.Worksheet.Cells[i, "K"]).Value2 = item1.Discount;
                     else
-                        (range.Worksheet.Cells[i, "K"]).Value2 = "";
+                        (range.Worksheet.Cells[i, "K"]).Value2 = 0;
 
-                    if (!string.IsNullOrEmpty(item1.MfgPartNo))
-                        (range.Worksheet.Cells[i, "L"]).Value2 = item1.MfgPartNo;
+                    if (!string.IsNullOrEmpty(item1.VendorModelNo))
+                        (range.Worksheet.Cells[i, "L"]).Value2 = item1.VendorModelNo;
                     else
                         (range.Worksheet.Cells[i, "L"]).Value2 = "";
 
-                    if (!string.IsNullOrEmpty(item1.MfgModelNo))
-                        (range.Worksheet.Cells[i, "M"]).Value2 = item1.MfgModelNo;
+                    if (!string.IsNullOrEmpty(item1.MfgPartNo))
+                        (range.Worksheet.Cells[i, "M"]).Value2 = item1.MfgPartNo;
                     else
                         (range.Worksheet.Cells[i, "M"]).Value2 = "";
 
-                    if (!string.IsNullOrEmpty(item1.ManufacturerName))
-                        (range.Worksheet.Cells[i, "N"]).Value2 = item1.ManufacturerName;
+                    if (!string.IsNullOrEmpty(item1.MfgModelNo))
+                        (range.Worksheet.Cells[i, "N"]).Value2 = item1.MfgModelNo;
                     else
                         (range.Worksheet.Cells[i, "N"]).Value2 = "";
 
-                    if (!string.IsNullOrEmpty(item1.CGSTPercentage.ToString()))
-                        (range.Worksheet.Cells[i, "O"]).Value2 = item1.CGSTPercentage;
+                    if (!string.IsNullOrEmpty(item1.ManufacturerName))
+                        (range.Worksheet.Cells[i, "O"]).Value2 = item1.ManufacturerName;
                     else
-                        (range.Worksheet.Cells[i, "O"]).Value2 = 0;
+                        (range.Worksheet.Cells[i, "O"]).Value2 = "";
 
-                    if (!string.IsNullOrEmpty(item1.IGSTPercentage.ToString()))
-                        (range.Worksheet.Cells[i, "P"]).Value2 = item1.IGSTPercentage;
+                    if (!string.IsNullOrEmpty(item1.CGSTPercentage.ToString()))
+                        (range.Worksheet.Cells[i, "P"]).Value2 = item1.CGSTPercentage;
                     else
                         (range.Worksheet.Cells[i, "P"]).Value2 = 0;
 
-                    if (!string.IsNullOrEmpty(item1.SGSTPercentage.ToString()))
-                        (range.Worksheet.Cells[i, "Q"]).Value2 = item1.SGSTPercentage;
+                    if (!string.IsNullOrEmpty(item1.IGSTPercentage.ToString()))
+                        (range.Worksheet.Cells[i, "Q"]).Value2 = item1.IGSTPercentage;
                     else
                         (range.Worksheet.Cells[i, "Q"]).Value2 = 0;
 
-                    if (!string.IsNullOrEmpty(item1.PFAmount.ToString()))
-                        (range.Worksheet.Cells[i, "R"]).Value2 = item1.PFAmount;
+                    if (!string.IsNullOrEmpty(item1.SGSTPercentage.ToString()))
+                        (range.Worksheet.Cells[i, "R"]).Value2 = item1.SGSTPercentage;
                     else
                         (range.Worksheet.Cells[i, "R"]).Value2 = 0;
 
-                    if (!string.IsNullOrEmpty(item1.PFPercentage.ToString()))
-                        (range.Worksheet.Cells[i, "S"]).Value2 = item1.PFPercentage;
+                    if (!string.IsNullOrEmpty(item1.PFAmount.ToString()))
+                        (range.Worksheet.Cells[i, "S"]).Value2 = item1.PFAmount;
                     else
                         (range.Worksheet.Cells[i, "S"]).Value2 = 0;
 
-                    if (!string.IsNullOrEmpty(item1.FreightAmount.ToString()))
-                        (range.Worksheet.Cells[i, "T"]).Value2 = item1.FreightAmount;
+                    if (!string.IsNullOrEmpty(item1.PFPercentage.ToString()))
+                        (range.Worksheet.Cells[i, "T"]).Value2 = item1.PFPercentage;
                     else
                         (range.Worksheet.Cells[i, "T"]).Value2 = 0;
 
-                    if (!string.IsNullOrEmpty(item1.FreightPercentage.ToString()))
-                        (range.Worksheet.Cells[i, "U"]).Value2 = item1.FreightPercentage;
+                    if (!string.IsNullOrEmpty(item1.FreightAmount.ToString()))
+                        (range.Worksheet.Cells[i, "U"]).Value2 = item1.FreightAmount;
                     else
                         (range.Worksheet.Cells[i, "U"]).Value2 = 0;
 
+                    if (!string.IsNullOrEmpty(item1.FreightPercentage.ToString()))
+                        (range.Worksheet.Cells[i, "V"]).Value2 = item1.FreightPercentage;
+                    else
+                        (range.Worksheet.Cells[i, "V"]).Value2 = 0;
+
                     if (!string.IsNullOrEmpty(item1.DeliveryDate.ToString()))
                     {
-                        (range.Worksheet.Cells[i, "V"]).Value2 = String.Format("{0:dd-MM-yyyy}", item1.DeliveryDate);
                         string date = Convert.ToDateTime(item1.DeliveryDate).Day.ToString() + "/" + Convert.ToDateTime(item1.DeliveryDate).Month.ToString() + "/" + Convert.ToDateTime(item1.DeliveryDate).Year.ToString();
-                        (range.Worksheet.Cells[i, "V"]).Value2 = date;
+                        (range.Worksheet.Cells[i, "W"]).Value2 = date;
                     }
                     else
-                        (range.Worksheet.Cells[i, "V"]).Value2 = "";
+                        (range.Worksheet.Cells[i, "W"]).Value2 = "";
 
                     if (item1.Remarks != null && !string.IsNullOrEmpty(item1.Remarks))
-                        (range.Worksheet.Cells[i, "W"]).Value2 = item1.Remarks;
+                        (range.Worksheet.Cells[i, "X"]).Value2 = item1.Remarks;
                     else
-                        (range.Worksheet.Cells[i, "W"]).Value2 = "";
+                        (range.Worksheet.Cells[i, "X"]).Value2 = "";
                     if (!string.IsNullOrEmpty(item1.RFQSplitItemId.ToString()))
-                        (range.Worksheet.Cells[i, "X"]).Value2 = item1.RFQSplitItemId;
+                        (range.Worksheet.Cells[i, "Y"]).Value2 = item1.RFQSplitItemId;
                     else
-                        (range.Worksheet.Cells[i, "X"]).Value2 = 0;
+                        (range.Worksheet.Cells[i, "Y"]).Value2 = 0;
                     i++;
                 }
+                range.Worksheet.Protect("password", Missing.Value, Missing.Value, Missing.Value, Missing.Value, Missing.Value, Missing.Value, Missing.Value, Missing.Value, Missing.Value, Missing.Value, Missing.Value, Missing.Value, Missing.Value, Missing.Value, Missing.Value);
+
                 workbooksExcel.Save();
                 workbooksExcel.Close(false, Type.Missing, Type.Missing);
                 docExcel.Application.DisplayAlerts = true;
@@ -1570,6 +1574,7 @@ namespace SCMAPI.Controllers
             {
                 throw;
             }
+
         }
 
         public HttpResponseMessage getGenetatedExcel(string filepath)
@@ -1642,63 +1647,90 @@ namespace SCMAPI.Controllers
                     VSCMEntities remoteObj = new VSCMEntities();
 
                     int i = 0;
+                    string errorMessages = "";
                     foreach (DataRow row in dtexcel.Rows)
                     {
 
                         if (i > 3 && row[0] != null && !string.IsNullOrEmpty((row[0]).ToString()))
                         {
+                            if (string.IsNullOrEmpty(row[7].ToString()))
+                            {
+                                return Ok(new SCMModels.Models.ServerSideValidation { ErrorMessage = "Unit Price Cannot be Empty At Line -" + i + " Cell No 7", ValidData = false });
+                            }
+
+                            if (string.IsNullOrEmpty(row[8].ToString()))
+                            {
+                                return Ok(new SCMModels.Models.ServerSideValidation { ErrorMessage = "HSN Code Cannot be Empty At Line - " + i + "Cell No 8", ValidData = false });
+                            }
+                            if (string.IsNullOrEmpty(row[16].ToString()))
+                            {
+                                if (string.IsNullOrEmpty(row[15].ToString()) && string.IsNullOrEmpty(row[17].ToString()))
+                                    return Ok(new SCMModels.Models.ServerSideValidation { ErrorMessage = "CGST or SGST Percentage Cannot be Empty At Line - " + i + "Cell No 15 or 17", ValidData = false });
+
+                            }
+
+
                             int itemsid = Convert.ToInt32(row[0]);
                             RemoteRFQItems_N remoteRFQItems_N = remoteObj.RemoteRFQItems_N.Where(x => x.RFQItemsId == itemsid).FirstOrDefault();
-                            remoteRFQItems_N.ItemId = row[1].ToString();
-                            if (!string.IsNullOrEmpty(row[3].ToString()))
-                                remoteRFQItems_N.QuotationQty = Convert.ToDouble(row[3]);
-                            if (!string.IsNullOrEmpty(row[10].ToString()))
-                                remoteRFQItems_N.VendorModelNo = (row[10].ToString());
+                            remoteRFQItems_N.ItemId = row[2].ToString();
+                            if (!string.IsNullOrEmpty(row[4].ToString()))
+                                remoteRFQItems_N.QuotationQty = Convert.ToDouble(row[4]);
                             if (!string.IsNullOrEmpty(row[11].ToString()))
-                                remoteRFQItems_N.MfgPartNo = row[11].ToString();
+                                remoteRFQItems_N.VendorModelNo = (row[11].ToString());
                             if (!string.IsNullOrEmpty(row[12].ToString()))
-                                remoteRFQItems_N.MfgModelNo = row[12].ToString();
+                                remoteRFQItems_N.MfgPartNo = row[12].ToString();
                             if (!string.IsNullOrEmpty(row[13].ToString()))
-                                remoteRFQItems_N.ManufacturerName = row[13].ToString();
+                                remoteRFQItems_N.MfgModelNo = row[13].ToString();
+
                             if (!string.IsNullOrEmpty(row[14].ToString()))
-                                remoteRFQItems_N.CGSTPercentage = Convert.ToDecimal(row[14]);
+                                remoteRFQItems_N.ManufacturerName = row[14].ToString();
+
                             if (!string.IsNullOrEmpty(row[15].ToString()))
-                                remoteRFQItems_N.IGSTPercentage = Convert.ToDecimal(row[15]);
+                                remoteRFQItems_N.CGSTPercentage = Convert.ToDecimal(row[15]);
+
                             if (!string.IsNullOrEmpty(row[16].ToString()))
-                                remoteRFQItems_N.SGSTPercentage = Convert.ToDecimal(row[16]);
+                                remoteRFQItems_N.IGSTPercentage = Convert.ToDecimal(row[16]);
+
                             if (!string.IsNullOrEmpty(row[17].ToString()))
-                                remoteRFQItems_N.PFAmount = Convert.ToDecimal(row[17]);
+                                remoteRFQItems_N.SGSTPercentage = Convert.ToDecimal(row[17]);
+
                             if (!string.IsNullOrEmpty(row[18].ToString()))
-                                remoteRFQItems_N.PFPercentage = Convert.ToDecimal(row[18]);
+                                remoteRFQItems_N.PFAmount = Convert.ToDecimal(row[18]);
+
                             if (!string.IsNullOrEmpty(row[19].ToString()))
-                                remoteRFQItems_N.FreightAmount = Convert.ToDecimal(row[19]);
+                                remoteRFQItems_N.PFPercentage = Convert.ToDecimal(row[19]);
+
                             if (!string.IsNullOrEmpty(row[20].ToString()))
-                                remoteRFQItems_N.FreightPercentage = Convert.ToDecimal(row[20]);
-                            if (!string.IsNullOrEmpty(row[7].ToString()))
-                                remoteRFQItems_N.HSNCode = row[7].ToString();
+                                remoteRFQItems_N.FreightAmount = Convert.ToDecimal(row[20]);
+
+                            if (!string.IsNullOrEmpty(row[21].ToString()))
+                                remoteRFQItems_N.FreightPercentage = Convert.ToDecimal(row[21]);
+
+                            if (!string.IsNullOrEmpty(row[8].ToString()))
+                                remoteRFQItems_N.HSNCode = row[8].ToString();
                             remoteObj.SaveChanges();
 
                             RemoteRFQItemsInfo_N remoteitemsInfo_N = remoteObj.RemoteRFQItemsInfo_N.Where(x => x.RFQItemsId == itemsid && x.DeleteFlag == false).FirstOrDefault();
                             if (remoteitemsInfo_N != null)
                             {
 
-                                if (!string.IsNullOrEmpty(row[4].ToString()))
-                                    remoteitemsInfo_N.UOM = Convert.ToInt32(row[4]);
                                 if (!string.IsNullOrEmpty(row[5].ToString()))
-                                    remoteitemsInfo_N.CurrencyValue = Convert.ToDecimal(row[5]);
+                                    remoteitemsInfo_N.UOM = Convert.ToInt32(row[5]);
                                 if (!string.IsNullOrEmpty(row[6].ToString()))
-                                    remoteitemsInfo_N.UnitPrice = Convert.ToDecimal(row[6]);
-                                if (!string.IsNullOrEmpty(row[8].ToString()))
-                                    remoteitemsInfo_N.DiscountPercentage = Convert.ToDecimal(row[8]);
+                                    remoteitemsInfo_N.CurrencyValue = Convert.ToDecimal(row[6]);
+                                if (!string.IsNullOrEmpty(row[7].ToString()))
+                                    remoteitemsInfo_N.UnitPrice = Convert.ToDecimal(row[7]);
                                 if (!string.IsNullOrEmpty(row[9].ToString()))
-                                    remoteitemsInfo_N.Discount = Convert.ToDecimal(row[9]);
-                                if (!string.IsNullOrEmpty(row[21].ToString()))
+                                    remoteitemsInfo_N.DiscountPercentage = Convert.ToDecimal(row[9]);
+                                if (!string.IsNullOrEmpty(row[10].ToString()))
+                                    remoteitemsInfo_N.Discount = Convert.ToDecimal(row[10]);
+                                if (!string.IsNullOrEmpty(row[22].ToString()))
                                 {
-                                    DateTime dt = DateTime.ParseExact(row[21].ToString(), "dd/MM/yyyy", CultureInfo.InvariantCulture);
+                                    DateTime dt = DateTime.ParseExact(row[22].ToString(), "dd/MM/yyyy", CultureInfo.InvariantCulture);
                                     remoteitemsInfo_N.DeliveryDate = dt;
                                 }
-                                if (!string.IsNullOrEmpty(row[22].ToString()))
-                                    remoteitemsInfo_N.Remarks = row[22].ToString();
+                                if (!string.IsNullOrEmpty(row[23].ToString()))
+                                    remoteitemsInfo_N.Remarks = row[23].ToString();
                                 remoteObj.SaveChanges();
                             }
                             else
@@ -1706,21 +1738,24 @@ namespace SCMAPI.Controllers
                                 RemoteRFQItemsInfo_N newremoteRfqItemsInfon = new RemoteRFQItemsInfo_N();
                                 int rfqsplititemid = obj.RFQItemsInfo_N.Max(li => li.RFQSplitItemId);
                                 newremoteRfqItemsInfon.RFQSplitItemId = rfqsplititemid + 1;
-                                if (!string.IsNullOrEmpty(row[4].ToString()))
-                                    newremoteRfqItemsInfon.UOM = Convert.ToInt32(row[4]);
-                                newremoteRfqItemsInfon.RFQItemsId = itemsid;
                                 if (!string.IsNullOrEmpty(row[5].ToString()))
-                                    newremoteRfqItemsInfon.CurrencyValue = Convert.ToDecimal(row[5]);
+                                    newremoteRfqItemsInfon.UOM = Convert.ToInt32(row[5]);
+                                newremoteRfqItemsInfon.RFQItemsId = itemsid;
                                 if (!string.IsNullOrEmpty(row[6].ToString()))
-                                    newremoteRfqItemsInfon.UnitPrice = Convert.ToDecimal(row[6]);
-                                if (!string.IsNullOrEmpty(row[8].ToString()))
-                                    newremoteRfqItemsInfon.DiscountPercentage = Convert.ToDecimal(row[8]);
+                                    newremoteRfqItemsInfon.CurrencyValue = Convert.ToDecimal(row[6]);
+
+                                if (!string.IsNullOrEmpty(row[7].ToString()))
+                                    newremoteRfqItemsInfon.UnitPrice = Convert.ToDecimal(row[7]);
                                 if (!string.IsNullOrEmpty(row[9].ToString()))
-                                    newremoteRfqItemsInfon.Discount = Convert.ToDecimal(row[9]);
-                                if (!string.IsNullOrEmpty(row[21].ToString()))
-                                    newremoteRfqItemsInfon.DeliveryDate = Convert.ToDateTime(row[21]);
+                                    newremoteRfqItemsInfon.DiscountPercentage = Convert.ToDecimal(row[9]);
+
+                                if (!string.IsNullOrEmpty(row[10].ToString()))
+                                    newremoteRfqItemsInfon.Discount = Convert.ToDecimal(row[10]);
+
                                 if (!string.IsNullOrEmpty(row[22].ToString()))
-                                    newremoteRfqItemsInfon.Remarks = row[22].ToString();
+                                    newremoteRfqItemsInfon.DeliveryDate = Convert.ToDateTime(row[22]);
+                                if (!string.IsNullOrEmpty(row[23].ToString()))
+                                    newremoteRfqItemsInfon.Remarks = row[23].ToString();
                                 remoteObj.RemoteRFQItemsInfo_N.Add(newremoteRfqItemsInfon);
                                 remoteObj.SaveChanges();
 
@@ -1728,55 +1763,55 @@ namespace SCMAPI.Controllers
 
                             RFQItems_N rFQItems_N = obj.RFQItems_N.Where(x => x.RFQItemsId == itemsid).FirstOrDefault();
 
-                            rFQItems_N.ItemId = row[1].ToString();
-                            if (!string.IsNullOrEmpty(row[3].ToString()))
-                                rFQItems_N.QuotationQty = Convert.ToDouble(row[3]);
-                            if (!string.IsNullOrEmpty(row[10].ToString()))
-                                rFQItems_N.VendorModelNo = (row[10].ToString());
+                            rFQItems_N.ItemId = row[2].ToString();
+                            if (!string.IsNullOrEmpty(row[4].ToString()))
+                                rFQItems_N.QuotationQty = Convert.ToDouble(row[4]);
                             if (!string.IsNullOrEmpty(row[11].ToString()))
-                                rFQItems_N.MfgPartNo = row[11].ToString();
+                                rFQItems_N.VendorModelNo = (row[11].ToString());
                             if (!string.IsNullOrEmpty(row[12].ToString()))
-                                rFQItems_N.MfgModelNo = row[12].ToString();
+                                rFQItems_N.MfgPartNo = row[12].ToString();
                             if (!string.IsNullOrEmpty(row[13].ToString()))
-                                rFQItems_N.ManufacturerName = row[13].ToString();
+                                rFQItems_N.MfgModelNo = row[13].ToString();
                             if (!string.IsNullOrEmpty(row[14].ToString()))
-                                rFQItems_N.CGSTPercentage = Convert.ToDecimal(row[14]);
+                                rFQItems_N.ManufacturerName = row[14].ToString();
                             if (!string.IsNullOrEmpty(row[15].ToString()))
-                                rFQItems_N.IGSTPercentage = Convert.ToDecimal(row[15]);
+                                rFQItems_N.CGSTPercentage = Convert.ToDecimal(row[15]);
                             if (!string.IsNullOrEmpty(row[16].ToString()))
-                                rFQItems_N.SGSTPercentage = Convert.ToDecimal(row[16]);
+                                rFQItems_N.IGSTPercentage = Convert.ToDecimal(row[16]);
                             if (!string.IsNullOrEmpty(row[17].ToString()))
-                                rFQItems_N.PFAmount = Convert.ToDecimal(row[17]);
+                                rFQItems_N.SGSTPercentage = Convert.ToDecimal(row[17]);
                             if (!string.IsNullOrEmpty(row[18].ToString()))
-                                rFQItems_N.PFPercentage = Convert.ToDecimal(row[18]);
+                                rFQItems_N.PFAmount = Convert.ToDecimal(row[18]);
                             if (!string.IsNullOrEmpty(row[19].ToString()))
-                                rFQItems_N.FreightAmount = Convert.ToDecimal(row[19]);
+                                rFQItems_N.PFPercentage = Convert.ToDecimal(row[19]);
                             if (!string.IsNullOrEmpty(row[20].ToString()))
-                                rFQItems_N.FreightPercentage = Convert.ToDecimal(row[20]);
-                            if (!string.IsNullOrEmpty(row[7].ToString()))
-                                rFQItems_N.HSNCode = row[7].ToString();
+                                rFQItems_N.FreightAmount = Convert.ToDecimal(row[20]);
+                            if (!string.IsNullOrEmpty(row[21].ToString()))
+                                rFQItems_N.FreightPercentage = Convert.ToDecimal(row[21]);
+                            if (!string.IsNullOrEmpty(row[8].ToString()))
+                                rFQItems_N.HSNCode = row[8].ToString();
                             obj.SaveChanges();
 
                             RFQItemsInfo_N itemsInfo_N = obj.RFQItemsInfo_N.Where(x => x.RFQItemsId == itemsid && x.DeleteFlag == false).FirstOrDefault();
                             if (itemsInfo_N != null)
                             {
-                                if (!string.IsNullOrEmpty(row[4].ToString()))
-                                    itemsInfo_N.UOM = Convert.ToInt32(row[4]);
                                 if (!string.IsNullOrEmpty(row[5].ToString()))
-                                    itemsInfo_N.CurrencyValue = Convert.ToDecimal(row[5]);
+                                    itemsInfo_N.UOM = Convert.ToInt32(row[5]);
                                 if (!string.IsNullOrEmpty(row[6].ToString()))
-                                    itemsInfo_N.UnitPrice = Convert.ToDecimal(row[6]);
-                                if (!string.IsNullOrEmpty(row[8].ToString()))
-                                    itemsInfo_N.DiscountPercentage = Convert.ToDecimal(row[8]);
+                                    itemsInfo_N.CurrencyValue = Convert.ToDecimal(row[6]);
+                                if (!string.IsNullOrEmpty(row[7].ToString()))
+                                    itemsInfo_N.UnitPrice = Convert.ToDecimal(row[7]);
                                 if (!string.IsNullOrEmpty(row[9].ToString()))
-                                    itemsInfo_N.Discount = Convert.ToDecimal(row[9]);
-                                if (!string.IsNullOrEmpty(row[21].ToString()))
+                                    itemsInfo_N.DiscountPercentage = Convert.ToDecimal(row[9]);
+                                if (!string.IsNullOrEmpty(row[10].ToString()))
+                                    itemsInfo_N.Discount = Convert.ToDecimal(row[10]);
+                                if (!string.IsNullOrEmpty(row[22].ToString()))
                                 {
-                                    DateTime dt = DateTime.ParseExact(row[21].ToString(), "dd/MM/yyyy", CultureInfo.InvariantCulture);
+                                    DateTime dt = DateTime.ParseExact(row[22].ToString(), "dd/MM/yyyy", CultureInfo.InvariantCulture);
                                     itemsInfo_N.DeliveryDate = dt;
                                 }
-                                if (!string.IsNullOrEmpty(row[22].ToString()))
-                                    itemsInfo_N.Remarks = row[22].ToString();
+                                if (!string.IsNullOrEmpty(row[23].ToString()))
+                                    itemsInfo_N.Remarks = row[23].ToString();
                                 obj.SaveChanges();
                             }
                             else
@@ -1784,32 +1819,32 @@ namespace SCMAPI.Controllers
                                 RFQItemsInfo_N newRfqItemsInfon = new RFQItemsInfo_N();
                                 int rfqsplititemid = obj.RFQItemsInfo_N.Max(li => li.RFQSplitItemId);
                                 newRfqItemsInfon.RFQSplitItemId = rfqsplititemid + 1;
-                                if (!string.IsNullOrEmpty(row[4].ToString()))
-                                    newRfqItemsInfon.UOM = Convert.ToInt32(row[4]);
-                                newRfqItemsInfon.RFQItemsId = itemsid;
                                 if (!string.IsNullOrEmpty(row[5].ToString()))
-                                    newRfqItemsInfon.CurrencyValue = Convert.ToDecimal(row[5]);
+                                    newRfqItemsInfon.UOM = Convert.ToInt32(row[5]);
+                                newRfqItemsInfon.RFQItemsId = itemsid;
                                 if (!string.IsNullOrEmpty(row[6].ToString()))
-                                    newRfqItemsInfon.UnitPrice = Convert.ToDecimal(row[6]);
-                                if (!string.IsNullOrEmpty(row[8].ToString()))
-                                    newRfqItemsInfon.DiscountPercentage = Convert.ToDecimal(row[8]);
+                                    newRfqItemsInfon.CurrencyValue = Convert.ToDecimal(row[6]);
+                                if (!string.IsNullOrEmpty(row[7].ToString()))
+                                    newRfqItemsInfon.UnitPrice = Convert.ToDecimal(row[7]);
                                 if (!string.IsNullOrEmpty(row[9].ToString()))
-                                    newRfqItemsInfon.Discount = Convert.ToDecimal(row[9]);
-                                if (!string.IsNullOrEmpty(row[21].ToString()))
+                                    newRfqItemsInfon.DiscountPercentage = Convert.ToDecimal(row[9]);
+                                if (!string.IsNullOrEmpty(row[10].ToString()))
+                                    newRfqItemsInfon.Discount = Convert.ToDecimal(row[10]);
+                                if (!string.IsNullOrEmpty(row[22].ToString()))
                                 {
-                                    DateTime dt = DateTime.ParseExact(row[21].ToString(), "dd/MM/yyyy", CultureInfo.InvariantCulture);
+                                    DateTime dt = DateTime.ParseExact(row[22].ToString(), "dd/MM/yyyy", CultureInfo.InvariantCulture);
                                     itemsInfo_N.DeliveryDate = dt;
                                 }
-                                if (!string.IsNullOrEmpty(row[22].ToString()))
-                                    newRfqItemsInfon.Remarks = row[22].ToString();
+                                if (!string.IsNullOrEmpty(row[23].ToString()))
+                                    newRfqItemsInfon.Remarks = row[23].ToString();
                                 obj.RFQItemsInfo_N.Add(newRfqItemsInfon);
                                 obj.SaveChanges();
 
                             }
                             var mPRItemInfo = obj.MPRItemInfoes.Join(obj.RFQItems_N, mpr => mpr.Itemdetailsid, rfq => rfq.MPRItemDetailsid, (mpr, rfq) => new { mpr, rfq }).Where(mpritem => mpritem.rfq.RFQItemsId == itemsid).FirstOrDefault();
                             MPRItemInfo mpritemsinfor = obj.MPRItemInfoes.Where(x => x.Itemdetailsid == mPRItemInfo.mpr.Itemdetailsid).FirstOrDefault();
-                            if (!string.IsNullOrEmpty(row[2].ToString()))
-                                mpritemsinfor.ItemDescription = row[2].ToString();
+                            if (!string.IsNullOrEmpty(row[3].ToString()))
+                                mpritemsinfor.ItemDescription = row[3].ToString();
                             obj.SaveChanges();
                         }
                         i++;
@@ -1825,6 +1860,7 @@ namespace SCMAPI.Controllers
             {
                 return Ok(e);
             }
+
 
         }
 
