@@ -78,6 +78,7 @@ namespace SCMModels.RFQModels
         public Nullable<bool> AribaRequired { get; set; }
         public Nullable<bool> msarequired { get; set; }
         public string potype { get; set; }
+        public string incoterms { get; set; }
         //public List<Additionaltaxes> additionaltaxes { get; set; }
     }
     public class PADocumentsmodel

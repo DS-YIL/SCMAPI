@@ -196,7 +196,7 @@ namespace BALayer.MPR
             return this._mprDataAcess.Getoldrevisionitems(itemdetailsid);
         }
 
-        public List<Tokuchuinformation> GetTokuchuinformation(int mprrevisionid)
+        public DataTable GetTokuchuinformation(int mprrevisionid)
         {
 			return this._mprDataAcess.GetTokuchuinformation(mprrevisionid);
         }

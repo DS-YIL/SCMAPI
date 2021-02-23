@@ -60,7 +60,7 @@ namespace DALayer.MPR
 		bool DeleteTermsAndConditions(int TermId, string DeletedBy);
 		string GeneratePassword();
         DataTable Getoldrevisionitems(List<int> itemdetailsid);
-		List<Tokuchuinformation> GetTokuchuinformation(int mprrevisionid);
+		DataTable GetTokuchuinformation(int mprrevisionid);
 		List<SCMModels.Models.Vendor> VendorList();
 
 

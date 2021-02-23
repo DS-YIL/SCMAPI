@@ -84,5 +84,7 @@ namespace DALayer.PurchaseAuthorization
         Task<MSAMasterConfirmation> updateMSAConfirmation(MSAMasterConfirmation model);
         Task<MSAMasterConfirmation> clearMSAConfirmation(MSAMasterConfirmation model);
         Task<statuscheckmodel> Unmappingitem(MappingItemModel model);
+        Task<List<IncoTermMaster>> getincotermmaster();
+        Task<statuscheckmodel> updatetokuchubyid(int tokuchuid);
     }
 }

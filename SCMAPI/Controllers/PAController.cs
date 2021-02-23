@@ -1398,8 +1398,8 @@ namespace SCMAPI.Controllers
         {
             try
             {
-                //string sourcePath = "C:\\Users\\464_0108\\Desktop\\";
-                string sourcePath = "D:\\Excelpath\\";
+                string sourcePath = "C:\\Users\\developer4\\Desktop\\";
+                //string sourcePath = "D:\\Excelpath\\";
                 string targetpath = ConfigurationManager.AppSettings["DownloadVexcel"];
                 string srcfilename = "RFQDownloadTemplate.xlsx";
                 string targetfilename = "Akil" + DateTime.Now.ToString("ddMMyyyyhhmmss") + ".xlsx";
@@ -1598,7 +1598,7 @@ namespace SCMAPI.Controllers
             Sourcecode Copyright : Yokogawa India Limited
        */
         [HttpPost]
-        [Route("UpLoadRFQData/{revisionId}")]
+        [Route("UploadRfqData/{revisionId}")]
         public IHttpActionResult UploadRfqData(int revisionId)
         {
             try
@@ -1863,7 +1863,131 @@ namespace SCMAPI.Controllers
 
 
         }
+        [HttpPost]
+        [Route("exceldata")]
+        public bool exceldata(string filename)
+        {
+            try
+            {
+                //filename = "YIL_SO_created_on_20_2_2021_18_40_10.xlsx";
+                string filePath = @"\\10.29.15.68\D$\SODetails\ActualPath\"+ filename;
+                //string name = filePath+filename;
+                string filePath1 = @"\\10.29.15.68\D$\SODetails\CopyPath";
+                System.IO.File.Move(filePath, filePath1);
+                //File.Move(name, filePath1);
+                //string filetype = "Sales";
+                //string filePath = @"D:\DSO\Copy of YIL_SO_file_26_11_2020_12_26_58.xlsx";
+                //var httpRequest = HttpContext.Current.Request;
+                //var serverPath = HttpContext.Current.Server.MapPath("~/DSODocuments");
+                //Console.WriteLine("Unable to open the ");
+                if (Directory.Exists(filePath))
+                {
+                    if (Directory.Exists(filePath1))
+                    {
+                        //Directory.Delete(destinationdirectory);
+                        //Directory.Move(destinationdirectory, backupdirectory + DateTime.Now.ToString("_MMMdd_yyyy_HHmmss"));
+                        Directory.Move(filePath, filePath1);
+                    }
+                    else
+                    {
+                        Directory.Move(filePath, filePath1);
+                    }
+                }
+                string parsedFileName = "";
+
+                YSCMEntities obj = new YSCMEntities();
 
 
+                DataTable dtexcel = new DataTable();
+                bool hasHeaders = false;
+                string HDR = hasHeaders ? "Yes" : "No";
+                string strConn;
+                if (filePath.Substring(filePath.LastIndexOf('.')).ToLower() == ".xlsx")
+                    strConn = "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" + filePath + ";Extended Properties=\"Excel 12.0;HDR=" + HDR + ";IMEX=0\"";
+                else
+                    strConn = "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" + Path.GetDirectoryName(filePath) + ";Extended Properties='Text;HDR=YES;FMT=Delimited;'";
+
+                OleDbConnection conn = new OleDbConnection(strConn);
+                conn.Open();
+                DataTable schemaTable = conn.GetOleDbSchemaTable(OleDbSchemaGuid.Tables, new object[] { null, null, null, "TABLE" });
+
+                DataRow schemaRow = schemaTable.Rows[0];
+                string sheet = schemaRow["TABLE_NAME"].ToString();
+                if (!sheet.EndsWith("_"))
+                {
+                    string query = " SELECT  * FROM [" + sheet + "]";
+                    OleDbDataAdapter daexcel = new OleDbDataAdapter(query, conn);
+                    dtexcel.Locale = CultureInfo.CurrentCulture;
+                    daexcel.Fill(dtexcel);
+                }
+
+                conn.Close();
+                int iSucceRows = 0;
+                //System.Web.HttpContext.Current.Response.ContentEncoding = System.Text.Encoding.UTF8;
+                //var data = obj.SaleorderDetails.Where(x => x.Deleteflag == false || x.Deleteflag==null).ToList();
+
+                foreach (DataRow row in dtexcel.Rows)
+                {
+                    obj.SaleorderDetails.Add(new SaleorderDetail
+                    {
+                        Deleteflag = false,
+                        UpdatedDate = System.DateTime.Now,
+                        SalesDocumentNo = row["Sales Document No#"].ToString(),
+                        PONumber = row["PO number"].ToString(),
+                        //POdate = row["PO date"] != DBNull.Value ? Convert.ToDateTime(string.IsNullOrWhiteSpace( row["PO date"].ToString())) : Convert.ToDateTime(""),
+                        //POdate = Convert.ToDateTime(row["PO date"].ToString()),
+                        soldtoparty = row["Sold-to party"].ToString(),
+                        soldtopartyname = row["Name: Sold-to party"].ToString(),
+                        payer = row["Payer"].ToString(),
+                        payername = row["Name: Payer"].ToString(),
+                        Billtoparty = row["Bill-to party"].ToString(),
+                        Billtopartyname = row["Name: Billing-to party"].ToString(),
+                        shiptoparty = row["Ship-to party"].ToString(),
+                        shiptopartyname = row["Name: Ship-to party"].ToString(),
+                        Consignee = row["Consignee"].ToString(),
+                        Consigneename = row["Name: Consignee"].ToString(),
+                        Enduser = row["End User"].ToString(),
+                        Endusername = row["Name: End User"].ToString(),
+                        soldtoparty2 = row["Sold-to party2"].ToString(),
+                        soldtoparty2name = row["Name: Sold-to party2"].ToString(),
+                        soldtoparty3 = row["Sold-to party3"].ToString(),
+                        soldtoparty3name = row["Name: Sold-to party3"].ToString(),
+                        IndustrySegmentE_U = row["Text: E/U Industry Segment"].ToString(),
+                        shiptopartyponumber = row["Ship-to party's PO Number"].ToString(),
+                        ProjectDefinition = row["Project definition(level 0)"].ToString(),
+                        ProjectText = row["Project text (Level 0)"].ToString(),
+                    });
+
+                }
+
+                obj.SaveChanges();
+                var data = "exec Updatesaleorderdetails";
+                var cmd = obj.Database.Connection.CreateCommand();
+                cmd.CommandText = data;
+                cmd.Connection.Open();
+                cmd.ExecuteReader();
+                cmd.Connection.Close();
+                //}
+                //return Ok(parsedFileName);
+                return true;
+            }
+            catch (Exception e)
+            {
+                throw;
+            }
+
+        }
+        [HttpGet]
+        [Route("getincotermmaster")]
+        public async Task<IHttpActionResult> getincotermmaster()
+        {
+            return Ok(await _paBusenessAcess.getincotermmaster());
+        }
+        [HttpGet]
+        [Route("updatetokuchubyid/{tokuchuid}")]
+        public async Task<IHttpActionResult> updatetokuchubyid(int tokuchuid)
+        {
+            return Ok(await _paBusenessAcess.updatetokuchubyid(tokuchuid));
+        }
     }
 }

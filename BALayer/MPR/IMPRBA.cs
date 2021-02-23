@@ -56,7 +56,7 @@ namespace BALayer.MPR
 		bool DeleteTermGroup(int TermGroupId, string DeletedBy);
 		bool DeleteTermsAndConditions(int TermId, string DeletedBy);
         DataTable Getoldrevisionitems(List<int> itemdetailsid);
-		List<Tokuchuinformation> GetTokuchuinformation(int mprrevisionid);
+		DataTable GetTokuchuinformation(int mprrevisionid);
 		List<SCMModels.Models.Vendor> VendorList();
 
 		SCMModels.Models.Vendor GetVendorInfo(int vendorid);

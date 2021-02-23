@@ -3104,13 +3104,19 @@ Review Date :<<>>   Reviewed By :<<>>
 				throw;
 			}
 		}
-		public List<Tokuchuinformation> GetTokuchuinformation(int mprrevisionid)
+		public DataTable GetTokuchuinformation(int mprrevisionid)
         {
-			List<Tokuchuinformation> tokuchu = new List<Tokuchuinformation>();
+			DataTable table = new DataTable();
             try
             {
-				tokuchu = DB.Tokuchuinformations.Where(x => x.RevisionId == mprrevisionid).ToList();
-				return tokuchu;
+				var query = "exec gettokuchuinformation " + mprrevisionid + "";
+				var cmd = DB.Database.Connection.CreateCommand();
+				cmd.CommandText = query;
+				cmd.Connection.Open();
+				table.Load(cmd.ExecuteReader());
+				cmd.Connection.Close();
+				//tokuchu = DB.Database.SqlQuery<Tokuchuinformation>(query).ToList();
+				return table;
 			}
             catch (Exception ex)
             {

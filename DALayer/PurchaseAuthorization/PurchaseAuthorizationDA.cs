@@ -583,7 +583,7 @@ Review Date :<<>>   Reviewed By :<<>>*/
 				con.Connection.Close();
 				return table;
 			}
-			catch (Exception ex)
+			catch (Exception ex)	
 			{
 				throw;
 			}
@@ -2364,84 +2364,84 @@ Review Date :<<>>   Reviewed By :<<>>*/
 		public int updateTokuchuRequest(TokuchuRequest tokuchuRequest, string typeOfuser, int revisionId)
 		{
 			int tokuchureqid = 0;
-			using (YSCMEntities Context = new YSCMEntities())
-			{
-				TokuchuRequest request = Context.TokuchuRequests.Where(li => li.TokuchRequestid == tokuchuRequest.TokuchRequestid).FirstOrDefault();
-				if (request == null)
-				{
-					request = new TokuchuRequest();
-					request.PAId = tokuchuRequest.PAId;
-					request.PreparedBY = tokuchuRequest.PreparedBY;
-					request.VerifiedBy = request.PreVerfiedBY = tokuchuRequest.VerifiedBy;
-					request.Preparedon = DateTime.Now;
-					request.DeleteFlag = false;
-					Context.TokuchuRequests.Add(request);
-					Context.SaveChanges();
-				}
-				else
-				{
-					request.VerifiedBy = request.PreVerfiedBY = tokuchuRequest.VerifiedBy;
-					if (typeOfuser == "PreVerifier")
-						request.PreVerifiedOn =DateTime.Now;
-					request.PreVerifiedStatus = tokuchuRequest.PreVerifiedStatus;
-					request.PreVerifiedRemarks = tokuchuRequest.PreVerifiedRemarks;
-					if (typeOfuser == "Verifier")
-						request.VerifiedOn = DateTime.Now;
-					request.VerifiedStatus = tokuchuRequest.VerifiedStatus;
-					request.VerifiedRemarks = tokuchuRequest.VerifiedRemarks;
-					Context.SaveChanges();
-				}
-				tokuchureqid = request.TokuchRequestid;
+            using (YSCMEntities Context = new YSCMEntities())
+            {
+                TokuchuRequest request = Context.TokuchuRequests.Where(li => li.TokuchRequestid == tokuchuRequest.TokuchRequestid).FirstOrDefault();
+                if (request == null)
+                {
+                    request = new TokuchuRequest();
+                    request.PAId = tokuchuRequest.PAId;
+                    request.PreparedBY = tokuchuRequest.PreparedBY;
+                    request.VerifiedBy = request.PreVerfiedBY = tokuchuRequest.VerifiedBy;
+                    request.Preparedon = DateTime.Now;
+                    request.DeleteFlag = false;
+                    Context.TokuchuRequests.Add(request);
+                    Context.SaveChanges();
+                }
+                else
+                {
+                    request.VerifiedBy = request.PreVerfiedBY = tokuchuRequest.VerifiedBy;
+                    if (typeOfuser == "PreVerifier")
+                        request.PreVerifiedOn = DateTime.Now;
+                    request.PreVerifiedStatus = tokuchuRequest.PreVerifiedStatus;
+                    request.PreVerifiedRemarks = tokuchuRequest.PreVerifiedRemarks;
+                    if (typeOfuser == "Verifier")
+                        request.VerifiedOn = DateTime.Now;
+                    request.VerifiedStatus = tokuchuRequest.VerifiedStatus;
+                    request.VerifiedRemarks = tokuchuRequest.VerifiedRemarks;
+                    Context.SaveChanges();
+                }
+                tokuchureqid = request.TokuchRequestid;
 
-				foreach (TokuchuLIneItem item in tokuchuRequest.TokuchuLIneItems)
-				{
-					TokuchuLIneItem TokuchuLIneItem = Context.TokuchuLIneItems.Where(li => li.Tklineitemid == item.Tklineitemid).FirstOrDefault();
-					if (TokuchuLIneItem == null)
-					{
-						TokuchuLIneItem = new TokuchuLIneItem();
-						TokuchuLIneItem.TokuchRequestid = request.TokuchRequestid;
-						TokuchuLIneItem.PAItemID = item.PAItemID;
-						TokuchuLIneItem.StandardLeadtime = item.StandardLeadtime;
-						TokuchuLIneItem.ProductCategorylevel2id = item.ProductCategorylevel2id;
-						Context.TokuchuLIneItems.Add(TokuchuLIneItem);
-						Context.SaveChanges();
+                foreach (TokuchuLIneItem item in tokuchuRequest.TokuchuLIneItems)
+                {
+                    TokuchuLIneItem TokuchuLIneItem = Context.TokuchuLIneItems.Where(li => li.Tklineitemid == item.Tklineitemid).FirstOrDefault();
+                    if (TokuchuLIneItem == null)
+                    {
+                        TokuchuLIneItem = new TokuchuLIneItem();
+                        TokuchuLIneItem.TokuchRequestid = request.TokuchRequestid;
+                        TokuchuLIneItem.PAItemID = item.PAItemID;
+                        TokuchuLIneItem.StandardLeadtime = item.StandardLeadtime;
+                        TokuchuLIneItem.ProductCategorylevel2id = item.ProductCategorylevel2id;
+                        Context.TokuchuLIneItems.Add(TokuchuLIneItem);
+                        Context.SaveChanges();
 
-					}
-					else
-					{
-						TokuchuLIneItem.StandardLeadtime = item.StandardLeadtime;
-						TokuchuLIneItem.ProductCategorylevel2id = item.ProductCategorylevel2id;
-						Context.SaveChanges();
+                    }
+                    else
+                    {
+                        TokuchuLIneItem.StandardLeadtime = item.StandardLeadtime;
+                        TokuchuLIneItem.ProductCategorylevel2id = item.ProductCategorylevel2id;
+                        Context.SaveChanges();
 
-					}
+                    }
 
-				}
-				int tokuchureqId = Convert.ToInt32(request.TokuchRequestid);
-				if (typeOfuser == "Requestor")
-				{
-					//mail to verifier					
-					this.emailTemplateDA.prepareAribaTemplate(tokuchureqId, tokuchuRequest.PreparedBY, tokuchuRequest.VerifiedBy, typeOfuser, revisionId);
-				}
+                }
+                int tokuchureqId = Convert.ToInt32(request.TokuchRequestid);
+                if (typeOfuser == "Requestor")
+                {
+                    //mail to verifier					
+                    this.emailTemplateDA.prepareAribaTemplate(tokuchureqId, tokuchuRequest.PreparedBY, tokuchuRequest.VerifiedBy, typeOfuser, revisionId);
+                }
 
-				if (typeOfuser == "PreVerifier")
-				{
-					//mail to requestor
-					//mail to ariba
-					if (tokuchuRequest.PreVerifiedStatus == "Approved")
-						this.emailTemplateDA.prepareAribaTemplate(tokuchureqId, tokuchuRequest.PreVerfiedBY, tokuchuRequest.PreparedBY, typeOfuser, revisionId);
-				}
-				if (typeOfuser == "Verifier")
-				{
-					//mail to requestor
-					if (tokuchuRequest.VerifiedStatus == "Approved")
-					{
-						this.emailTemplateDA.prepareAribaTemplate(tokuchureqId, tokuchuRequest.VerifiedBy, tokuchuRequest.PreparedBY, typeOfuser, revisionId);
-						string mprpreparedby = obj.MPRRevisions.Where(li => li.RevisionId == revisionId).FirstOrDefault().CheckedBy;
-						this.emailTemplateDA.prepareAribaTemplate(tokuchureqId, tokuchuRequest.VerifiedBy, mprpreparedby, "MPRRequestor", revisionId);
-					}
-				}
-			}
-			return tokuchureqid;
+                if (typeOfuser == "PreVerifier")
+                {
+                    //mail to requestor
+                    //mail to ariba
+                    if (tokuchuRequest.PreVerifiedStatus == "Approved")
+                        this.emailTemplateDA.prepareAribaTemplate(tokuchureqId, tokuchuRequest.PreVerfiedBY, tokuchuRequest.PreparedBY, typeOfuser, revisionId);
+                }
+                if (typeOfuser == "Verifier")
+                {
+                    //mail to requestor
+                    if (tokuchuRequest.VerifiedStatus == "Approved")
+                    {
+                        this.emailTemplateDA.prepareAribaTemplate(tokuchureqId, tokuchuRequest.VerifiedBy, tokuchuRequest.PreparedBY, typeOfuser, revisionId);
+                        string mprpreparedby = obj.MPRRevisions.Where(li => li.RevisionId == revisionId).FirstOrDefault().CheckedBy;
+                        this.emailTemplateDA.prepareAribaTemplate(tokuchureqId, tokuchuRequest.VerifiedBy, mprpreparedby, "MPRRequestor", revisionId);
+                    }
+                }
+            }
+            return tokuchureqid;
 		}
 		public List<GetTokuchuDetail> getTokuchuReqList(tokuchuFilterParams tokuchuFilterParams)
 		{
@@ -3242,5 +3242,37 @@ Review Date :<<>>   Reviewed By :<<>>*/
 				throw;
 			}
 		}
-	}
+		public async Task<List<IncoTermMaster>> getincotermmaster()
+        {
+			List<IncoTermMaster> master = new List<IncoTermMaster>();
+            try
+            {
+				master = obj.IncoTermMasters.ToList();
+				return master;
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+        }
+
+        public async Task<statuscheckmodel> updatetokuchubyid(int tokuchuid)
+        {
+			statuscheckmodel status = new statuscheckmodel();
+            try
+            {
+				var query = "update TokuchuRequest set DownloadedBy=NULL,DownloadedOn=NULL, CompletedStatus=NULL,CompletedOn=NULL where TokuchRequestid ='" + tokuchuid + "'";
+				var cmd = obj.Database.Connection.CreateCommand();
+				cmd.CommandText = query;
+				cmd.Connection.Open();
+				cmd.ExecuteReader();
+				cmd.Connection.Close();
+				return status;
+			}
+            catch (Exception ex)
+            {
+                throw;
+            }
+        }
+    }
 }

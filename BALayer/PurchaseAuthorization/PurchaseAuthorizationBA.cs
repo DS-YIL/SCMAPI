@@ -344,5 +344,15 @@ namespace BALayer.PurchaseAuthorization
 		{
 			return _purchaseDataAcess.Unmappingitem(model);
 		}
-	}
+
+        public async Task<List<IncoTermMaster>> getincotermmaster()
+        {
+			return await _purchaseDataAcess.getincotermmaster();
+        }
+
+        public async Task<statuscheckmodel> updatetokuchubyid(int tokuchuid)
+        {
+			return await _purchaseDataAcess.updatetokuchubyid(tokuchuid);
+        }
+    }
 }
