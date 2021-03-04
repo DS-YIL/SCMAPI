@@ -1,4 +1,5 @@
-﻿using SCMModels.SCMModels;
+﻿using DALayer.Emails;
+using SCMModels.SCMModels;
 using System;
 using System.Data.SqlClient;
 using System.Web;
@@ -7,6 +8,7 @@ namespace DALayer.Common
 {
 	public class ErrorLog
 	{
+		private IEmailTemplateDA emailTemplateDA = default(IEmailTemplateDA);
 		public void ErrorMessage(string controllername, string methodname, string exception)
 		{
 			exception = exception.Replace("'", String.Empty);
@@ -17,7 +19,7 @@ namespace DALayer.Common
 			con.Open();
 			cmd.ExecuteNonQuery();
 			con.Close();
-			
+			this.emailTemplateDA.sendErrorLog(controllername, methodname, exception, HttpContext.Current.Request.Url);
 
 		}
 	}

@@ -916,6 +916,69 @@ namespace DALayer.Emails
 			}
 			return true;
 		}
+		/*Name of Function : <<sendBGInitiationmail>>  Author :<<Prasanna>>  
+		  Date of Creation <<15-02-2020>>
+		  Purpose : <<Send BG Initiation mail to vendor>>
+		  Review Date :<<>>   Reviewed By :<<>>*/
+		public bool sendBGInitiationmail(int BGId, string FrmEmailId, string Remarks, string Type)
+		{
+			try
+			{
+				using (var db = new YSCMEntities()) //ok
+				{
+					BankGuarantee BGDeatils = db.BankGuarantees.Where(li => li.BGId == BGId).FirstOrDefault();
+					var vendorList = db.VendorUserMasters.Where(li => li.VendorId == BGDeatils.Vendorid).ToList();
+					foreach (var vendor in vendorList)
+					{
+						if (vendor != null)
+						{
+							var mailData = (db.Employees.Where(li => li.EmployeeNo == FrmEmailId).FirstOrDefault<Employee>());
+							var ipaddress = ConfigurationManager.AppSettings["UI_vendor_IpAddress"];
+							EmailSend emlSndngList = new EmailSend();
+							if (Type == "BGSubmit")
+								emlSndngList.Subject = "Submit BG for the PONO:" + BGDeatils.PONo + "";
+							if (Type == "BGReminder")
+								emlSndngList.Subject = "Reminder: Submit BG for the PONO:" + BGDeatils.PONo + "";
+							if (Type == "BGStatusChange")
+								emlSndngList.Subject = "BG Status for BG NO:" + BGDeatils.BGNo + "; PONo: " + BGDeatils.PONo + " ; " + "Status: " + BGDeatils.BGStatus;
+							if (Type == "ReSubmit")
+								emlSndngList.Subject = "Please Sumbit Revised BG for BG No:" + BGDeatils.BGNo + "; PONo: " + BGDeatils.PONo;
+
+							emlSndngList.Body = "<html><meta charset=\"ISO-8859-1\"><head><link rel = 'stylesheet' href = 'https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css' ></head><body><div class='container'><div>Dear Vendor, </div><br/><div>" + Remarks + "</div><br/><b  style='color:#40bfbf;'>Contact Details :</b><br/><b>Name:</b>" + mailData.Name + " <br/><b>Contact Number:</b>" + mailData.MobileNo + "<br/><br/>The required portal details are given below : <br /><br /> <b  style='color:#40bfbf;'>Click Here to Redirect : <a href='" + ipaddress + "'>" + ipaddress + "</a></b><br /> <br /> <b style='color:#40bfbf;'>Instruction: </b> Open the link with GOOGLE CHROME <br /> <b style='color:#40bfbf;'>U Name:</b> " + vendor.VuniqueId + " <br /><b style='color:#40bfbf;'>Pwd:</b> " + vendor.pwd + "<br /><br/><div>Regards,<br/><div>CMM Department</div></body></html>";
+							if (mailData != null)
+								emlSndngList.FrmEmailId = mailData.EMail;
+							if (!string.IsNullOrEmpty(emlSndngList.FrmEmailId))
+								emlSndngList.BCC = emlSndngList.FrmEmailId;
+							emlSndngList.ToEmailId = vendor.Vuserid;
+							if ((!string.IsNullOrEmpty(emlSndngList.FrmEmailId) && !string.IsNullOrEmpty(emlSndngList.FrmEmailId)) && (emlSndngList.FrmEmailId != "NULL" && emlSndngList.ToEmailId != "NULL"))
+								this.sendEmail(emlSndngList);
+						}
+					}
+
+				}
+			}
+			catch (Exception ex)
+			{
+				log.ErrorMessage("EmailTemplate", "sendASNCommunicationMail", ex.Message + "; " + ex.StackTrace.ToString());
+			}
+			return true;
+		}
+		/*Name of Function : <<sendErrorLog>>  Author :<<Prasanna>>  
+		  Date of Creation <<04-03-2021>>
+		  Purpose : <<sendErrorLog>>
+		  Review Date :<<>>   Reviewed By :<<>>*/
+		public bool sendErrorLog(string controllername, string methodname, string exception, Uri url)
+		{
+			EmailSend emlSndngList = new EmailSend();
+			emlSndngList.Subject = "Error Log Created";
+			emlSndngList.Body = "<html><head></head><body><div class='container'><b  style='color:#40bfbf;'>Controller Name:</b>" + controllername + "</div><br/><div><b  style='color:#40bfbf;'>Method Name:" + methodname + "</b></div><br /><div><b  style='color:#40bfbf;'>URL:" + url + "</b></div><div><b  style='color:#40bfbf;'>Exception Details:" + exception + "</b></div></body></html>";
+			emlSndngList.FrmEmailId = ConfigurationManager.AppSettings["fromemail"];
+			emlSndngList.ToEmailId = ConfigurationManager.AppSettings["ErrorToEmail"];
+			if ((!string.IsNullOrEmpty(emlSndngList.FrmEmailId) && !string.IsNullOrEmpty(emlSndngList.FrmEmailId)) && (emlSndngList.FrmEmailId != "NULL" && emlSndngList.ToEmailId != "NULL"))
+				this.sendEmail(emlSndngList);
+			return true;
+		}
+
 		/*Name of Function : <<sendEmail>>  Author :<<Prasanna>>  
 		  Date of Creation <<01-12-2019>>
 		  Purpose : <<Sending mail method>>

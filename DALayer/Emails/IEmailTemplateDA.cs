@@ -21,6 +21,8 @@ namespace DALayer.Emails
 		bool sendTechNotificationMail(int RFQRevisionId, string status,string StatusBy);
 		bool sendASNCommunicationMail(int ASNId, string Remarks, string RemarksFrom);
 		bool sendASNInitiationEmail(ASNInitiation asnIniLocal);
+		bool sendBGInitiationmail(int BGId,string FrmEmailId,string Remarks, string Type);
+		bool sendErrorLog(string controllername, string methodname, string exception, Uri URL);
 
 	}
 }

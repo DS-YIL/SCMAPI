@@ -330,12 +330,12 @@ namespace DALayer.RFQ
 		  Review Date :<<>>   Reviewed By :<<>>*/
         public async Task<RfqRevisionModel> CreateRfQ(RfqRevisionModel model, bool addMPRRfq)
         {
-
-            try
+			var dbcxtransaction = vscm.Database.BeginTransaction();
+			var dbcxtransactionLocal = obj.Database.BeginTransaction();
+			try
             {
-                //server data
-
-                int revisionid = 0;
+				//server data				
+				int revisionid = 0;
                 string BuyergroupEmail = null;
                 var rfqremote = new RemoteRFQMaster();
                 if (model != null)
@@ -381,10 +381,12 @@ namespace DALayer.RFQ
                         {
                             //vscm.RemoteRFQMasters.Add(rfqremote);
                             vscm.SaveChanges();
-                        }
+							
+						}
                         catch (Exception ex)
                         {
-                            log.ErrorMessage("RFQController", "CreateRfQ", ex.Message + "; " + ex.StackTrace.ToString());
+							dbcxtransaction.Rollback();
+							log.ErrorMessage("RFQController", "CreateRfQ", ex.Message + "; " + ex.StackTrace.ToString());
                         }
                     }
 
@@ -436,8 +438,8 @@ namespace DALayer.RFQ
                         }
                         catch (Exception ex)
                         {
-
-                            log.ErrorMessage("RFQController", "CreateRfQ", ex.Message + "; " + ex.StackTrace.ToString());
+							dbcxtransaction.Rollback();
+							log.ErrorMessage("RFQController", "CreateRfQ", ex.Message + "; " + ex.StackTrace.ToString());
                         }
                     }
                     else
@@ -472,8 +474,8 @@ namespace DALayer.RFQ
                         }
                         catch (Exception ex)
                         {
-
-                            log.ErrorMessage("RFQController", "CreateRfQ", ex.Message + "; " + ex.StackTrace.ToString());
+							dbcxtransaction.Rollback();
+							log.ErrorMessage("RFQController", "CreateRfQ", ex.Message + "; " + ex.StackTrace.ToString());
                         }
                     }
 
@@ -575,8 +577,8 @@ namespace DALayer.RFQ
                                 }
                                 catch (Exception ex)
                                 {
-
-                                    log.ErrorMessage("RFQController", "CreateRfQ", ex.Message + "; " + ex.StackTrace.ToString());
+									dbcxtransaction.Rollback();
+									log.ErrorMessage("RFQController", "CreateRfQ", ex.Message + "; " + ex.StackTrace.ToString());
                                 }
                             }
                         }
@@ -609,8 +611,8 @@ namespace DALayer.RFQ
 
                     }
                 }
-
-                int masterid = rfqremote.RfqMasterId;
+				
+				int masterid = rfqremote.RfqMasterId;
                 string rfeNo = rfqremote.RFQNo;
                 //int remoterevisionid = (from x in vscm.RemoteRFQRevisions_N orderby x.rfqRevisionId descending select x.rfqRevisionId).First();
                 int Ritemid = (from x in vscm.RemoteRFQItems_N orderby x.RFQItemsId descending select x.RFQItemsId).First();
@@ -648,7 +650,8 @@ namespace DALayer.RFQ
                         }
                         catch (Exception ex)
                         {
-
+							dbcxtransaction.Rollback();
+							dbcxtransactionLocal.Rollback();
                             log.ErrorMessage("RFQController", "CreateRfQ", ex.Message + "; " + ex.StackTrace.ToString());
                         }
                     }
@@ -669,8 +672,9 @@ namespace DALayer.RFQ
                         }
                         catch (Exception ex)
                         {
-
-                            log.ErrorMessage("RFQController", "CreateRfQ", ex.Message + "; " + ex.StackTrace.ToString());
+							dbcxtransaction.Rollback();
+							dbcxtransactionLocal.Rollback();
+							log.ErrorMessage("RFQController", "CreateRfQ", ex.Message + "; " + ex.StackTrace.ToString());
                         }
                     }
 
@@ -719,8 +723,9 @@ namespace DALayer.RFQ
                         }
                         catch (Exception ex)
                         {
-
-                            log.ErrorMessage("RFQController", "CreateRfQ", ex.Message + "; " + ex.StackTrace.ToString());
+							dbcxtransaction.Rollback();
+							dbcxtransactionLocal.Rollback();
+							log.ErrorMessage("RFQController", "CreateRfQ", ex.Message + "; " + ex.StackTrace.ToString());
                         }
 
                     }
@@ -756,8 +761,9 @@ namespace DALayer.RFQ
                         }
                         catch (Exception ex)
                         {
-
-                            log.ErrorMessage("RFQController", "CreateRfQ", ex.Message + "; " + ex.StackTrace.ToString());
+							dbcxtransaction.Rollback();
+							dbcxtransactionLocal.Rollback();
+							log.ErrorMessage("RFQController", "CreateRfQ", ex.Message + "; " + ex.StackTrace.ToString());
                         }
                     }
 
@@ -803,7 +809,9 @@ namespace DALayer.RFQ
                                 }
                                 catch (Exception ex)
                                 {
-                                    log.ErrorMessage("RFQController", "CreateRfQ", ex.Message + "; " + ex.StackTrace.ToString());
+									dbcxtransaction.Rollback();
+									dbcxtransactionLocal.Rollback();
+									log.ErrorMessage("RFQController", "CreateRfQ", ex.Message + "; " + ex.StackTrace.ToString());
                                 }
 
                             }
@@ -836,8 +844,9 @@ namespace DALayer.RFQ
                                 }
                                 catch (Exception ex)
                                 {
-
-                                    log.ErrorMessage("RFQController", "CreateRfQ", ex.Message + "; " + ex.StackTrace.ToString());
+									dbcxtransaction.Rollback();
+									dbcxtransactionLocal.Rollback();
+									log.ErrorMessage("RFQController", "CreateRfQ", ex.Message + "; " + ex.StackTrace.ToString());
                                 }
 
                             }
@@ -848,7 +857,7 @@ namespace DALayer.RFQ
                                 MPRRfqItem mprRfq = new MPRRfqItem();
                                 mprRfq.MPRItemDetailsid = rfqitemLocal.MPRItemDetailsid;    
                                 mprRfq.MPRRevisionId = model.rfqmaster.MPRRevisionId;
-                                mprRfq.RfqItemsid = Convert.ToInt16(rfqitemLocal.RFQItemsId);
+                                mprRfq.RfqItemsid = Convert.ToInt32(rfqitemLocal.RFQItemsId);
                                 //var splitdata = obj.RateContracts.Where(li => li.ItemId == rfqitemLocal.ItemId && li.VendorId == model.rfqmaster.VendorId && li.RFQType == "Quote").ToList();
 
                                 //foreach (var rfqspliData in splitdata)
@@ -904,16 +913,18 @@ namespace DALayer.RFQ
                                 }
                                 catch (Exception ex)
                                 {
-
-                                    log.ErrorMessage("RFQController", "CreateRfQ", ex.Message + "; " + ex.StackTrace.ToString());
+									dbcxtransaction.Rollback();
+									dbcxtransactionLocal.Rollback();
+									log.ErrorMessage("RFQController", "CreateRfQ", ex.Message + "; " + ex.StackTrace.ToString());
                                 }
                             }
                         }
 
                         catch (Exception ex)
                         {
-
-                            log.ErrorMessage("RFQController", "CreateRfQ", ex.Message + "; " + ex.StackTrace.ToString());
+							dbcxtransaction.Rollback();
+							dbcxtransactionLocal.Rollback();
+							log.ErrorMessage("RFQController", "CreateRfQ", ex.Message + "; " + ex.StackTrace.ToString());
                         }
                     }
                     //update mpr status
@@ -941,17 +952,21 @@ namespace DALayer.RFQ
                         }
                         catch (Exception ex)
                         {
-
-                            log.ErrorMessage("RFQController", "CreateRfQ", ex.Message + "; " + ex.StackTrace.ToString());
+							dbcxtransaction.Rollback();
+							dbcxtransactionLocal.Rollback();
+							log.ErrorMessage("RFQController", "CreateRfQ", ex.Message + "; " + ex.StackTrace.ToString());
                         }
                     }
                 }
-
-                return await this.GetRfqDetailsById(revisionid);
+				dbcxtransaction.Commit();
+				dbcxtransactionLocal.Commit();
+				return await this.GetRfqDetailsById(revisionid);
             }
             catch (DbEntityValidationException e)
             {
-                foreach (var eve in e.EntityValidationErrors)
+				dbcxtransaction.Rollback();
+				dbcxtransactionLocal.Rollback();
+				foreach (var eve in e.EntityValidationErrors)
                 {
                     Console.WriteLine("Entity of type \"{0}\" in state \"{1}\" has the following validation errors:",
                            eve.Entry.Entity.GetType().Name, eve.Entry.State);
