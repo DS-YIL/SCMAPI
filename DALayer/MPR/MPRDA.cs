@@ -86,7 +86,7 @@ Review Date :<<>>   Reviewed By :<<>>
 				query = Result.query;
 			else
 				query = "insert into " + Result.tableName + "(" + Result.columnNames + ")values('" + Result.columnValues + "')";
-		
+
 
 			SqlConnection con = new SqlConnection(DB.Database.Connection.ConnectionString);
 			SqlCommand cmd = new SqlCommand(query, con);
@@ -651,8 +651,8 @@ Review Date :<<>>   Reviewed By :<<>>
 							item.MfgPartNo = mPRItemInfo.MfgPartNo;
 							item.TargetSpend = mPRItemInfo.TargetSpend;
 							item.RepeatOrderRefId = mPRItemInfo.RepeatOrderRefId;
-                            if (revise == true)
-                            {
+							if (revise == true)
+							{
 								item.PreviousItemdetailsid = mPRItemInfo.Itemdetailsid;
 							}
 							DB.MPRItemInfoes.Add(item);
@@ -1887,7 +1887,7 @@ Review Date :<<>>   Reviewed By :<<>>
 
 				foreach (MPRItemInfo item in list)
 				{
-					List<MPRRfqItem> mprItems = Context.MPRRfqItems.Where(li => li.MPRItemDetailsid == item.RepeatOrderRefId &&  item.RepeatOrderRefId != null).ToList();
+					List<MPRRfqItem> mprItems = Context.MPRRfqItems.Where(li => li.MPRItemDetailsid == item.RepeatOrderRefId && item.RepeatOrderRefId != null).ToList();
 					foreach (MPRRfqItem mprrfqItem in mprItems)
 					{
 						if (mprrfqItem != null)
@@ -2062,7 +2062,7 @@ Review Date :<<>>   Reviewed By :<<>>
 		Date of Creation <<30-03-2020>>
 		Purpose : <<Genereate password for vendor user>>
 		Review Date :<<>>   Reviewed By :<<>>*/
-		public  string GeneratePassword()
+		public string GeneratePassword()
 		{
 			bool includeLowercase = true;
 			bool includeUppercase = true;
@@ -2172,7 +2172,7 @@ Review Date :<<>>   Reviewed By :<<>>
 			try
 			{
 				VSCMEntities vscmObj = new VSCMEntities();
-				var vendorMaster = DB.VendorUserMasters.Where(li => li.VendorId == model.Vendorid && li.Vuserid==model.VendorEmailId).FirstOrDefault();
+				var vendorMaster = DB.VendorUserMasters.Where(li => li.VendorId == model.Vendorid && li.Vuserid == model.VendorEmailId).FirstOrDefault();
 				if (vendorMaster != null && model.IsExistVendor == false)
 					Vendorid = vendorMaster.VendorId;
 
@@ -2506,6 +2506,8 @@ Review Date :<<>>   Reviewed By :<<>>
 						query += "  and Vendorid = '" + vendorRegfilters.Vendorid + "'";
 					if (!string.IsNullOrEmpty(vendorRegfilters.VendorName))
 						query += "  and VendorName = '" + vendorRegfilters.VendorName + "'";
+					if (!string.IsNullOrEmpty(vendorRegfilters.VendorCode))
+						query += "  and VendorCode = '" + vendorRegfilters.VendorCode + "'";
 					if (!string.IsNullOrEmpty(vendorRegfilters.IntiatedBy))
 						query += "  and IntiatedBy = '" + vendorRegfilters.IntiatedBy + "'";
 					if (!string.IsNullOrEmpty(vendorRegfilters.IntiatorStatus))
@@ -2718,6 +2720,21 @@ Review Date :<<>>   Reviewed By :<<>>
 
 							//var remotedataforbankdetails = new RemoteBankDetailsForVendor();
 							RemoteBankDetailsForVendor remotedataforbankdetail = vscm.RemoteBankDetailsForVendors.Where(li => li.VendorId == vendorid).FirstOrDefault<RemoteBankDetailsForVendor>();
+							if (remotedataforbankdetail == null)
+							{
+								var remotedataforbankdetails = new RemoteBankDetailsForVendor();
+								remotedataforbankdetails.IFSCCode = model.IFSCCode;
+								remotedataforbankdetails.IncoTerms = model.IncoTerms;
+								remotedataforbankdetails.BankDetails = model.BankDetails;
+								remotedataforbankdetails.BankerName = model.BankerName;
+								remotedataforbankdetails.AccNo = model.AccNo;
+								remotedataforbankdetails.AccountHolderName = model.AccountHolderName;
+								remotedataforbankdetails.VendorId = vendorid;
+								remotedataforbankdetails.LocationOrBranch = model.LocationOrBranch;
+								vscm.RemoteBankDetailsForVendors.Add(remotedataforbankdetails);
+								vscm.SaveChanges();
+								bankdetailsid = remotedataforbankdetails.Id;
+							}
 							if (remotedataforbankdetail != null)
 							{
 								//var remotedataforbankdetail = new RemoteBankDetailsForVendor();
@@ -2811,6 +2828,21 @@ Review Date :<<>>   Reviewed By :<<>>
 
 							//var remotedataforbankdetails = new RemoteBankDetailsForVendor();
 							BankDetailsForVendor yscmdataforbankdetail = DB.BankDetailsForVendors.Where(li => li.VendorId == model.VendorId).FirstOrDefault<BankDetailsForVendor>();
+							if (yscmdataforbankdetail == null)
+							{
+								var dataforbankdetails = new BankDetailsForVendor();
+								dataforbankdetails.Id = bankdetailsid;
+								dataforbankdetails.IFSCCode = model.IFSCCode;
+								dataforbankdetails.IncoTerms = model.IncoTerms;
+								dataforbankdetails.BankDetails = model.BankDetails;
+								dataforbankdetails.BankerName = model.BankerName;
+								dataforbankdetails.AccNo = model.AccNo;
+								dataforbankdetails.AccountHolderName = model.AccountHolderName;
+								dataforbankdetails.VendorId = model.VendorId;
+								dataforbankdetails.LocationOrBranch = model.LocationOrBranch;
+								DB.BankDetailsForVendors.Add(dataforbankdetails);
+								DB.SaveChanges();
+							}
 							if (yscmdataforbankdetail != null)
 							{
 								//var remotedataforbankdetail = new RemoteBankDetailsForVendor();
@@ -2823,7 +2855,7 @@ Review Date :<<>>   Reviewed By :<<>>
 								yscmdataforbankdetail.VendorId = vendorid;
 								yscmdataforbankdetail.LocationOrBranch = model.LocationOrBranch;
 								// vscm.RemoteBankDetailsForVendors.Add(remotedataforbankdetails);
-								vscm.SaveChanges();
+								DB.SaveChanges();
 							}
 
 							this.InsertVendorDocuments(model.DocDetailsLists);
@@ -3105,10 +3137,10 @@ Review Date :<<>>   Reviewed By :<<>>
 			}
 		}
 		public DataTable GetTokuchuinformation(int mprrevisionid)
-        {
+		{
 			DataTable table = new DataTable();
-            try
-            {
+			try
+			{
 				var query = "exec gettokuchuinformation " + mprrevisionid + "";
 				var cmd = DB.Database.Connection.CreateCommand();
 				cmd.CommandText = query;
@@ -3118,11 +3150,11 @@ Review Date :<<>>   Reviewed By :<<>>
 				//tokuchu = DB.Database.SqlQuery<Tokuchuinformation>(query).ToList();
 				return table;
 			}
-            catch (Exception ex)
-            {
-                throw;
-            }
-        }
+			catch (Exception ex)
+			{
+				throw;
+			}
+		}
 		/*
   
          Name of Function : <<GetVendorInfo>>  Author :<<Fayaz>>  
@@ -3318,10 +3350,10 @@ Review Date :<<>>   Reviewed By :<<>>
 			remoteDb.sp_deleteRfqDetails_N(rfqrevisionId, mprrevisionid);
 			remoteDb.SaveChanges();
 
-            DB.sp_deleteRfqDetails_N(rfqrevisionId, mprrevisionid);
-            DB.SaveChanges();
+			DB.sp_deleteRfqDetails_N(rfqrevisionId, mprrevisionid);
+			DB.SaveChanges();
 
-            return true;
+			return true;
 		}
 		/*
            Name of Function : <<GetMappedNotMappedRfqItems>>  Author :<<Fayaz>>  
@@ -3353,5 +3385,277 @@ Review Date :<<>>   Reviewed By :<<>>
 			   }).ToList();
 		}
 
+		/*
+	   Name of Function : <<updateBG>>  Author :<<Prasanna>>  
+	   Date of Creation <<12-02-2021>>
+	   Purpose : <<Update Bank guarantee details>>
+	   Review Date :<<>>   Reviewed By :<<>>
+	  Version : 0.1 <change version only if there is major change - new release etc>
+	   Sourcecode Copyright : Yokogawa India Limited
+  */
+		public bool updateBG(BankGuarantee bg)
+		{
+			try
+			{
+				if (bg.BGId == 0)
+				{
+					//Remote
+					int BGId = 0;
+					VSCMEntities vscm = new VSCMEntities();
+					if (bg.BGId == 0)
+					{
+						Int64 sequenceNo = Convert.ToInt64(vscm.RemoteBankGuarantees.Max(li => li.SequenceNo));
+						if (sequenceNo == null || sequenceNo == 0)
+							sequenceNo = 1;
+						else
+						{
+							sequenceNo = sequenceNo + 1;
+						}
+						var RemoteBankGuarantee = new RemoteBankGuarantee();
+						var value = DB.SP_sequenceNumber(sequenceNo).FirstOrDefault();
+						RemoteBankGuarantee.BGNo = "BG/" + DateTime.Now.ToString("MMyy") + "/" + value;
+						RemoteBankGuarantee.SequenceNo = Convert.ToInt32(sequenceNo);
+						RemoteBankGuarantee.PONo = bg.PONo;
+						RemoteBankGuarantee.PODate = bg.PODate;
+						RemoteBankGuarantee.POValue = bg.POValue;
+						RemoteBankGuarantee.Vendorid = bg.Vendorid;
+						RemoteBankGuarantee.VendorName = bg.VendorName;
+						RemoteBankGuarantee.WarrantyExpiryDate = bg.WarrantyExpiryDate;
+						RemoteBankGuarantee.BGRemarks = bg.BGRemarks;
+						RemoteBankGuarantee.BGStatus = "Open";
+						RemoteBankGuarantee.IsBGRevised = false;
+						RemoteBankGuarantee.CreatedBy = bg.CreatedBy;
+						RemoteBankGuarantee.CreatedDate = DateTime.Now;
+						vscm.RemoteBankGuarantees.Add(RemoteBankGuarantee);
+						vscm.SaveChanges();
+						BGId = RemoteBankGuarantee.BGId;
+					}
+
+					else
+					{
+						//var RemoteBankGuarantee = vscm.RemoteBankGuarantees.Where(li => li.BGId == bg.BGId).FirstOrDefault();
+						//RemoteBankGuarantee.BGStatus = bg.BGStatus;
+						//vscm.SaveChanges();
+						//BGId = RemoteBankGuarantee.BGId;
+					}
+
+					//local
+					var BankGuarantee = vscm.RemoteBankGuarantees.Where(li => li.BGId == BGId).FirstOrDefault();
+					var LocalBG = DB.BankGuarantees.Where(li => li.BGId == BGId).FirstOrDefault();
+					if (LocalBG == null)
+					{
+						BankGuarantee LocalBankGuarantee = new BankGuarantee();
+						LocalBankGuarantee.BGId = BankGuarantee.BGId;
+						LocalBankGuarantee.BGNo = BankGuarantee.BGNo;
+						LocalBankGuarantee.SequenceNo = BankGuarantee.SequenceNo;
+						LocalBankGuarantee.PONo = BankGuarantee.PONo;
+						LocalBankGuarantee.PODate = BankGuarantee.PODate;
+						LocalBankGuarantee.POValue = BankGuarantee.POValue;
+						LocalBankGuarantee.Vendorid = BankGuarantee.Vendorid;
+						LocalBankGuarantee.VendorName = BankGuarantee.VendorName;
+						LocalBankGuarantee.WarrantyExpiryDate = BankGuarantee.WarrantyExpiryDate;
+						LocalBankGuarantee.BGRemarks = BankGuarantee.BGRemarks;
+						LocalBankGuarantee.BGStatus = "Open";
+						LocalBankGuarantee.IsBGRevised = false;
+						LocalBankGuarantee.CreatedBy = BankGuarantee.CreatedBy;
+						LocalBankGuarantee.CreatedDate = BankGuarantee.CreatedDate;
+						DB.BankGuarantees.Add(LocalBankGuarantee);
+						DB.SaveChanges();
+					}
+					else
+					{
+						LocalBG.BGStatus = BankGuarantee.BGStatus;
+						DB.SaveChanges();
+					}
+					//update BG status track in remote 
+					RemoteBGStatusTrack RemstatusTrack = new RemoteBGStatusTrack();
+					RemstatusTrack.BGId = BGId;
+					RemstatusTrack.UpdatedDate = DateTime.Now;
+					RemstatusTrack.UpdatedBy = bg.CreatedBy;
+					RemstatusTrack.Status = "Open";
+					if (!string.IsNullOrEmpty(RemstatusTrack.Status))
+					{
+						vscm.RemoteBGStatusTracks.Add(RemstatusTrack);
+						vscm.SaveChanges();
+					}
+
+					//update BG status track in local 
+					BGStatusTrack statusTrack = new BGStatusTrack();
+					statusTrack.StatustrackId = RemstatusTrack.StatustrackId;
+					statusTrack.BGId = BGId;
+					statusTrack.UpdatedDate = DateTime.Now;
+					statusTrack.UpdatedBy = bg.CreatedBy;
+					statusTrack.Status = "Open";
+					if (!string.IsNullOrEmpty(statusTrack.Status))
+					{
+						DB.BGStatusTracks.Add(statusTrack);
+						DB.SaveChanges();
+					}
+					//mail to vendor
+					this.emailTemplateDA.sendBGInitiationmail(BGId, bg.CreatedBy, bg.BGRemarks, "BGSubmit");
+				}
+				else
+				{
+					this.emailTemplateDA.sendBGInitiationmail(bg.BGId, bg.CreatedBy, "Please Submit  BG", "BGReminder");
+				}
+			}
+			catch (Exception ex)
+			{
+				log.ErrorMessage("MPRDA", "updateBG", ex.Message.ToString());
+			}
+			return true;
+		}
+		/*
+           Name of Function : <<updateBG>>  Author :<<Prasanna>>  
+           Date of Creation <<12-02-2021>>
+           Purpose : <<Update Bank guarantee details>>
+           Review Date :<<>>   Reviewed By :<<>>
+          Version : 0.1 <change version only if there is major change - new release etc>
+           Sourcecode Copyright : Yokogawa India Limited
+      */
+		public BankGuarantee updateBGStatus(BGStatusTrack bgst)
+		{
+			try
+			{
+				//Remote
+				VSCMEntities vscm = new VSCMEntities();
+
+				if (bgst.BGId != null)
+				{
+					var RemoteBankGuarantee = vscm.RemoteBankGuarantees.Where(li => li.BGId == bgst.BGId).FirstOrDefault();
+					RemoteBankGuarantee.BGStatus = bgst.Status;
+					vscm.SaveChanges();
+				}
+				//local
+				var LocalBG = DB.BankGuarantees.Where(li => li.BGId == bgst.BGId).FirstOrDefault();
+				if (LocalBG != null)
+				{
+					LocalBG.BGStatus = bgst.Status;
+					DB.SaveChanges();
+				}
+				//update BG status track in remote 
+				RemoteBGStatusTrack RemstatusTrack = new RemoteBGStatusTrack();
+				RemstatusTrack.BGId = bgst.BGId;
+				RemstatusTrack.UpdatedDate = DateTime.Now;
+				RemstatusTrack.UpdatedBy = bgst.UpdatedBy;
+				RemstatusTrack.Status = bgst.Status;
+				RemstatusTrack.Remarks = bgst.Remarks;
+				if (!string.IsNullOrEmpty(RemstatusTrack.Status))
+				{
+					vscm.RemoteBGStatusTracks.Add(RemstatusTrack);
+					vscm.SaveChanges();
+				}
+				//update BG status track local 
+				BGStatusTrack statusTrack = new BGStatusTrack();
+				statusTrack.StatustrackId = RemstatusTrack.StatustrackId;
+				statusTrack.BGId = bgst.BGId;
+				statusTrack.UpdatedDate = DateTime.Now;
+				statusTrack.UpdatedBy = bgst.UpdatedBy;
+				statusTrack.Status = bgst.Status;
+				statusTrack.Remarks = bgst.Remarks;
+				if (!string.IsNullOrEmpty(statusTrack.Status))
+				{
+					DB.BGStatusTracks.Add(statusTrack);
+					DB.SaveChanges();
+				}
+				//mail to vendor
+				this.emailTemplateDA.sendBGInitiationmail(bgst.BGId, bgst.UpdatedBy, bgst.Remarks, "BGStatusChange");
+			}
+
+
+			catch (Exception ex)
+			{
+				log.ErrorMessage("MPRDA", "updateBG", ex.Message.ToString());
+			}
+			var bg = DB.BankGuarantees.Where(li => li.BGId == bgst.BGId).FirstOrDefault();
+			bg.BGDocuments = bg.BGDocuments.Where(li => li.DeleteFlag != true).ToList();
+			return bg;
+		}
+		/*Name of Function : <<getBGApplicableList>>  Author :<<Prasanna>>  
+		Date of Creation <<05-03-2021>>
+		Purpose : <<function is used to  get getBGList>>
+		Review Date :<<>>   Reviewed By :<<>>*/
+		public List<getBGPAdetail> getBGApplicableList(BGfilters BGfilters)
+		{
+			List<getBGPAdetail> BGList = new List<getBGPAdetail>();
+			try
+			{
+				using (YSCMEntities Context = new YSCMEntities())
+				{
+					Context.Configuration.ProxyCreationEnabled = false;
+					var query = default(string);
+					query = "select * from getBGPAdetails";
+					if (!string.IsNullOrEmpty(BGfilters.ToDate))
+						query += " and PODate <= '" + BGfilters.ToDate + "'";
+					if (!string.IsNullOrEmpty(BGfilters.FromDate))
+						query += "  and PODate >= '" + BGfilters.FromDate + "'";
+					if (!string.IsNullOrEmpty(BGfilters.VendorName))
+						query += "  and VendorName like'%" + BGfilters.VendorName + "%'";			
+					query += " order by MPRRevisionId desc ";
+					BGList = Context.getBGPAdetails.SqlQuery(query).ToList<getBGPAdetail>();
+				}
+			}
+			catch (Exception ex)
+			{
+				log.ErrorMessage("MPRDA", "getBGApplicableList", ex.Message + "; " + ex.StackTrace.ToString());
+			}
+			return BGList;
+		}
+		/*Name of Function : <<getBGList>>  Author :<<Prasanna>>  
+		Date of Creation <<15-02-2021>>
+		Purpose : <<function is used to  get getBGList>>
+		Review Date :<<>>   Reviewed By :<<>>*/
+		public List<BankGuarantee> getBGList(BGfilters BGfilters)
+		{
+			List<BankGuarantee> BGList = new List<BankGuarantee>();
+			try
+			{
+				using (YSCMEntities Context = new YSCMEntities())
+				{
+					Context.Configuration.ProxyCreationEnabled = false;
+					var query = default(string);
+					query = "select * from BankGuarantee where ( Deleteflag=1 or Deleteflag is null)";
+					if (!string.IsNullOrEmpty(BGfilters.ToDate))
+						query += " and CreatedDate <= '" + BGfilters.ToDate + "'";
+					if (!string.IsNullOrEmpty(BGfilters.FromDate))
+						query += "  and CreatedDate >= '" + BGfilters.FromDate + "'";
+					if (!string.IsNullOrEmpty(BGfilters.VendorName))
+						query += "  and VendorName like'%" + BGfilters.VendorName + "%'";
+					if (!string.IsNullOrEmpty(BGfilters.BGNo))
+						query += "  and BGNo = '" + BGfilters.BGNo + "'";
+					if (!string.IsNullOrEmpty(BGfilters.PONo))
+						query += "  and PONo = '" + BGfilters.PONo + "'";
+					if (!string.IsNullOrEmpty(BGfilters.BGStatus))
+						query += "  and BGStatus = '" + BGfilters.BGStatus + "'";
+					query += " order by BGId desc ";
+					BGList = Context.BankGuarantees.SqlQuery(query).ToList<BankGuarantee>();
+				}
+			}
+			catch (Exception ex)
+			{
+				log.ErrorMessage("MPRDA", "getBGList", ex.Message + "; " + ex.StackTrace.ToString());
+			}
+			return BGList;
+		}
+
+		/*Name of Function : <<getBGDetails>>  Author :<<Prasanna>>  
+		Date of Creation <<15-02-2021>>
+		Purpose : <<function is used to  get getBG details>>
+		Review Date :<<>>   Reviewed By :<<>>*/
+
+		public BankGuarantee getBGDetails(int BGId)
+		{
+			var bg = new BankGuarantee();
+			try
+			{
+				bg = DB.BankGuarantees.Where(li => li.BGId == BGId).FirstOrDefault();
+				bg.BGDocuments = bg.BGDocuments.Where(li => li.DeleteFlag != true).ToList();
+			}
+			catch (Exception ex)
+			{
+				log.ErrorMessage("MPRDA", "getBGDetails", ex.Message + "; " + ex.StackTrace.ToString());
+			}
+			return bg;
+		}
 	}
 }
