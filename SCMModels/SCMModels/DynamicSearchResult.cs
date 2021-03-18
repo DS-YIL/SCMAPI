@@ -314,6 +314,9 @@ namespace SCMModels
 		public string VendorName { get; set; }
 		public string BGStatus { get; set; }
 		public string PONo { get; set; }
+		public string OrgDepartmentId { get; set; }
+		public string MPRRevisionId { get; set; }
+		public string BuyerGroupId { get; set; }
 	}
 
 }

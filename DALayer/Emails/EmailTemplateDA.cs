@@ -940,7 +940,22 @@ namespace DALayer.Emails
 							if (Type == "BGReminder")
 								emlSndngList.Subject = "Reminder: Submit BG for the PONO:" + BGDeatils.PONo + "";
 							if (Type == "BGStatusChange")
+							{
 								emlSndngList.Subject = "BG Status for BG NO:" + BGDeatils.BGNo + "; PONo: " + BGDeatils.PONo + " ; " + "Status: " + BGDeatils.BGStatus;
+								if (BGDeatils.BGStatus == "Verified" || BGDeatils.BGStatus == "Sent for Modification" || BGDeatils.BGStatus == "Rejected")
+								{
+									emlSndngList.CC = (db.Employees.Where(li => li.EmployeeNo == BGDeatils.CreatedBy).FirstOrDefault<Employee>()).EMail + ",";
+								}
+								if (BGDeatils.BGStatus == "Expired" || BGDeatils.BGStatus == "Closed")
+								{
+									if (!string.IsNullOrEmpty(BGDeatils.BUHead))
+										emlSndngList.CC += (db.Employees.Where(li => li.EmployeeNo == BGDeatils.BUHead).FirstOrDefault<Employee>()).EMail + ",";
+									if (!string.IsNullOrEmpty(BGDeatils.BuyerManger))
+										emlSndngList.CC += (db.Employees.Where(li => li.EmployeeNo == BGDeatils.BuyerManger).FirstOrDefault<Employee>()).EMail + ",";
+									if (!string.IsNullOrEmpty(BGDeatils.ProjectManager))
+										emlSndngList.CC += (db.Employees.Where(li => li.EmployeeNo == BGDeatils.ProjectManager).FirstOrDefault<Employee>()).EMail + ",";
+								}
+							}
 							if (Type == "ReSubmit")
 								emlSndngList.Subject = "Please Sumbit Revised BG for BG No:" + BGDeatils.BGNo + "; PONo: " + BGDeatils.PONo;
 
@@ -950,6 +965,7 @@ namespace DALayer.Emails
 							if (!string.IsNullOrEmpty(emlSndngList.FrmEmailId))
 								emlSndngList.BCC = emlSndngList.FrmEmailId;
 							emlSndngList.ToEmailId = vendor.Vuserid;
+
 							if ((!string.IsNullOrEmpty(emlSndngList.FrmEmailId) && !string.IsNullOrEmpty(emlSndngList.FrmEmailId)) && (emlSndngList.FrmEmailId != "NULL" && emlSndngList.ToEmailId != "NULL"))
 								this.sendEmail(emlSndngList);
 						}

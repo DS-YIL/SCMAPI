@@ -1855,7 +1855,31 @@ Review Date :<<>>   Reviewed By :<<>>
 						this.emailTemplateDA.mailtoRequestor(mprrevision.RevisionId, mprStatus.PreparedBy);
 					}
 				}
-
+				if (mprStatus.StatusId == 12)
+				{
+					var POBGList = DB.getBGPAdetails.Where(li => li.MPRRevisionId == mprStatus.RevisionId).ToList();
+					foreach (var item in POBGList)
+					{
+						var bg = new BankGuarantee();
+						bg.BGNo = item.BGNo;
+						bg.BGId =Convert.ToInt32(item.BGId);
+						bg.CreatedBy = mprStatus.PreparedBy;
+						bg.Vendorid = item.VendorId;
+						bg.VendorName = item.VendorName;
+						bg.PONo = item.PONo;
+						bg.POValue = item.POValue;
+						bg.PODate = item.PODate;
+						bg.JobCode = item.JobCode;
+						bg.SaleOrderNo = item.SaleOrderNo;
+						bg.DepartmentId = item.DepartmentId;
+						var orgId = DB.MPRDepartments.Where(li => li.DepartmentId == item.DepartmentId).FirstOrDefault().ORgDepartmentid;
+						if (orgId != null)
+							bg.BUHead = DB.OrgDepartments.Where(li => li.OrgDepartmentId == orgId).FirstOrDefault().DepartmentHead;
+						bg.ProjectManager = item.ProjectManager;
+						bg.BuyerManger = item.BuyerManager;
+						updateBG(bg);
+					}
+				}
 			}
 			catch (DbEntityValidationException e)
 			{
@@ -3420,8 +3444,11 @@ Review Date :<<>>   Reviewed By :<<>>
 						RemoteBankGuarantee.POValue = bg.POValue;
 						RemoteBankGuarantee.Vendorid = bg.Vendorid;
 						RemoteBankGuarantee.VendorName = bg.VendorName;
-						RemoteBankGuarantee.WarrantyExpiryDate = bg.WarrantyExpiryDate;
+						//RemoteBankGuarantee.WarrantyExpiryDate = bg.WarrantyExpiryDate;
 						RemoteBankGuarantee.BGRemarks = bg.BGRemarks;
+						RemoteBankGuarantee.BUHead = bg.BUHead;
+						RemoteBankGuarantee.BuyerManger = bg.BuyerManger;
+						RemoteBankGuarantee.ProjectManager = bg.ProjectManager;
 						RemoteBankGuarantee.BGStatus = "Open";
 						RemoteBankGuarantee.IsBGRevised = false;
 						RemoteBankGuarantee.CreatedBy = bg.CreatedBy;
@@ -3453,8 +3480,14 @@ Review Date :<<>>   Reviewed By :<<>>
 						LocalBankGuarantee.POValue = BankGuarantee.POValue;
 						LocalBankGuarantee.Vendorid = BankGuarantee.Vendorid;
 						LocalBankGuarantee.VendorName = BankGuarantee.VendorName;
-						LocalBankGuarantee.WarrantyExpiryDate = BankGuarantee.WarrantyExpiryDate;
+						LocalBankGuarantee.JobCode = bg.JobCode;
+						LocalBankGuarantee.SaleOrderNo = bg.SaleOrderNo;
+						//LocalBankGuarantee.WarrantyExpiryDate = BankGuarantee.WarrantyExpiryDate;
 						LocalBankGuarantee.BGRemarks = BankGuarantee.BGRemarks;
+						LocalBankGuarantee.DepartmentId = bg.DepartmentId;
+						LocalBankGuarantee.BUHead = BankGuarantee.BUHead;
+						LocalBankGuarantee.BuyerManger = BankGuarantee.BuyerManger;
+						LocalBankGuarantee.ProjectManager = BankGuarantee.ProjectManager;
 						LocalBankGuarantee.BGStatus = "Open";
 						LocalBankGuarantee.IsBGRevised = false;
 						LocalBankGuarantee.CreatedBy = BankGuarantee.CreatedBy;
@@ -3584,13 +3617,21 @@ Review Date :<<>>   Reviewed By :<<>>
 				{
 					Context.Configuration.ProxyCreationEnabled = false;
 					var query = default(string);
-					query = "select * from getBGPAdetails";
+					query = "select * from getBGPAdetails where PAId !=0 ";
 					if (!string.IsNullOrEmpty(BGfilters.ToDate))
 						query += " and PODate <= '" + BGfilters.ToDate + "'";
 					if (!string.IsNullOrEmpty(BGfilters.FromDate))
 						query += "  and PODate >= '" + BGfilters.FromDate + "'";
+					if (!string.IsNullOrEmpty(BGfilters.PONo))
+						query += "  and PONo  = " + BGfilters.PONo + "";
+					if (!string.IsNullOrEmpty(BGfilters.MPRRevisionId))
+						query += "  and MPRRevisionId = " + BGfilters.MPRRevisionId + "";
 					if (!string.IsNullOrEmpty(BGfilters.VendorName))
-						query += "  and VendorName like'%" + BGfilters.VendorName + "%'";			
+						query += "  and VendorName like'%" + BGfilters.VendorName + "%'";
+					if (!string.IsNullOrEmpty(BGfilters.OrgDepartmentId))
+						query += "  and DepartmentId = " + BGfilters.OrgDepartmentId + "";
+					if (!string.IsNullOrEmpty(BGfilters.BuyerGroupId))
+						query += "  and BuyerGroupId =" + BGfilters.BuyerGroupId + "";
 					query += " order by MPRRevisionId desc ";
 					BGList = Context.getBGPAdetails.SqlQuery(query).ToList<getBGPAdetail>();
 				}

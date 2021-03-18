@@ -17,6 +17,7 @@ using System.Linq;
 using DALayer.Emails;
 using System.Data.Entity.Validation;
 using DALayer.Common;
+using SCMModels.RemoteModel;
 
 namespace SCMAPI.Controllers
 {
@@ -275,7 +276,7 @@ namespace SCMAPI.Controllers
 		[Route("DeleteTermGroup/{TermGroupId}/{DeletedBy}")]
 		public IHttpActionResult DeleteTermGroup(int TermGroupId, string DeletedBy)
 		{
-			return Ok(this._mprBusenessAcess.DeleteTermGroup(TermGroupId,  DeletedBy));
+			return Ok(this._mprBusenessAcess.DeleteTermGroup(TermGroupId, DeletedBy));
 		}
 		[HttpGet]
 		[Route("DeleteTermsAndConditions/{TermId}/{DeletedBy}")]
@@ -500,8 +501,8 @@ namespace SCMAPI.Controllers
 								mprIteminfos.ProjectDefinition = row[10].ToString();
 							if (!string.IsNullOrEmpty(row[12].ToString()))
 								mprIteminfos.SystemModel = row[12].ToString();
-                            if (data != null)
-                                mprIteminfos.UnitId = data.UnitId;
+							if (data != null)
+								mprIteminfos.UnitId = data.UnitId;
 							if (row[9].ToString() == "")
 								mprIteminfos.Itemid = "NewItem";
 							else
@@ -572,7 +573,7 @@ namespace SCMAPI.Controllers
 		}
 		private static string ToValidFileName(string fileName)
 		{
-			fileName = fileName.ToLower().Replace(" ", "_").Replace("(", "_").Replace(")", "_").Replace("&", "_").Replace("*", "_").Replace("-", "_").Replace("+", "_");
+			fileName = fileName.ToLower().Replace(" ", "_").Replace("(", "_").Replace(")", "_").Replace("&", "_").Replace("*", "_").Replace("-", "_").Replace("+", "_").Replace("?", "_");
 			return string.Join("_", fileName.Split(Path.GetInvalidFileNameChars()));
 		}
 
@@ -673,16 +674,16 @@ namespace SCMAPI.Controllers
 			return Ok(true);
 		}
 
-        [HttpPost]
-        [Route("Getoldrevisionitems")]
-        public IHttpActionResult Getoldrevisionitems(List<int> itemdetailsid)
-        {
-            return Ok(this._mprBusenessAcess.Getoldrevisionitems(itemdetailsid));
-        }
+		[HttpPost]
+		[Route("Getoldrevisionitems")]
+		public IHttpActionResult Getoldrevisionitems(List<int> itemdetailsid)
+		{
+			return Ok(this._mprBusenessAcess.Getoldrevisionitems(itemdetailsid));
+		}
 		[HttpGet]
 		[Route("GetTokuchuinformation/{mprrevisionid}")]
 		public IHttpActionResult GetTokuchuinformation(int mprrevisionid)
-        {
+		{
 			return Ok(this._mprBusenessAcess.GetTokuchuinformation(mprrevisionid));
 		}
 		[HttpGet]
@@ -701,16 +702,12 @@ namespace SCMAPI.Controllers
 			return Ok(this._mprBusenessAcess.GetVendorInfo(vendorid));
 		}
 
-
-
 		[HttpGet]
 		[Route("getVendorUserInfo/{vendorId}")]
 		public IHttpActionResult GetVendorUserInfo(int vendorid)
 		{
 			return Ok(this._mprBusenessAcess.GetVendorUserInfo(vendorid));
 		}
-
-
 
 		[HttpPost]
 		[Route("deactivateVendor")]
@@ -738,14 +735,100 @@ namespace SCMAPI.Controllers
 			return Ok(this._mprBusenessAcess.DeteteRfqItems(rfqrevisionId, mprRevisionid));
 		}
 
-
-
 		[HttpGet]
 		[Route("GetMappedNotMappedRfqItems/{mprRevisionId}")]
 		public IHttpActionResult CheckMprRevision(int mprRevisionId)
 		{
 			return Ok(this._mprBusenessAcess.CheckMprRevision(mprRevisionId));
 		}
-	}
+		[HttpPost]
+		[Route("updateBG")]
+		public IHttpActionResult updateBG(BankGuarantee bg)
+		{
+			return Ok(this._mprBusenessAcess.updateBG(bg));
+		}
 
+		[HttpPost]
+		[Route("getBGApplicableList")]
+		public IHttpActionResult getBGApplicableList(BGfilters BGfilters)
+		{
+			return Ok(_mprBusenessAcess.getBGApplicableList(BGfilters));
+		}
+		[HttpPost]
+		[Route("getBGList")]
+		public IHttpActionResult getBGList(BGfilters BGfilters)
+		{
+			return Ok(_mprBusenessAcess.getBGList(BGfilters));
+		}
+
+		[HttpGet]
+		[Route("getBGDetails/{BGId}")]
+		public IHttpActionResult getBGDetails(int BGId)
+		{
+			return Ok(this._mprBusenessAcess.getBGDetails(BGId));
+		}
+		[HttpPost]
+		[Route("updateBGStatus")]
+		public IHttpActionResult updateBGStatus(BGStatusTrack bgsttrack)
+		{
+			return Ok(this._mprBusenessAcess.updateBGStatus(bgsttrack));
+		}
+		[HttpGet]
+		[Route("BGAutoReminderForVendor")]
+		public IHttpActionResult BGAutoReminderForVendor()
+		{
+			YSCMEntities db = new YSCMEntities();
+			VSCMEntities vscm = new VSCMEntities();
+
+			var bgList = db.BankGuarantees.Where(li => li.BGExpiryDate != null && (li.BGStatus == "Verified" || li.BGStatus == "Expired")).ToList();
+			foreach (var item in bgList)
+			{
+				//if bg expiry date- one month == current date && bg expiry date & warranty Expirydate difference should be greater than 6 months
+				DateTime bgExpiryDate = Convert.ToDateTime(item.BGExpiryDate);
+				DateTime WarrantyExpiryDate = Convert.ToDateTime(item.WarrantyExpiryDate);
+				var autoDate = bgExpiryDate.AddMonths(-1).ToShortDateString();
+				var currentDate = DateTime.Now.ToShortDateString();
+				var months = (WarrantyExpiryDate.Month - bgExpiryDate.Month) + 12 * (WarrantyExpiryDate.Year - bgExpiryDate.Year);
+				if (autoDate == currentDate && months > 1)
+				{
+					if (item.BGId != null)
+					{
+						var RemoteBankGuarantee = vscm.RemoteBankGuarantees.Where(li => li.BGId == item.BGId).FirstOrDefault();
+						RemoteBankGuarantee.IsBGRevised = false;
+						vscm.SaveChanges();
+					}
+					//local
+					var LocalBG = db.BankGuarantees.Where(li => li.BGId == item.BGId).FirstOrDefault();
+					if (LocalBG != null)
+					{
+						LocalBG.IsBGRevised = false;
+						db.SaveChanges();
+					}
+					var Remarks = "Your BG is Expiring Soon, Please Re submit the revised BG for BG No: " + item.BGNo + "; PO No:" + item.PONo + " ";
+					this.emailTemplateDA.sendBGInitiationmail(item.BGId, item.CreatedBy, Remarks, "ReSubmit");
+				}
+				//BG Expired when vendor not submit documents
+				int cmp = bgExpiryDate.AddDays(1).CompareTo(DateTime.Now);// if cmp value < 0 means bgexpiry date is less than current date, current date is greater means bgExpiryDate is comes after current date
+				if (item.IsBGRevised == false && cmp < 0 && item.BGStatus != "Expired")
+				{
+					//update BG status track status track 
+					BGStatusTrack bgst = new BGStatusTrack();
+					bgst.BGId = item.BGId;
+					bgst.Status = "Expired";
+					bgst.UpdatedBy = item.CreatedBy;
+					this._mprBusenessAcess.updateBGStatus(bgst);
+				}
+				if (WarrantyExpiryDate.ToShortDateString() == currentDate && item.BGStatus != "Closed")
+				{
+					//update BG status track status track 
+					BGStatusTrack bgst = new BGStatusTrack();
+					bgst.BGId = item.BGId;
+					bgst.Status = "Closed";
+					bgst.UpdatedBy = item.CreatedBy;
+					this._mprBusenessAcess.updateBGStatus(bgst);
+				}
+			}
+			return Ok(true);
+		}
+	}
 }

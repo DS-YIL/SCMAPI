@@ -70,6 +70,12 @@ namespace BALayer.MPR
 		bool DeteteRfqItems(int rfqrevisionId, int mprrevisionid);
 
 		List<SCMModels.Models.RFQ> CheckMprRevision(int mprrevisionId);
+
+		bool updateBG(BankGuarantee bg);
+		List<getBGPAdetail> getBGApplicableList(BGfilters BGfilters);
+		List<BankGuarantee> getBGList(BGfilters BGfilters);
+		BankGuarantee getBGDetails(int bgid);
+		BankGuarantee updateBGStatus(BGStatusTrack bgsttrack);
 	}
 
 }

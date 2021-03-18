@@ -71,5 +71,11 @@ namespace DALayer.MPR
 		bool AddVendorUser(VendorUserMaster vendorUserMaster);
 		bool DeteteRfqItems(int rfqrevisionId, int mprrevisionid);
 		List<SCMModels.Models.RFQ> GetMappedNotMappedRfqItems(int mprrevisionId);
+
+		bool updateBG(BankGuarantee bg);
+		List<getBGPAdetail> getBGApplicableList(BGfilters BGfilters);
+		List<BankGuarantee> getBGList(BGfilters BGfilters);
+		BankGuarantee getBGDetails(int bgid);
+		BankGuarantee updateBGStatus(BGStatusTrack bgsttrack);
 	}
 }

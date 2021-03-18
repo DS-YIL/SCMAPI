@@ -191,15 +191,15 @@ namespace BALayer.MPR
 			return this._mprDataAcess.DeleteTermsAndConditions(TermId, DeletedBy);
 		}
 
-        public DataTable Getoldrevisionitems(List<int> itemdetailsid)
-        {
-            return this._mprDataAcess.Getoldrevisionitems(itemdetailsid);
-        }
+		public DataTable Getoldrevisionitems(List<int> itemdetailsid)
+		{
+			return this._mprDataAcess.Getoldrevisionitems(itemdetailsid);
+		}
 
-        public DataTable GetTokuchuinformation(int mprrevisionid)
-        {
+		public DataTable GetTokuchuinformation(int mprrevisionid)
+		{
 			return this._mprDataAcess.GetTokuchuinformation(mprrevisionid);
-        }
+		}
 		public List<SCMModels.Models.Vendor> VendorList()
 		{
 			return this._mprDataAcess.VendorList();
@@ -231,18 +231,38 @@ namespace BALayer.MPR
 			return this._mprDataAcess.AddVendorUser(vendorUserMaster);
 		}
 
-
-
 		public bool DeteteRfqItems(int rfqrevisionId, int mprrevisionid)
 		{
 			return this._mprDataAcess.DeteteRfqItems(rfqrevisionId, mprrevisionid);
 		}
 
-
-
 		public List<SCMModels.Models.RFQ> CheckMprRevision(int mprrevisionId)
 		{
 			return this._mprDataAcess.GetMappedNotMappedRfqItems(mprrevisionId);
 		}
+		public bool updateBG(BankGuarantee bg)
+		{
+			return this._mprDataAcess.updateBG(bg);
+		}
+		public List<getBGPAdetail> getBGApplicableList(BGfilters BGfilters)
+		{
+			return this._mprDataAcess.getBGApplicableList(BGfilters);
+		}
+		public List<BankGuarantee> getBGList(BGfilters BGfilters)
+		{
+			return this._mprDataAcess.getBGList(BGfilters);
+
+		}
+		public BankGuarantee getBGDetails(int bgid)
+		{
+			return this._mprDataAcess.getBGDetails(bgid);
+
+		}
+		public BankGuarantee updateBGStatus(BGStatusTrack bgsttrack)
+		{
+			return this._mprDataAcess.updateBGStatus(bgsttrack);
+
+		}
+
 	}
 }
