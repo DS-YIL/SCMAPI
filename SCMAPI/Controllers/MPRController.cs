@@ -276,7 +276,7 @@ namespace SCMAPI.Controllers
 		[Route("DeleteTermGroup/{TermGroupId}/{DeletedBy}")]
 		public IHttpActionResult DeleteTermGroup(int TermGroupId, string DeletedBy)
 		{
-			return Ok(this._mprBusenessAcess.DeleteTermGroup(TermGroupId, DeletedBy));
+			return Ok(this._mprBusenessAcess.DeleteTermGroup(TermGroupId,  DeletedBy));
 		}
 		[HttpGet]
 		[Route("DeleteTermsAndConditions/{TermId}/{DeletedBy}")]
@@ -702,12 +702,16 @@ namespace SCMAPI.Controllers
 			return Ok(this._mprBusenessAcess.GetVendorInfo(vendorid));
 		}
 
+
+
 		[HttpGet]
 		[Route("getVendorUserInfo/{vendorId}")]
 		public IHttpActionResult GetVendorUserInfo(int vendorid)
 		{
 			return Ok(this._mprBusenessAcess.GetVendorUserInfo(vendorid));
 		}
+
+
 
 		[HttpPost]
 		[Route("deactivateVendor")]
@@ -734,6 +738,8 @@ namespace SCMAPI.Controllers
 		{
 			return Ok(this._mprBusenessAcess.DeteteRfqItems(rfqrevisionId, mprRevisionid));
 		}
+
+
 
 		[HttpGet]
 		[Route("GetMappedNotMappedRfqItems/{mprRevisionId}")]
