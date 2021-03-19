@@ -330,8 +330,8 @@ namespace DALayer.RFQ
 		  Review Date :<<>>   Reviewed By :<<>>*/
         public async Task<RfqRevisionModel> CreateRfQ(RfqRevisionModel model, bool addMPRRfq)
         {
-			var dbcxtransaction = vscm.Database.BeginTransaction();
-			var dbcxtransactionLocal = obj.Database.BeginTransaction();
+			//var dbcxtransaction = vscm.Database.BeginTransaction();
+			//var dbcxtransactionLocal = obj.Database.BeginTransaction();
 			try
             {
 				//server data				
@@ -385,7 +385,7 @@ namespace DALayer.RFQ
 						}
                         catch (Exception ex)
                         {
-							dbcxtransaction.Rollback();
+							//dbcxtransaction.Rollback();
 							log.ErrorMessage("RFQController", "CreateRfQ", ex.Message + "; " + ex.StackTrace.ToString());
                         }
                     }
@@ -438,7 +438,7 @@ namespace DALayer.RFQ
                         }
                         catch (Exception ex)
                         {
-							dbcxtransaction.Rollback();
+							//dbcxtransaction.Rollback();
 							log.ErrorMessage("RFQController", "CreateRfQ", ex.Message + "; " + ex.StackTrace.ToString());
                         }
                     }
@@ -474,7 +474,7 @@ namespace DALayer.RFQ
                         }
                         catch (Exception ex)
                         {
-							dbcxtransaction.Rollback();
+							//dbcxtransaction.Rollback();
 							log.ErrorMessage("RFQController", "CreateRfQ", ex.Message + "; " + ex.StackTrace.ToString());
                         }
                     }
@@ -577,7 +577,7 @@ namespace DALayer.RFQ
                                 }
                                 catch (Exception ex)
                                 {
-									dbcxtransaction.Rollback();
+									//dbcxtransaction.Rollback();
 									log.ErrorMessage("RFQController", "CreateRfQ", ex.Message + "; " + ex.StackTrace.ToString());
                                 }
                             }
@@ -650,8 +650,8 @@ namespace DALayer.RFQ
                         }
                         catch (Exception ex)
                         {
-							dbcxtransaction.Rollback();
-							dbcxtransactionLocal.Rollback();
+							//dbcxtransaction.Rollback();
+							//dbcxtransactionLocal.Rollback();
                             log.ErrorMessage("RFQController", "CreateRfQ", ex.Message + "; " + ex.StackTrace.ToString());
                         }
                     }
@@ -672,8 +672,8 @@ namespace DALayer.RFQ
                         }
                         catch (Exception ex)
                         {
-							dbcxtransaction.Rollback();
-							dbcxtransactionLocal.Rollback();
+							//dbcxtransaction.Rollback();
+							//dbcxtransactionLocal.Rollback();
 							log.ErrorMessage("RFQController", "CreateRfQ", ex.Message + "; " + ex.StackTrace.ToString());
                         }
                     }
@@ -721,12 +721,28 @@ namespace DALayer.RFQ
                             rfqStatus.updatedby = model.rfqmaster.CreatedBy;
                             this.insertRFQStatus(rfqStatus);
                         }
-                        catch (Exception ex)
-                        {
-							dbcxtransaction.Rollback();
-							dbcxtransactionLocal.Rollback();
-							log.ErrorMessage("RFQController", "CreateRfQ", ex.Message + "; " + ex.StackTrace.ToString());
-                        }
+						catch (DbEntityValidationException e)
+						{
+							//dbcxtransaction.Rollback();
+							//dbcxtransactionLocal.Rollback();
+							foreach (var eve in e.EntityValidationErrors)
+							{
+								Console.WriteLine("Entity of type \"{0}\" in state \"{1}\" has the following validation errors:",
+									eve.Entry.Entity.GetType().Name, eve.Entry.State);
+								foreach (var ve in eve.ValidationErrors)
+								{
+									log.ErrorMessage("RFQController", "CreateRfQ", ve.ErrorMessage);
+									Console.WriteLine("- Property: \"{0}\", Error: \"{1}\"",
+										ve.PropertyName, ve.ErrorMessage);
+								}
+							}
+						}
+						//catch (Exception ex)
+      //                  {
+						//	dbcxtransaction.Rollback();
+						//	dbcxtransactionLocal.Rollback();
+						//	log.ErrorMessage("RFQController", "CreateRfQ", ex.Message + "; " + ex.StackTrace.ToString());
+      //                  }
 
                     }
                     else
@@ -761,8 +777,8 @@ namespace DALayer.RFQ
                         }
                         catch (Exception ex)
                         {
-							dbcxtransaction.Rollback();
-							dbcxtransactionLocal.Rollback();
+							//dbcxtransaction.Rollback();
+							//dbcxtransactionLocal.Rollback();
 							log.ErrorMessage("RFQController", "CreateRfQ", ex.Message + "; " + ex.StackTrace.ToString());
                         }
                     }
@@ -809,8 +825,8 @@ namespace DALayer.RFQ
                                 }
                                 catch (Exception ex)
                                 {
-									dbcxtransaction.Rollback();
-									dbcxtransactionLocal.Rollback();
+									//dbcxtransaction.Rollback();
+									//dbcxtransactionLocal.Rollback();
 									log.ErrorMessage("RFQController", "CreateRfQ", ex.Message + "; " + ex.StackTrace.ToString());
                                 }
 
@@ -844,8 +860,8 @@ namespace DALayer.RFQ
                                 }
                                 catch (Exception ex)
                                 {
-									dbcxtransaction.Rollback();
-									dbcxtransactionLocal.Rollback();
+									//dbcxtransaction.Rollback();
+									//dbcxtransactionLocal.Rollback();
 									log.ErrorMessage("RFQController", "CreateRfQ", ex.Message + "; " + ex.StackTrace.ToString());
                                 }
 
@@ -913,8 +929,8 @@ namespace DALayer.RFQ
                                 }
                                 catch (Exception ex)
                                 {
-									dbcxtransaction.Rollback();
-									dbcxtransactionLocal.Rollback();
+									//dbcxtransaction.Rollback();
+									//dbcxtransactionLocal.Rollback();
 									log.ErrorMessage("RFQController", "CreateRfQ", ex.Message + "; " + ex.StackTrace.ToString());
                                 }
                             }
@@ -922,8 +938,8 @@ namespace DALayer.RFQ
 
                         catch (Exception ex)
                         {
-							dbcxtransaction.Rollback();
-							dbcxtransactionLocal.Rollback();
+							//dbcxtransaction.Rollback();
+							//dbcxtransactionLocal.Rollback();
 							log.ErrorMessage("RFQController", "CreateRfQ", ex.Message + "; " + ex.StackTrace.ToString());
                         }
                     }
@@ -952,20 +968,20 @@ namespace DALayer.RFQ
                         }
                         catch (Exception ex)
                         {
-							dbcxtransaction.Rollback();
-							dbcxtransactionLocal.Rollback();
+							//dbcxtransaction.Rollback();
+							//dbcxtransactionLocal.Rollback();
 							log.ErrorMessage("RFQController", "CreateRfQ", ex.Message + "; " + ex.StackTrace.ToString());
                         }
                     }
                 }
-				dbcxtransaction.Commit();
-				dbcxtransactionLocal.Commit();
+				//dbcxtransaction.Commit();
+				//dbcxtransactionLocal.Commit();
 				return await this.GetRfqDetailsById(revisionid);
             }
             catch (DbEntityValidationException e)
             {
-				dbcxtransaction.Rollback();
-				dbcxtransactionLocal.Rollback();
+				//dbcxtransaction.Rollback();
+				//dbcxtransactionLocal.Rollback();
 				foreach (var eve in e.EntityValidationErrors)
                 {
                     Console.WriteLine("Entity of type \"{0}\" in state \"{1}\" has the following validation errors:",
