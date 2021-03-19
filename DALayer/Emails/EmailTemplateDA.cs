@@ -965,7 +965,6 @@ namespace DALayer.Emails
 							if (!string.IsNullOrEmpty(emlSndngList.FrmEmailId))
 								emlSndngList.BCC = emlSndngList.FrmEmailId;
 							emlSndngList.ToEmailId = vendor.Vuserid;
-
 							if ((!string.IsNullOrEmpty(emlSndngList.FrmEmailId) && !string.IsNullOrEmpty(emlSndngList.FrmEmailId)) && (emlSndngList.FrmEmailId != "NULL" && emlSndngList.ToEmailId != "NULL"))
 								this.sendEmail(emlSndngList);
 						}

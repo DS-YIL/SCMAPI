@@ -1877,7 +1877,7 @@ Review Date :<<>>   Reviewed By :<<>>
 							bg.BUHead = DB.OrgDepartments.Where(li => li.OrgDepartmentId == orgId).FirstOrDefault().DepartmentHead;
 						bg.ProjectManager = item.ProjectManager;
 						bg.BuyerManger = item.BuyerManager;
-						updateBG(bg);
+						//updateBG(bg);
 					}
 				}
 			}
