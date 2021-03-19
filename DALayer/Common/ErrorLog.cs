@@ -8,7 +8,7 @@ namespace DALayer.Common
 {
 	public class ErrorLog
 	{
-		private IEmailTemplateDA emailTemplateDA = default(IEmailTemplateDA);
+		//private IEmailTemplateDA emailTemplateDA = default(IEmailTemplateDA);
 		public void ErrorMessage(string controllername, string methodname, string exception)
 		{
 			exception = exception.Replace("'", String.Empty);
@@ -19,7 +19,7 @@ namespace DALayer.Common
 			con.Open();
 			cmd.ExecuteNonQuery();
 			con.Close();
-			this.emailTemplateDA.sendErrorLog(controllername, methodname, exception, HttpContext.Current.Request.Url);
+			//this.emailTemplateDA.sendErrorLog(controllername, methodname, exception, HttpContext.Current.Request.Url);
 
 		}
 	}
