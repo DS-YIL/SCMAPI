@@ -57,7 +57,19 @@ namespace DALayer.PAEmailDA
             }
             return true;
         }
-
+        public bool msaconfirmationmail(int paid)
+        {
+            var ipaddress = ConfigurationManager.AppSettings["UI_IpAddress"];
+            EmailSend send = new EmailSend();
+            send.FrmEmailId = obj.LoadMSALineItems.Where(x => x.paid == paid).FirstOrDefault().ConfirmedBy;
+            send.ToEmailId = "rpadeveloper@in.yokogawa.com";
+            send.Subject = "MSA Confirmation for YGS Upload";
+            if(!string.IsNullOrEmpty(send.FrmEmailId) && !string.IsNullOrEmpty(send.FrmEmailId))
+            {
+                sendEmail(send);
+            }
+            return true;
+        }
         public bool sendEmail(EmailSend emlSndngList)
         {
             bool validEmail = IsValidEmail(emlSndngList.ToEmailId);

@@ -17,6 +17,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using DALayer.Common;
 
 namespace DALayer.PurchaseAuthorization
 {
@@ -29,6 +30,7 @@ Review Date :<<>>   Reviewed By :<<>>
 */
 	public class PurchaseAuthorizationDA : IPurchaseAuthorizationDA
 	{
+		private ErrorLog log = new ErrorLog();
 		private IPAEmailDA emailDA = default(IPAEmailDA);
 		private IEmailTemplateDA emailTemplateDA = default(IEmailTemplateDA);
 		public PurchaseAuthorizationDA(IPAEmailDA EmailDA, IEmailTemplateDA emailTemplateDA)
@@ -496,7 +498,7 @@ Review Date :<<>>   Reviewed By :<<>>*/
 Date of Creation <<>>
 Purpose : <<getting configured employee based on total pa value,target spend and credit days>>
 Review Date :<<>>   Reviewed By :<<>>*/
-		public DataTable GetEmployeeMappings11(PAConfigurationModel model)
+		public DataTable GetEmployeeMappings12(PAConfigurationModel model)
 		{
 			string con = obj.Database.Connection.ConnectionString;
             SqlConnection Conn1 = new SqlConnection(con);
@@ -555,7 +557,74 @@ Review Date :<<>>   Reviewed By :<<>>*/
 				throw;
 			}
 		}
-		public DataTable GetEmployeeMappings1(PAConfigurationModel model)
+		public DataSet GetEmployeeMappings1(PAConfigurationModel model)
+		{
+			string con = obj.Database.Connection.ConnectionString;
+			//SqlConnection Conn1 = new SqlConnection(@"Data Source=10.29.15.183;User ID=sa;Password=yil@1234;initial catalog=YSCM;Integrated Security=false;");
+			SqlConnection Conn1 = new SqlConnection(con);
+			EmployeModel employee = new EmployeModel();
+			DataSet Ds = new DataSet();
+			string data = string.Join(",", model.MPRItemDetailsid);
+			model.PAValue = model.UnitPrice;
+			int Termscode = 0;
+			if (model.PAValue > model.TargetSpend)
+				model.LessBudget = false;
+			else
+				model.LessBudget = true;
+			if (model.PaymentTermCode != null && model.Creditdays == 0)
+				Termscode = Convert.ToInt32(model.PaymentTermCode.Substring(model.PaymentTermCode.Length - 3, 3));
+			else if (model.Creditdays != 0)
+				Termscode = Convert.ToInt32(model.Creditdays);
+			else
+				Termscode = 0;
+			try
+			{
+				SqlParameter[] Param = new SqlParameter[5];
+				Param[0] = new SqlParameter("@itemid", data);
+				Param[1] = new SqlParameter("@PAvalue", model.PAValue);
+				Param[2] = new SqlParameter("@TargetSpend", model.TargetSpend);
+				Param[3] = new SqlParameter("@creditdays", Termscode);
+				Param[4] = new SqlParameter("@departmentid", model.DeptId);
+				string spname = "PAApprovers";
+				SqlCommand cmd = new SqlCommand();
+				SqlDataAdapter Adp = new SqlDataAdapter();
+				cmd = new SqlCommand();
+				cmd.Connection = Conn1;
+				cmd.CommandText = spname;
+				cmd.CommandTimeout = 0;
+				cmd.CommandType = CommandType.StoredProcedure;
+
+
+
+				if (Param != null)
+				{
+					foreach (SqlParameter sqlParam in Param)
+					{
+						cmd.Parameters.Add(sqlParam);
+					}
+				}
+
+
+
+				Adp = new SqlDataAdapter(cmd);
+				Ds = new DataSet();
+
+
+
+				Adp.Fill(Ds);
+				cmd.Parameters.Clear();
+				//Ds.Clear();
+				return Ds;
+			}
+			catch (Exception ex)
+			{
+
+
+
+				throw;
+			}
+		}
+		public DataTable GetEmployeeMappings11(PAConfigurationModel model)
 		{
 
 			EmployeModel employee = new EmployeModel();
@@ -1042,9 +1111,11 @@ Review Date :<<>>   Reviewed By :<<>>*/
 					authorization.VendorId = model.VendorId;
 					authorization.PAStatus = "Inprogress";
 					authorization.DeleteFlag = false;
-					authorization.Aribarequired = model.AribaRequired;
-					authorization.MSArequied = model.msarequired;
-					obj.MPRPADetails.Add(authorization);
+					authorization.POtype = model.potype;
+                    authorization.Aribarequired = model.AribaRequired;
+                    authorization.MSArequired = model.msarequired;
+					authorization.incoterms = model.incoterms;
+                    obj.MPRPADetails.Add(authorization);
 					obj.SaveChanges();
 					status.Sid = authorization.PAId;
 
@@ -1096,10 +1167,10 @@ Review Date :<<>>   Reviewed By :<<>>*/
 							RfqSplitItemId = Convert.ToInt32(splitdata),
 							Mprrfqsplititemid = items.Mprrfqsplititemid,
 							MPRItemDetailsId = items.MPRItemDetailsid,
-							PODescription = items.PODescription,
-							POText = items.POText,
-							POItemType = items.itemtypesupplier
-						};
+                            //PODescription = items.PODescription,
+                            //POText = items.POText,
+                            //POItemType = items.itemtypesupplier
+                        };
 						obj.PAItems.Add(paitem);
 						obj.SaveChanges();
 					}
@@ -1214,10 +1285,10 @@ Review Date :<<>>   Reviewed By :<<>>*/
 					model.FactorsForImports = data.FactorsForImports;
 					model.SpecialRemarks = data.SpecialRemarks;
 					model.SuppliersReference = data.SuppliersReference;
-					model.potype = data.POtype;
-					model.AribaRequired = data.Aribarequired;
-					model.msarequired = data.MSArequied;
-					model.Deleteflag = data.DeleteFlag;
+                    model.potype = data.POtype;
+                    model.AribaRequired = data.Aribarequired;
+                    model.msarequired = data.MSArequired;
+                    model.Deleteflag = data.DeleteFlag;
 
 					var statusdata = obj.ShowAdditionalcharges.Where(x => x.itemstatus == "Approved" && x.PAId == PID).ToList();
 					model.Item = statusdata.Select(x => new RfqItemModel()
@@ -1253,10 +1324,10 @@ Review Date :<<>>   Reviewed By :<<>>*/
 						DutyAmount = x.DutyAmount,
 						InsuranceAmount = x.InsuranceAmount,
 						MPRRevisionId = Convert.ToInt32(x.MPRRevisionId),
-						POText=x.POText,
-						PODescription=x.PODescription,
-						itemtypesupplier=x.POItemType
-					}).ToList();
+                        POText = x.POText,
+                        PODescription = x.PODescription,
+                        itemtypesupplier = x.POItemType
+                    }).ToList();
 					//var taxes = obj.ShowAdditionalcharges.Where(x => x.PAId == PID).ToList();
 					//model.additionaltaxes = taxes.Select(x => new Additionaltaxes()
 					//{
@@ -1314,7 +1385,7 @@ Review Date :<<>>   Reviewed By :<<>>*/
 			}
 			catch (Exception ex)
 			{
-				throw;
+				throw ex;
 			}
 		}
 
@@ -2985,6 +3056,17 @@ Review Date :<<>>   Reviewed By :<<>>*/
 					data.ConfirmedDate = DateTime.Now;
 					obj.SaveChanges();
 					model.StatusRemarks = "1";
+					var msadata = obj.MSALineItems.Where(x => x.paid == model.PAID && x.deletionflag==null).ToList();
+                    foreach (var item in msadata)
+                    {
+						item.MSAMasterID = data.MSAMasterID;
+						obj.SaveChanges();
+					}
+					
+					//item.MSAMasterID = data.MSAMasterID; 
+					//obj.MSALineItems.Add(item);
+					//obj.SaveChanges();
+					this.emailDA.msaconfirmationmail(Convert.ToInt32(model.PAID));
 				}
 
 				else
@@ -2999,17 +3081,38 @@ Review Date :<<>>   Reviewed By :<<>>*/
 							//So Automatically based on PAID records will take from View and Insert MSALineItemTable,
 							//MSAMasterConfirmationTable and Update Confirmation flag is Yes.
 
+						int msamasterid = 0;
+						var MSAMasterConfirmation1 = obj.MSAMasterConfirmations.Where(li => li.PAID == model.PAID && li.Deleteflag == false).FirstOrDefault();
+
+
 						//need to take data from View and dump into MSALineItem and MSAMasterConfirmation
 						var RPAViewData = obj.RPALoadItemForMSAs.Where(li => li.paid == model.PAID).ToList();
 						if (IsPAVaild(model.PAID, RPAViewData))
 						{
+							if (MSAMasterConfirmation1 == null)
+							{
+								MSAMasterConfirmation mSAMasterConfirmation = new MSAMasterConfirmation();
+								mSAMasterConfirmation.Deleteflag = model.Deleteflag;
+								mSAMasterConfirmation.Confirmationflag = model.Confirmationflag;
+								mSAMasterConfirmation.PAID = model.PAID;
+								mSAMasterConfirmation.ConfirmedBy = model.UploadedBy;
+								mSAMasterConfirmation.ConfirmedDate = DateTime.Now;
+								mSAMasterConfirmation.UploadedBy = model.UploadedBy;
+								mSAMasterConfirmation.UplaodedDate = DateTime.Now;
+								obj.MSAMasterConfirmations.Add(mSAMasterConfirmation);
+								obj.SaveChanges();
+								msamasterid = mSAMasterConfirmation.MSAMasterID;
+								model.StatusRemarks = "4";
+							}
+
 							foreach (var item in RPAViewData)
 							{
 								if (item.PAItemID != null)
 								{
 									MSALineItem mSALineItem1 = new MSALineItem();
+									mSALineItem1.MSAMasterID = msamasterid;
 									mSALineItem1.Item_No_ = item.Item_No_;
-									mSALineItem1.deletionflag = false;
+									//mSALineItem1.deletionflag = false;
 									mSALineItem1.mscode = item.mscode;
 									mSALineItem1.ItemDescription = item.ItemDescription;
 									mSALineItem1.WBS = item.WBS;
@@ -3035,13 +3138,13 @@ Review Date :<<>>   Reviewed By :<<>>*/
 									mSALineItem1.storagelocationname = item.storagelocationname;
 									mSALineItem1.VendorCode = item.VendorCode;
 									mSALineItem1.VendorName = item.VendorName;
-									mSALineItem1.VendorModelNo = item.VendorModelNo;
+									mSALineItem1.VendorModelNo = item.VendorModelNo.Substring(0,35);
 									mSALineItem1.sortstring1 = item.sortstring1;
 									mSALineItem1.ProjectManager = item.ProjectManager;
 									mSALineItem1.note1 = item.note1;
-									mSALineItem1.note2 = item.note2.ToString();
-									mSALineItem1.note3 = item.note3.ToString();
-									mSALineItem1.note4 = item.note4;
+									mSALineItem1.note2 = item.note3.ToString();
+									mSALineItem1.note3 = item.PAItemID.ToString();
+									mSALineItem1.note4 = item.note2.ToString("yyyyMMdd");
 									mSALineItem1.lt = item.lt;
 									mSALineItem1.deadline = item.deadline;
 									mSALineItem1.deliverydate = item.deliverydate;
@@ -3102,26 +3205,27 @@ Review Date :<<>>   Reviewed By :<<>>*/
 									obj.MSALineItems.Add(mSALineItem1);
 									obj.SaveChanges();
 									model.StatusRemarks = "3";
+									
 								}
 
 							}
 
-							var MSAMasterConfirmation1 = obj.MSAMasterConfirmations.Where(li => li.PAID == model.PAID && li.Deleteflag == false).FirstOrDefault();
-							if (MSAMasterConfirmation1 == null)
-							{
-								MSAMasterConfirmation mSAMasterConfirmation = new MSAMasterConfirmation();
-								mSAMasterConfirmation.Deleteflag = model.Deleteflag;
-								mSAMasterConfirmation.Confirmationflag = model.Confirmationflag;
-								mSAMasterConfirmation.PAID = model.PAID;
-								mSAMasterConfirmation.ConfirmedBy = model.UploadedBy;
-								mSAMasterConfirmation.ConfirmedDate = DateTime.Now;
-								mSAMasterConfirmation.UploadedBy = model.UploadedBy;
-								mSAMasterConfirmation.UplaodedDate = DateTime.Now;
-								obj.MSAMasterConfirmations.Add(mSAMasterConfirmation);
-								obj.SaveChanges();
-								model.StatusRemarks = "4";
-							}
-
+							//var MSAMasterConfirmation1 = obj.MSAMasterConfirmations.Where(li => li.PAID == model.PAID && li.Deleteflag == false).FirstOrDefault();
+							//if (MSAMasterConfirmation1 == null)
+							//{
+							//	MSAMasterConfirmation mSAMasterConfirmation = new MSAMasterConfirmation();
+							//	mSAMasterConfirmation.Deleteflag = model.Deleteflag;
+							//	mSAMasterConfirmation.Confirmationflag = model.Confirmationflag;
+							//	mSAMasterConfirmation.PAID = model.PAID;
+							//	mSAMasterConfirmation.ConfirmedBy = model.UploadedBy;
+							//	mSAMasterConfirmation.ConfirmedDate = DateTime.Now;
+							//	mSAMasterConfirmation.UploadedBy = model.UploadedBy;
+							//	mSAMasterConfirmation.UplaodedDate = DateTime.Now;
+							//	obj.MSAMasterConfirmations.Add(mSAMasterConfirmation);
+							//	obj.SaveChanges();
+							//	model.StatusRemarks = "4";
+							//}
+							this.emailDA.msaconfirmationmail(Convert.ToInt32(model.PAID));
 						}
 						else
 						{
@@ -3149,7 +3253,7 @@ Review Date :<<>>   Reviewed By :<<>>*/
 					{
 						return false;
 					}
-					if (string.IsNullOrEmpty(item.Item_No_) || string.IsNullOrEmpty(item.mscode) || string.IsNullOrEmpty(item.ItemDescription))
+					if (string.IsNullOrEmpty(item.mscode) || string.IsNullOrEmpty(item.ItemDescription))
 					{
 						return false;
 					}
@@ -3242,13 +3346,13 @@ Review Date :<<>>   Reviewed By :<<>>*/
 				throw;
 			}
 		}
-		public async Task<List<IncoTermMaster>> getincotermmaster()
+        public async Task<List<IncoTermMaster>> getincotermmaster()
         {
-			List<IncoTermMaster> master = new List<IncoTermMaster>();
+            List<IncoTermMaster> master = new List<IncoTermMaster>();
             try
             {
-				master = obj.IncoTermMasters.ToList();
-				return master;
+                master = obj.IncoTermMasters.ToList();
+                return master;
             }
             catch (Exception ex)
             {
@@ -3269,6 +3373,102 @@ Review Date :<<>>   Reviewed By :<<>>*/
 				cmd.Connection.Close();
 				return status;
 			}
+            catch (Exception ex)
+            {
+                throw;
+            }
+        }
+		public async Task<statuscheckmodel> UpdateMsaprconfirmation(List<ItemsViewModel> msa)
+		{
+			statuscheckmodel status = new statuscheckmodel();
+            try
+            {
+                foreach (var item in msa)
+                {
+					var data = obj.PAItems.Where(x => x.PAItemID == item.paitemid).FirstOrDefault();
+					//data.PRno = item.PRno;
+					//data.PRLineItemNo = item.PRLineItemNo;
+					//data.PRcreatedOn = System.DateTime.Now;
+					//data.PRcreatedBy = item.PRcreatedBy;
+					//obj.MSALineItems.Add(item);
+					obj.SaveChanges();
+				}
+				//var data = obj.MSALineItems.Where(x => x.PAItemID == msa.PAItemID).FirstOrDefault();
+				//MSALineItem item = new MSALineItem();
+
+				return status;
+            }
+            catch (Exception ex)
+            {
+				throw ex;
+				//log.ErrorMessage("PAController", "UpdateMsaprconfirmation", ex.Message + "; " + ex.StackTrace.ToString());
+			}
+			//try
+			//{
+			//	var data = obj.MSALineItems.Where(x => x.PAItemID == msa.PAItemID).FirstOrDefault();
+			//	//MSALineItem item = new MSALineItem();
+			//	data.PRno = msa.PRno;
+			//	data.PRLineItemNo = msa.PRLineItemNo;
+			//	data.PRcreatedOn = msa.PRcreatedOn;
+			//	data.PRcreatedBy = msa.PRcreatedBy;
+			//	//obj.MSALineItems.Add(item);
+			//	obj.SaveChanges();
+			//	return status;
+			//}
+			//catch (Exception ex)
+			//{
+			//	log.ErrorMessage("PAController", "UpdateMsaprconfirmation", ex.Message + "; " + ex.StackTrace.ToString());
+			//}
+		}
+		public async Task<List<MSAProcessTrack>> getmsaprocesstrackbyId(int paid)
+        {
+			List<MSAProcessTrack> process = new List<MSAProcessTrack>();
+            try
+            {
+				var data = obj.MSAMasterConfirmations.Where(x => x.PAID == paid).FirstOrDefault();
+				if (data != null)
+                {
+					process = obj.MSAProcessTracks.Where(x => x.MSAMasterID == data.MSAMasterID).ToList();
+                }
+				return process;
+			}
+            catch (Exception ex)
+            {
+                throw;
+            }
+        }
+
+        public async Task<statuscheckmodel> InsertScrapRregister(ScrapRegisterMasterModel msa)
+        {
+			statuscheckmodel status = new statuscheckmodel();
+            try
+            {
+				ScrapEntryMaster scrap = new ScrapEntryMaster();
+				scrap.TruckNo = msa.TruckNo;
+				scrap.Dateofentry = msa.DateOfEntry;
+				scrap.PreparedDate = msa.PreparedDate;
+				scrap.RequesterDepartmentID = msa.RequesterDepartmentID;
+				scrap.RequestedBY = msa.RequestedBY;
+				scrap.PreparedBY ="400108";
+
+				obj.ScrapEntryMasters.Add(scrap);
+				obj.SaveChanges();
+
+                foreach (var item in msa.scrapitems)
+                {
+					var item1 = new ScrapItem();
+					item1.BasicPrice = item.BAsicPrice;
+					item1.CGSTAmount = item.cgstamount;
+					item1.SGSTAmount = item.sgstamount;
+					item1.IGSTAmount = item.igstamount;
+					//item1.ItemId = item.ItemId;
+					item1.Qty = item.Qty;
+					item1.UnitPrice = item.UnitPrice;
+					obj.ScrapItems.Add(item1);
+					obj.SaveChanges();
+                }
+				return status;
+            }
             catch (Exception ex)
             {
                 throw;

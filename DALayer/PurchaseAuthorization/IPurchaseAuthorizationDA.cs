@@ -28,7 +28,7 @@ namespace DALayer.PurchaseAuthorization
         Task<statuscheckmodel> RemovePurchaseApprover(EmployeemappingtopurchaseModel model);
         Task<PACreditDaysApproverModel> GetPACreditDaysApproverById(int ApprovalId);
         Task<EmployeModel> GetEmployeeMappings(PAConfigurationModel model);
-        DataTable GetEmployeeMappings1(PAConfigurationModel model);
+        DataSet GetEmployeeMappings1(PAConfigurationModel model);
 
         //Task<List<LoadItemsByID>> GetItemsByMasterIDs(PADetailsModel masters);
         List<loadtaxesbyitemwise> GetItemsByMasterIDs(PADetailsModel masters);
@@ -86,5 +86,8 @@ namespace DALayer.PurchaseAuthorization
         Task<statuscheckmodel> Unmappingitem(MappingItemModel model);
         Task<List<IncoTermMaster>> getincotermmaster();
         Task<statuscheckmodel> updatetokuchubyid(int tokuchuid);
+        Task<statuscheckmodel> UpdateMsaprconfirmation(List<ItemsViewModel> msa);
+        Task<List<MSAProcessTrack>> getmsaprocesstrackbyId(int paid);
+        Task<statuscheckmodel> InsertScrapRregister(ScrapRegisterMasterModel msa);
     }
 }

@@ -85,7 +85,7 @@ namespace BALayer.PurchaseAuthorization
 		{
 			return await _purchaseDataAcess.GetEmployeeMappings(model);
 		}
-		public DataTable GetEmployeeMappings1(PAConfigurationModel model)
+		public DataSet GetEmployeeMappings1(PAConfigurationModel model)
 		{
 			return _purchaseDataAcess.GetEmployeeMappings1(model);
 		}
@@ -340,19 +340,34 @@ namespace BALayer.PurchaseAuthorization
 			return await _purchaseDataAcess.clearMSAConfirmation(model);
 
 		}
-		public Task<statuscheckmodel> Unmappingitem(MappingItemModel model)
+		public Task<statuscheckmodel> Unmappingitem(MappingItemModel model)        
 		{
 			return _purchaseDataAcess.Unmappingitem(model);
 		}
 
+
         public async Task<List<IncoTermMaster>> getincotermmaster()
         {
-			return await _purchaseDataAcess.getincotermmaster();
+            return await _purchaseDataAcess.getincotermmaster();
         }
-
         public async Task<statuscheckmodel> updatetokuchubyid(int tokuchuid)
         {
 			return await _purchaseDataAcess.updatetokuchubyid(tokuchuid);
+        }
+
+        public async Task<statuscheckmodel> UpdateMsaprconfirmation(List<ItemsViewModel> msa)
+        {
+			return await _purchaseDataAcess.UpdateMsaprconfirmation(msa);
+        }
+
+        public async Task<List<MSAProcessTrack>> getmsaprocesstrackbyId(int paid)
+        {
+			return await _purchaseDataAcess.getmsaprocesstrackbyId(paid);
+		}
+
+        public async Task<statuscheckmodel> InsertScrapRregister(ScrapRegisterMasterModel msa)
+        {
+			return await _purchaseDataAcess.InsertScrapRregister(msa);
         }
     }
 }

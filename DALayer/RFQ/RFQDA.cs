@@ -97,7 +97,17 @@ namespace DALayer.RFQ
             //List<RFQQuoteView> mainList = RFQQuoteViewList.GroupBy(p => p.VendorId)
             //               .Select(grp => grp.First())
             //               .ToList();
-
+            foreach (RFQQuoteView item1 in mainList)
+            {
+                if (item1.RFQType == "Repeat Order" || item1.RFQType == "Quote")
+                {
+                    MPRItemInfo previousprice = new MPRItemInfo();
+                    previousprice.Itemdetailsid = Convert.ToInt32(item1.MPRItemDetailsid);
+                    previousprice.PONumber = item1.PONO;
+                    previousprice.POPrice = item1.UnitPrice;
+                    PreviouPriceUpdate(previousprice);
+                }
+            }
             List<int> vendorIdsList = new List<int>();
             foreach (RFQQuoteView item in mainList)
             {
@@ -106,18 +116,18 @@ namespace DALayer.RFQ
                     MPRRfqItem mprRfq = new MPRRfqItem();
                     mprRfq.MPRRevisionId = item.MPRRevisionId;
                     mprRfq.MPRItemDetailsid = item.MPRItemDetailsid;
-                    mprRfq.RfqItemsid = Convert.ToInt16(item.RFQItemId);
+                    mprRfq.RfqItemsid = Convert.ToInt32(item.RFQItemId);
                     MPRRfqItemInfo mprRfqInfo = new MPRRfqItemInfo();
                     mprRfqInfo.rfqsplititemid = item.RFQSplitItemId;
                     mprRfq.MPRRfqItemInfos.Add(mprRfqInfo);
                     createMPRRFQItems(mprRfq);
-                    if (item.RFQType == "Repeat Order")
-                    {
-                        MPRItemInfo previousprice = new MPRItemInfo();
-                        previousprice.Itemdetailsid = Convert.ToInt32(item.MPRItemDetailsid);
-                        previousprice.PONumber = item.PONO;
-                        PreviouPriceUpdate(previousprice);
-                    }
+                    //if (item.RFQType == "Repeat Order")
+                    //{
+                    //    MPRItemInfo previousprice = new MPRItemInfo();
+                    //    previousprice.Itemdetailsid = Convert.ToInt32(item.MPRItemDetailsid);
+                    //    previousprice.PONumber = item.PONO;
+                    //    PreviouPriceUpdate(previousprice);
+                    //}
                 }
                 else
                 {

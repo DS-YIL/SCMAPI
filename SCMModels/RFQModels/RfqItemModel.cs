@@ -150,6 +150,9 @@ namespace SCMModels.RFQModels
 		public int paitemid { get; set; }
 		public int MRPItemsDetailsID { get; set; }
 		public string EmployeeNo { get; set; }
+        public string PRno { get; set; }
+		public string PRLineItemNo { get; set; }
+		public string PRcreatedBy { get; set; }
 	}
 	public class EmployeeFilterModel
 	{
