@@ -142,10 +142,10 @@ namespace SCMAPI.Controllers
         }
         [HttpPost]
         [Route("GetEmployeeMappings1")]
-        [ResponseType(typeof(DataTable))]
-        public DataTable GetEmployeeMappings1(PAConfigurationModel model)
+        [ResponseType(typeof(DataSet))]
+        public DataSet GetEmployeeMappings1(PAConfigurationModel model)
         {
-            DataTable ds = new DataTable();
+            DataSet ds = new DataSet();
             ds = _paBusenessAcess.GetEmployeeMappings1(model);
             return ds;
         }
@@ -1044,7 +1044,7 @@ namespace SCMAPI.Controllers
 
                                 MSALineItem mSALineItem1 = new MSALineItem();
                                 mSALineItem1.Item_No_ = string.IsNullOrWhiteSpace(row["Item No#"].ToString()) ? DBNull.Value.ToString() : row["Item No#"].ToString();
-                                mSALineItem1.deletionflag = false;
+                                //mSALineItem1.deletionflag = false;
                                 mSALineItem1.mscode = row["mscode"].ToString();
                                 mSALineItem1.ItemDescription = row["ItemDescription"].ToString();
                                 mSALineItem1.WBS = row["WBS"].ToString();
@@ -1074,9 +1074,9 @@ namespace SCMAPI.Controllers
                                 mSALineItem1.sortstring1 = string.IsNullOrWhiteSpace(row["sortstring1"].ToString()) ? null : row["sortstring1"].ToString();
                                 mSALineItem1.ProjectManager = string.IsNullOrWhiteSpace(row["ProjectManager"].ToString()) ? null : row["ProjectManager"].ToString();
                                 mSALineItem1.note1 = string.IsNullOrWhiteSpace(row["note1"].ToString()) ? null : row["note1"].ToString();
-                                mSALineItem1.note2 = string.IsNullOrWhiteSpace(row["note2"].ToString()) ? null : row["note2"].ToString();
-                                mSALineItem1.note3 = string.IsNullOrWhiteSpace(row["note3"].ToString()) ? null : row["note3"].ToString();
-                                mSALineItem1.note4 = string.IsNullOrWhiteSpace(row["note4"].ToString()) ? null : row["note4"].ToString();
+                                mSALineItem1.note2 = string.IsNullOrWhiteSpace(row["note3"].ToString()) ? null : row["note3"].ToString();
+                                mSALineItem1.note3 = paitemid.ToString();
+                                mSALineItem1.note4 = string.IsNullOrWhiteSpace(row["note2"].ToString()) ? null :Convert.ToDateTime(row["note2"].ToString()).ToString("yyyyMMdd");
                                 mSALineItem1.lt = string.IsNullOrWhiteSpace(row["lt"].ToString()) ? null : row["lt"].ToString();
                                 mSALineItem1.deadline = string.IsNullOrWhiteSpace(row["deadline"].ToString()) ? null : row["deadline"].ToString();
                                 mSALineItem1.deliverydate = string.IsNullOrWhiteSpace(row["deliverydate"].ToString()) ? null : row["deliverydate"].ToString();
@@ -1200,7 +1200,210 @@ namespace SCMAPI.Controllers
         [Route("UpdateMSAConfirmation")]
         public async Task<IHttpActionResult> UpdateMSAMasterConfirmation(MSAMasterConfirmation model)
         {
+            //this.msalineitems(model);
             return Ok(await _paBusenessAcess.updateMSAConfirmation(model));
+        }
+        [HttpPost]
+        [Route("msalineitems")]
+        public bool msalineitems(MSAMasterConfirmation model)
+        {
+            string sourcePath = @"C:\Users\developer4\Desktop";
+            string targetpath = ConfigurationManager.AppSettings["DownloadVexcel"];
+            string srcfilename = "finalmsa.xls";
+            string targetfilename = "MSA" + DateTime.Now.ToString("ddMMyyyyhhmmss") + ".xls";
+            string sourceFile = System.IO.Path.Combine(sourcePath, srcfilename);
+            string destFile = System.IO.Path.Combine(targetpath, targetfilename);
+            if (!System.IO.Directory.Exists(targetpath))
+            {
+                System.IO.Directory.CreateDirectory(targetpath);
+            }
+            System.IO.File.Copy(sourceFile, destFile, false);
+            Microsoft.Office.Interop.Excel._Application docExcel = new Microsoft.Office.Interop.Excel.Application();
+            //docExcel.ActiveWorkbook.Sheets[1].Activate();
+            //docExcel.Sheets[1].Activate();
+           // docExcel.ActiveSheet;
+            docExcel.Visible = false;
+            docExcel.DisplayAlerts = false;
+            //xlWorkSheet = (Worksheet)xlWorkBook.Sheets["SheetName"];
+            //Microsoft.Office.Interop.Excel._Workbook workbooksExcel = docExcel.Workbooks.Open(destFile, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Microsoft.Office.Interop.Excel.XlCorruptLoad.xlExtractData);
+            Microsoft.Office.Interop.Excel._Workbook workbooksExcel = docExcel.Workbooks.Open(destFile, ReadOnly: true, Password: "Feb@1234Feb@1234");
+
+            Microsoft.Office.Interop.Excel._Worksheet worksheetExcel = (Microsoft.Office.Interop.Excel._Worksheet)workbooksExcel.ActiveSheet;
+            //Microsoft.Office.Interop.Excel._Worksheet worksheetExcel = workbooksExcel.Worksheets[3] as Microsoft.Office.Interop.Excel.Worksheet;
+            Microsoft.Office.Interop.Excel.Range range = worksheetExcel.UsedRange;
+            YSCMEntities obj = new YSCMEntities();
+            var msadata = obj.RPALoadItemForMSAs.Where(x => x.paid == model.PAID).ToList();
+            int i = 2;
+            foreach (var item in msadata)
+            {
+                if (item.PAItemID != null)
+                {
+                    if(!string.IsNullOrEmpty(item.Item_No_))
+                        (range.Worksheet.Cells["2", "A"]).Value2 = item.Item_No_;
+                    else
+                        (range.Worksheet.Cells["2", "A"]).Value2 = 0;
+
+                    if(!string.IsNullOrEmpty(item.deletionflag))
+                        (range.Worksheet.Cells["2", "B"]).Value2 = item.deletionflag;
+                    else
+                        (range.Worksheet.Cells["2", "B"]).Value2 = 0;
+
+                    if (!string.IsNullOrEmpty(item.mscode))
+                        (range.Worksheet.Cells["2", "C"]).Value2 = item.mscode;
+                    else
+                        (range.Worksheet.Cells["2", "C"]).Value2 = 0;
+
+                    //if (!string.IsNullOrEmpty(item.ItemDescription))
+                    //    (range.Worksheet.Cells[i, "D"]).Value2 = item.ItemDescription;
+                    //else
+                    //    (range.Worksheet.Cells[i, "D"]).Value2 = 0;
+
+                    //if (!string.IsNullOrEmpty(item.WBS))
+                    //    (range.Worksheet.Cells[i, "E"]).Value2 = item.WBS;
+                    //else
+                    //    (range.Worksheet.Cells[i, "E"]).Value2 = 0;
+
+                    //if (!string.IsNullOrEmpty(item.wbsdesc))
+                    //    (range.Worksheet.Cells[i, "F"]).Value2 = item.wbsdesc;
+                    //else
+                    //    (range.Worksheet.Cells[i, "F"]).Value2 = 0;
+
+                    //if (item.Quantity!=0)
+                    //    (range.Worksheet.Cells[i, "G"]).Value2 = item.Quantity;
+                    //else
+                    //    (range.Worksheet.Cells[i, "G"]).Value2 = 0;
+
+                    //if (!string.IsNullOrEmpty(item.unit))
+                    //    (range.Worksheet.Cells[i, "H"]).Value2 = item.unit;
+                    //else
+                    //    (range.Worksheet.Cells[i, "H"]).Value2 = 0;
+
+                    //if (!string.IsNullOrEmpty(item.RequirementDate))
+                    //    (range.Worksheet.Cells[i, "I"]).Value2 = item.RequirementDate;
+                    //else
+                    //    (range.Worksheet.Cells[i, "I"]).Value2 = 0;
+
+                    //if (!string.IsNullOrEmpty(item.Project))
+                    //    (range.Worksheet.Cells[i, "J"]).Value2 = item.Project;
+                    //else
+                    //    (range.Worksheet.Cells[i, "J"]).Value2 = 0;
+
+                    //if (!string.IsNullOrEmpty(item.projectdesc))
+                    //    (range.Worksheet.Cells[i, "K"]).Value2 = item.projectdesc;
+                    //else
+                    //    (range.Worksheet.Cells[i, "K"]).Value2 = 0;
+
+                    //if (!string.IsNullOrEmpty(item.TokuchuNo))
+                    //    (range.Worksheet.Cells[i, "L"]).Value2 = item.TokuchuNo;
+                    //else
+                    //    (range.Worksheet.Cells[i, "L"]).Value2 = 0;
+
+                    //if (!string.IsNullOrEmpty(item.bupfl))
+                    //    (range.Worksheet.Cells[i, "N"]).Value2 = item.bupfl;
+                    //else
+                    //    (range.Worksheet.Cells[i, "N"]).Value2 = 0;
+
+                    //if (!string.IsNullOrEmpty(item.bupfldesc))
+                    //    (range.Worksheet.Cells[i, "O"]).Value2 = item.bupfldesc;
+                    //else
+                    //    (range.Worksheet.Cells[i, "O"]).Value2 = 0;
+
+                    //if (item.UnitPrice!=0)
+                    //    (range.Worksheet.Cells[i, "P"]).Value2 = item.UnitPrice;
+                    //else
+                    //    (range.Worksheet.Cells[i, "P"]).Value2 = 0;
+
+                    //if (!string.IsNullOrEmpty(item.Currency))
+                    //    (range.Worksheet.Cells[i, "Q"]).Value2 = item.Currency;
+                    //else
+                    //    (range.Worksheet.Cells[i, "Q"]).Value2 = 0;
+
+                    //if (!string.IsNullOrEmpty(item.priceunit))
+                    //    (range.Worksheet.Cells[i, "R"]).Value2 = item.priceunit;
+                    //else
+                    //    (range.Worksheet.Cells[i, "R"]).Value2 = 0;
+
+                    //if (!string.IsNullOrEmpty(item.costelement))
+                    //    (range.Worksheet.Cells[i, "S"]).Value2 = item.costelement;
+                    //else
+                    //    (range.Worksheet.Cells[i, "S"]).Value2 = 0;
+
+                    //if (!string.IsNullOrEmpty(item.costelementdesc))
+                    //    (range.Worksheet.Cells[i, "T"]).Value2 = item.costelementdesc;
+                    //else
+                    //    (range.Worksheet.Cells[i, "T"]).Value2 = 0;
+
+                    //if (!string.IsNullOrEmpty(item.plant))
+                    //    (range.Worksheet.Cells[i, "U"]).Value2 = item.plant;
+                    //else
+                    //    (range.Worksheet.Cells[i, "U"]).Value2 = 0;
+
+                    //if (!string.IsNullOrEmpty(item.plantname))
+                    //    (range.Worksheet.Cells[i, "V"]).Value2 = item.plantname;
+                    //else
+                    //    (range.Worksheet.Cells[i, "V"]).Value2 = 0;
+
+                    //if (!string.IsNullOrEmpty(item.StorageLocation))
+                    //    (range.Worksheet.Cells[i, "W"]).Value2 = item.StorageLocation;
+                    //else
+                    //    (range.Worksheet.Cells[i, "W"]).Value2 = 0;
+
+                    //if (!string.IsNullOrEmpty(item.storagelocationname))
+                    //    (range.Worksheet.Cells[i, "X"]).Value2 = item.storagelocationname;
+                    //else
+                    //    (range.Worksheet.Cells[i, "X"]).Value2 = 0;
+
+                    //if (!string.IsNullOrEmpty(item.VendorCode))
+                    //    (range.Worksheet.Cells[i, "Y"]).Value2 = item.VendorCode;
+                    //else
+                    //    (range.Worksheet.Cells[i, "Y"]).Value2 = 0;
+
+                    //if (!string.IsNullOrEmpty(item.VendorName))
+                    //    (range.Worksheet.Cells[i, "Z"]).Value2 = item.VendorName;
+                    //else
+                    //    (range.Worksheet.Cells[i, "Z"]).Value2 = 0;
+
+                    //if (!string.IsNullOrEmpty(item.VendorModelNo))
+                    //    (range.Worksheet.Cells[i, "AA"]).Value2 = item.VendorModelNo;
+                    //else
+                    //    (range.Worksheet.Cells[i, "AA"]).Value2 = 0;
+
+                    //if (!string.IsNullOrEmpty(item.sortstring1))
+                    //    (range.Worksheet.Cells[i, "AB"]).Value2 = item.sortstring1;
+                    //else
+                    //    (range.Worksheet.Cells[i, "AB"]).Value2 = 0;
+
+                    //if (!string.IsNullOrEmpty(item.note1))
+                    //    (range.Worksheet.Cells[i, "AD"]).Value2 = item.note1;
+                    //else
+                    //    (range.Worksheet.Cells[i, "AD"]).Value2 = 0;
+
+                    //if (!string.IsNullOrEmpty(item.note2.ToString()))
+                    //    (range.Worksheet.Cells[i, "AE"]).Value2 = item.note2;
+                    //else
+                    //    (range.Worksheet.Cells[i, "AE"]).Value2 = 0;
+
+                    //if (item.note3!=0)
+                    //    (range.Worksheet.Cells[i, "AF"]).Value2 = item.note3;
+                    //else
+                    //    (range.Worksheet.Cells[i, "AF"]).Value2 = 0;
+
+                    //if (!string.IsNullOrEmpty(item.note4))
+                    //    (range.Worksheet.Cells[i, "AG"]).Value2 = item.note4;
+                    //else
+                    //    (range.Worksheet.Cells[i, "AG"]).Value2 = 0;
+
+                    //if (!string.IsNullOrEmpty(item.lt))
+                    //    (range.Worksheet.Cells[i, "AH"]).Value2 = item.lt;
+                    //else
+                    //    (range.Worksheet.Cells[i, "AH"]).Value2 = 0;
+                }
+                workbooksExcel.SaveAs("msaupdate.xls", "D:\\msalineitem");
+                //workbooksExcel.Close(false, Type.Missing, Type.Missing);
+                //docExcel.Application.DisplayAlerts = true;
+                //docExcel.Application.Quit();
+            }
+            return true;
         }
         [HttpPost]
         [Route("ClearMSAConfirmation")]
@@ -1473,10 +1676,10 @@ namespace SCMAPI.Controllers
                     else
                         (range.Worksheet.Cells[i, "H"]).Value2 = 0;
 
-                    if (item1.HSNCode != null)
-                        (range.Worksheet.Cells[i, "I"]).Value2 = item1.HSNCode;
-                    else
-                        (range.Worksheet.Cells[i, "I"]).Value2 = 0;
+                    //if (item1.HSNCode != null)
+                    //    (range.Worksheet.Cells[i, "I"]).Value2 = item1.HSNCode;
+                    //else
+                    //    (range.Worksheet.Cells[i, "I"]).Value2 = 0;
 
                     if (!string.IsNullOrEmpty(item1.DiscountPercentage.ToString()))
                         (range.Worksheet.Cells[i, "J"]).Value2 = item1.DiscountPercentage;
@@ -1496,7 +1699,7 @@ namespace SCMAPI.Controllers
                     if (!string.IsNullOrEmpty(item1.MfgPartNo))
                         (range.Worksheet.Cells[i, "M"]).Value2 = item1.MfgPartNo;
                     else
-                        (range.Worksheet.Cells[i, "M"]).Value2 = "";
+                        (range.Worksheet.Cells[i, "M"]).Value2 = "";    
 
                     if (!string.IsNullOrEmpty(item1.MfgModelNo))
                         (range.Worksheet.Cells[i, "N"]).Value2 = item1.MfgModelNo;
@@ -1555,10 +1758,10 @@ namespace SCMAPI.Controllers
                         (range.Worksheet.Cells[i, "X"]).Value2 = item1.Remarks;
                     else
                         (range.Worksheet.Cells[i, "X"]).Value2 = "";
-                    if (!string.IsNullOrEmpty(item1.RFQSplitItemId.ToString()))
-                        (range.Worksheet.Cells[i, "Y"]).Value2 = item1.RFQSplitItemId;
-                    else
-                        (range.Worksheet.Cells[i, "Y"]).Value2 = 0;
+                    //if (!string.IsNullOrEmpty(item1.RFQSplitItemId.ToString()))
+                    //    (range.Worksheet.Cells[i, "Y"]).Value2 = item1.RFQSplitItemId;
+                    //else
+                    //    (range.Worksheet.Cells[i, "Y"]).Value2 = 0;
                     i++;
                 }
                 range.Worksheet.Protect("password", Missing.Value, Missing.Value, Missing.Value, Missing.Value, Missing.Value, Missing.Value, Missing.Value, Missing.Value, Missing.Value, Missing.Value, Missing.Value, Missing.Value, Missing.Value, Missing.Value, Missing.Value);
@@ -1865,27 +2068,24 @@ namespace SCMAPI.Controllers
         }
         [HttpPost]
         [Route("exceldata")]
-        public bool exceldata(string filename)
+        public bool exceldata()
         {
             try
             {
-                //filename = "YIL_SO_created_on_20_2_2021_18_40_10.xlsx";
-                string filePath = @"\\10.29.15.68\D$\SODetails\ActualPath\"+ filename;
-                //string name = filePath+filename;
-                string filePath1 = @"\\10.29.15.68\D$\SODetails\CopyPath";
+                string Actualpath = ConfigurationManager.AppSettings["SODocPath"];
+                //var directory = new DirectoryInfo(@"\\10.29.15.68\\D$\\SODetails\\ActualPath");
+                var directory = new DirectoryInfo(Actualpath);
+                string myFile = (from f in directory.GetFiles()
+                              orderby f.LastWriteTime descending
+                              select f).First().ToString();
+                //string filePath =Actualpath + "'\'" + myFile;
+                string filePath= @"C:\\SODetails\\ActualPath\\" + myFile;
+                string filePath1 = @"C:\\SODetails\\CopyPath\\" + myFile;
                 System.IO.File.Move(filePath, filePath1);
-                //File.Move(name, filePath1);
-                //string filetype = "Sales";
-                //string filePath = @"D:\DSO\Copy of YIL_SO_file_26_11_2020_12_26_58.xlsx";
-                //var httpRequest = HttpContext.Current.Request;
-                //var serverPath = HttpContext.Current.Server.MapPath("~/DSODocuments");
-                //Console.WriteLine("Unable to open the ");
                 if (Directory.Exists(filePath))
                 {
                     if (Directory.Exists(filePath1))
                     {
-                        //Directory.Delete(destinationdirectory);
-                        //Directory.Move(destinationdirectory, backupdirectory + DateTime.Now.ToString("_MMMdd_yyyy_HHmmss"));
                         Directory.Move(filePath, filePath1);
                     }
                     else
@@ -1902,10 +2102,10 @@ namespace SCMAPI.Controllers
                 bool hasHeaders = false;
                 string HDR = hasHeaders ? "Yes" : "No";
                 string strConn;
-                if (filePath.Substring(filePath.LastIndexOf('.')).ToLower() == ".xlsx")
-                    strConn = "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" + filePath + ";Extended Properties=\"Excel 12.0;HDR=" + HDR + ";IMEX=0\"";
+                if (filePath1.Substring(filePath1.LastIndexOf('.')).ToLower() == ".xlsx")
+                    strConn = "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" + filePath1 + ";Extended Properties=\"Excel 12.0;HDR=" + HDR + ";IMEX=0\"";
                 else
-                    strConn = "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" + Path.GetDirectoryName(filePath) + ";Extended Properties='Text;HDR=YES;FMT=Delimited;'";
+                    strConn = "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" + Path.GetDirectoryName(filePath1) + ";Extended Properties='Text;HDR=YES;FMT=Delimited;'";
 
                 OleDbConnection conn = new OleDbConnection(strConn);
                 conn.Open();
@@ -1975,7 +2175,6 @@ namespace SCMAPI.Controllers
             {
                 throw;
             }
-
         }
         [HttpGet]
         [Route("getincotermmaster")]
@@ -1983,11 +2182,29 @@ namespace SCMAPI.Controllers
         {
             return Ok(await _paBusenessAcess.getincotermmaster());
         }
-        [HttpGet]
+        [HttpGet]   
         [Route("updatetokuchubyid/{tokuchuid}")]
         public async Task<IHttpActionResult> updatetokuchubyid(int tokuchuid)
         {
             return Ok(await _paBusenessAcess.updatetokuchubyid(tokuchuid));
+        }
+        [HttpPost]
+        [Route("UpdateMsaprconfirmation")]
+        public async Task<IHttpActionResult> UpdateMsaprconfirmation(List<ItemsViewModel> msa)
+        {
+            return Ok(await _paBusenessAcess.UpdateMsaprconfirmation(msa));
+        }
+        [HttpGet]
+        [Route("getmsaprocesstrackbyId/{paid}")]
+        public async Task<IHttpActionResult> getmsaprocesstrackbyId(int paid)
+        {
+            return Ok(await _paBusenessAcess.getmsaprocesstrackbyId(paid));
+        }
+        [HttpPost]
+        [Route("InsertScrapRregister")]
+        public async Task<IHttpActionResult> InsertScrapRregister(ScrapRegisterMasterModel msa)
+        {
+            return Ok(await _paBusenessAcess.InsertScrapRregister(msa));
         }
     }
 }
