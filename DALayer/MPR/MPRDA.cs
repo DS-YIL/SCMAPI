@@ -1862,7 +1862,7 @@ Review Date :<<>>   Reviewed By :<<>>
 					{
 						var bg = new BankGuarantee();
 						bg.BGNo = item.BGNo;
-						bg.BGId =Convert.ToInt32(item.BGId);
+						bg.BGId = Convert.ToInt32(item.BGId);
 						bg.CreatedBy = mprStatus.PreparedBy;
 						bg.Vendorid = item.VendorId;
 						bg.VendorName = item.VendorName;
@@ -1872,12 +1872,13 @@ Review Date :<<>>   Reviewed By :<<>>
 						bg.JobCode = item.JobCode;
 						bg.SaleOrderNo = item.SaleOrderNo;
 						bg.DepartmentId = item.DepartmentId;
+						bg.BGRemarks = "Please submit BG for the PONO:" + item.PONo + "";
 						var orgId = DB.MPRDepartments.Where(li => li.DepartmentId == item.DepartmentId).FirstOrDefault().ORgDepartmentid;
 						if (orgId != null)
 							bg.BUHead = DB.OrgDepartments.Where(li => li.OrgDepartmentId == orgId).FirstOrDefault().DepartmentHead;
 						bg.ProjectManager = item.ProjectManager;
 						bg.BuyerManger = item.BuyerManager;
-						//updateBG(bg);
+						updateBG(bg);
 					}
 				}
 			}
@@ -3564,6 +3565,7 @@ Review Date :<<>>   Reviewed By :<<>>
 				if (LocalBG != null)
 				{
 					LocalBG.BGStatus = bgst.Status;
+					LocalBG.VerifiedonReceiptofOriginal = true;
 					DB.SaveChanges();
 				}
 				//update BG status track in remote 
