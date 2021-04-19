@@ -48,29 +48,43 @@ Review Date :<<>>   Reviewed By :<<>>
 	    Review Date :<<>>   Reviewed By :<<>>*/
 		public DataTable getDBMastersList(DynamicSearchResult Result)
 		{
-			Result.connectionString = DB.Database.Connection.ConnectionString;
 			DataTable dtDBMastersList = new DataTable();
 			string query = "";
-			if (!string.IsNullOrEmpty(Result.tableName))
-			{
-				query = "select * from " + Result.tableName;
-				if (Result.sortBy != null)
-				{
-					query += " order by " + Result.sortBy;
-				}
-			}
-			else if (Result.query != "")
-			{
-				query = Result.query;
-			}
-
 			SqlConnection con = new SqlConnection(DB.Database.Connection.ConnectionString);
-			SqlCommand cmd = new SqlCommand(query, con);
-			con.Open();
-			SqlDataAdapter da = new SqlDataAdapter(cmd);
-			da.Fill(dtDBMastersList);
-			con.Close();
-			da.Dispose();
+			SqlDataAdapter da = new SqlDataAdapter();
+			try
+			{
+				Result.connectionString = DB.Database.Connection.ConnectionString;
+				if (!string.IsNullOrEmpty(Result.tableName))
+				{
+					query = "select * from " + Result.tableName;
+					if (Result.sortBy != null)
+					{
+						query += " order by " + Result.sortBy;
+					}
+				}
+				else if (Result.query != "")
+				{
+					query = Result.query;
+				}
+
+
+				SqlCommand cmd = new SqlCommand(query, con);
+				con.Open();
+				da = new SqlDataAdapter(cmd);
+				da.Fill(dtDBMastersList);
+
+			}
+			catch (Exception ex)
+			{
+
+				log.ErrorMessage("MPRDA", "getDBMastersList", query + ";" + ex.Message.ToString());
+			}
+			finally
+			{
+				con.Close();
+				da.Dispose();
+			}
 
 			return dtDBMastersList;
 		}
@@ -3401,7 +3415,7 @@ Review Date :<<>>   Reviewed By :<<>>
 				   ActiveRevision = v.rfq.rev_n.ActiveRevision,
 				   RFQNo = v.rfqm.RFQNo,
 				   MprRevisionId = v.rfq.mprr.RevisionId,
-				   statusId = v.rfq.rev_n.StatusId,
+				   StatusId = v.rfq.rev_n.StatusId,
 				   RevisionNo = v.rfq.rev_n.RevisionNo,
 				   RevisionId = v.rfq.mprr.RevisionId,
 				   rfqRevisionId = v.rfq.rev_n.rfqRevisionId,
