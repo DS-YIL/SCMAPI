@@ -134,7 +134,7 @@ namespace DALayer.ASN
 				{
 					Context.Configuration.ProxyCreationEnabled = false;
 					var query = default(string);
-					query = "select * from ASNShipmentHeader where ( Deleteflag=1 or Deleteflag is null)";
+					query = "select * from ASNShipmentHeader where ( Deleteflag=0 or Deleteflag is null)";
 					if (!string.IsNullOrEmpty(ASNfilters.ToDate))
 						query += " and CreatedDate <= '" + ASNfilters.ToDate + "'";
 					if (!string.IsNullOrEmpty(ASNfilters.FromDate))
@@ -166,10 +166,13 @@ namespace DALayer.ASN
 			ASNShipmentHeader ASNDetails = new ASNShipmentHeader();
 			try
 			{
-				ASNDetails = obj.ASNShipmentHeaders.Where(li => li.ASNId == ASNId).FirstOrDefault();
-				foreach (ASNCommunication item in ASNDetails.ASNCommunications)
+				ASNDetails = obj.ASNShipmentHeaders.Where(li => li.ASNId == ASNId && li.Deleteflag != true).FirstOrDefault();
+				if (ASNDetails != null)
 				{
-					item.Employee = obj.VendorEmployeeViews.Where(li => li.EmployeeNo == item.RemarksFrom).FirstOrDefault();
+					foreach (ASNCommunication item in ASNDetails.ASNCommunications)
+					{
+						item.Employee = obj.VendorEmployeeViews.Where(li => li.EmployeeNo == item.RemarksFrom).FirstOrDefault();
+					}
 				}
 
 			}
