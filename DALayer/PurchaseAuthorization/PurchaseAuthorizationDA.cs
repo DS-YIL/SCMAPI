@@ -3446,7 +3446,7 @@ Review Date :<<>>   Reviewed By :<<>>*/
 				ScrapEntryMaster scrap = new ScrapEntryMaster();
 				scrap.TruckNo = msa.TruckNo;
 				scrap.Dateofentry = msa.DateOfEntry;
-				scrap.PreparedDate = msa.PreparedDate;
+				//scrap.PreparedDate = msa.PreparedDate;
 				scrap.RequesterDepartmentID = msa.RequesterDepartmentID;
 				scrap.RequestedBY = msa.RequestedBY;
 				scrap.PreparedBY ="400108";
@@ -3474,5 +3474,89 @@ Review Date :<<>>   Reviewed By :<<>>*/
                 throw;
             }
         }
+		/*Name of Function : <<GetCMMMonthlyPerformance1>>  Author :<<Rahul>>  
+Date of Creation <<>>
+Purpose : <<Getting Monthly Performance report buyer group wise >>
+Review Date :<<>>   Reviewed By :<<>>*/
+		public DataSet GetCMMMonthlyPerformance1(string spName, SqlParameter[] paramArr)
+        {
+			SqlConnection Conn1 = new SqlConnection(@"Data Source=10.29.15.68;User ID=sa;Password=yil@1234;initial catalog=YSCM;Integrated Security=false;");
+			EmployeModel employee = new EmployeModel();
+			DataSet Ds = new DataSet();
+			try
+			{
+
+				SqlCommand cmd = new SqlCommand();
+				SqlDataAdapter Adp = new SqlDataAdapter();
+				cmd = new SqlCommand();
+				cmd.Connection = Conn1;
+				cmd.CommandText = spName;
+				cmd.CommandTimeout = 0;
+				cmd.CommandType = CommandType.StoredProcedure;
+
+				if (paramArr != null)
+				{
+					foreach (SqlParameter sqlParam in paramArr)
+					{
+						cmd.Parameters.Add(sqlParam);
+					}
+				}
+
+				Adp = new SqlDataAdapter(cmd);
+				Ds = new DataSet();
+
+				Adp.Fill(Ds);
+				cmd.Parameters.Clear();
+				//Ds.Clear();
+				return Ds;
+			}
+			catch (Exception ex)
+			{
+
+				throw;
+			}
+		}
+		/*Name of Function : <<GetCMMMonthlyPerformance1>>  Author :<<Rahul>>  
+Date of Creation <<>>
+Purpose : <<Getting Monthly Performance report buyer group wise >>
+Review Date :<<>>   Reviewed By :<<>>*/
+		public DataSet GetCMMMonthlyPerformance2(string spName, SqlParameter[] paramArr)
+        {
+			SqlConnection Conn1 = new SqlConnection(@"Data Source=10.29.15.68;User ID=sa;Password=yil@1234;initial catalog=YSCM;Integrated Security=false;");
+			EmployeModel employee = new EmployeModel();
+			DataSet Ds = new DataSet();
+			try
+			{
+
+				SqlCommand cmd = new SqlCommand();
+				SqlDataAdapter Adp = new SqlDataAdapter();
+				cmd = new SqlCommand();
+				cmd.Connection = Conn1;
+				cmd.CommandText = spName;
+				cmd.CommandTimeout = 0;
+				cmd.CommandType = CommandType.StoredProcedure;
+
+				if (paramArr != null)
+				{
+					foreach (SqlParameter sqlParam in paramArr)
+					{
+						cmd.Parameters.Add(sqlParam);
+					}
+				}
+
+				Adp = new SqlDataAdapter(cmd);
+				Ds = new DataSet();
+
+				Adp.Fill(Ds);
+				cmd.Parameters.Clear();
+				//Ds.Clear();
+				return Ds;
+			}
+			catch (Exception ex)
+			{
+
+				throw;
+			}
+		}
     }
 }

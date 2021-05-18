@@ -369,5 +369,15 @@ namespace BALayer.PurchaseAuthorization
         {
 			return await _purchaseDataAcess.InsertScrapRregister(msa);
         }
+
+        public DataSet GetCMMMonthlyPerformance1(string spName, SqlParameter[] paramArr)
+        {
+			return _purchaseDataAcess.GetCMMMonthlyPerformance1(spName, paramArr);
+		}
+
+        public DataSet GetCMMMonthlyPerformance2(string spName, SqlParameter[] paramArr)
+        {
+			return _purchaseDataAcess.GetCMMMonthlyPerformance2(spName, paramArr);
+		}
     }
 }

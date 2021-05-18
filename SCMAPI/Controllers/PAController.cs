@@ -2206,5 +2206,103 @@ namespace SCMAPI.Controllers
         {
             return Ok(await _paBusenessAcess.InsertScrapRregister(msa));
         }
+
+        [HttpPost]
+        [Route("GetCMMMonthlyPerformancereport1")]
+        [ResponseType(typeof(DataSet))]
+        public DataSet GetCMMMonthlyPerformancereport1(ReportInputModel model)
+        {
+            DataSet ds = new DataSet();
+            SqlParameter[] Param = new SqlParameter[4];
+            string data = "";
+            YSCMEntities obj = new YSCMEntities();
+            //if (model.DepartmentId == 0)
+            //{
+            //    List<int> departments = obj.MPRDepartments.Where(x => x.ORgDepartmentid == model.OrgDepartmentId).Select(x => (int)x.DepartmentId).ToList();
+            //    data = string.Join(" , ", departments);
+            //}
+            //else
+            //{
+            //    data = string.Join(",", model.DepartmentId);
+            //}
+            if (model.BuyerGroupId == 0)
+            {
+                Param[0] = new SqlParameter("buyergroupid", SqlDbType.VarChar);
+                Param[0].Value = DBNull.Value;
+                Param[1] = new SqlParameter("@fromdate", model.Fromdate);
+                Param[2] = new SqlParameter("@todate", model.Todate);
+                if (model.DepartmentId == 0)
+                {
+                    Param[3] = new SqlParameter("Departmentid", SqlDbType.VarChar);
+                    Param[3].Value = DBNull.Value;
+                }
+                else
+                    Param[3] = new SqlParameter("@Departmentid", data);
+            }
+            else
+            {
+                Param[0] = new SqlParameter("@BuyerGroupId", model.BuyerGroupId);
+                Param[1] = new SqlParameter("@fromdate", model.Fromdate);
+                Param[2] = new SqlParameter("@todate", model.Todate);
+                if (model.DepartmentId == 0)
+                {
+                    Param[3] = new SqlParameter("Departmentid", SqlDbType.VarChar);
+                    Param[3].Value = DBNull.Value;
+                }
+                else
+                    Param[3] = new SqlParameter("@Departmentid", data);
+            }
+            ds = _paBusenessAcess.GetCMMMonthlyPerformance1("SP_GetMonthlyPerformanceReport1", Param);
+            return ds;
+        }
+        [HttpPost]
+        [Route("GetCMMMonthlyreport2")]
+        [ResponseType(typeof(DataSet))]
+        public DataSet GetCMMMonthlyreport2(ReportInputModel model)
+        {
+            DataSet ds = new DataSet();
+            SqlParameter[] Param = new SqlParameter[4];
+            string data = "";
+            YSCMEntities obj = new YSCMEntities();
+            //if (model.DepartmentId == 0)
+            //{
+            //    List<int> departments = obj.MPRDepartments.Where(x => x.ORgDepartmentid == model.OrgDepartmentId).Select(x => (int)x.DepartmentId).ToList();
+            //    data = string.Join(" , ", departments);
+            //}
+            //else
+            //{
+            //    data = string.Join(",", model.DepartmentId);
+            //}
+            if (model.BuyerGroupId == 0)
+            {
+                Param[0] = new SqlParameter("buyergroupid", SqlDbType.VarChar);
+                Param[0].Value = DBNull.Value;
+                Param[1] = new SqlParameter("@fromdate", model.Fromdate);
+                Param[2] = new SqlParameter("@todate", model.Todate);
+                if (model.DepartmentId == 0)
+                {
+                    Param[3] = new SqlParameter("Departmentid", SqlDbType.VarChar);
+                    Param[3].Value = DBNull.Value;
+                }
+                else
+                Param[3] = new SqlParameter("@Departmentid", model.DepartmentId);
+               
+            }
+            else
+            {
+                Param[0] = new SqlParameter("@BuyerGroupId", model.BuyerGroupId);
+                Param[1] = new SqlParameter("@fromdate", model.Fromdate);
+                Param[2] = new SqlParameter("@todate", model.Todate);
+                if (model.DepartmentId == 0)
+                {
+                    Param[3] = new SqlParameter("Departmentid", SqlDbType.VarChar);
+                    Param[3].Value = DBNull.Value;
+                }
+                else
+                    Param[3] = new SqlParameter("@Departmentid", model.DepartmentId);
+            }
+            ds = _paBusenessAcess.GetCMMMonthlyPerformance1("SP_GetMonthlyReport2", Param);
+            return ds;
+        }
     }
 }

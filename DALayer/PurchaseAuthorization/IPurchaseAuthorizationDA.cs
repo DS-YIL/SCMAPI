@@ -89,5 +89,7 @@ namespace DALayer.PurchaseAuthorization
         Task<statuscheckmodel> UpdateMsaprconfirmation(List<ItemsViewModel> msa);
         Task<List<MSAProcessTrack>> getmsaprocesstrackbyId(int paid);
         Task<statuscheckmodel> InsertScrapRregister(ScrapRegisterMasterModel msa);
+        DataSet GetCMMMonthlyPerformance1(string spName, SqlParameter[] paramArr);
+        DataSet GetCMMMonthlyPerformance2(string spName, SqlParameter[] paramArr);
     }
 }
