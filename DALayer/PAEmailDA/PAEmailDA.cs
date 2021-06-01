@@ -70,6 +70,86 @@ namespace DALayer.PAEmailDA
             }
             return true;
         }
+        public bool ScrapApprovalRequest(int scrapid,string approvalname,string Requestedby,string type)
+        {
+            var ipaddress = ConfigurationManager.AppSettings["UI_IpAddress"];
+            ipaddress=ipaddress+ "SCM/scrapregister/" + scrapid + "";
+            EmailSend send = new EmailSend();
+            if(type== "Approverequest")
+            {
+                if(!string.IsNullOrEmpty(Requestedby))
+                    send.FrmEmailId = obj.Employees.Where(x => x.EmployeeNo == Requestedby).FirstOrDefault().EMail;
+
+                if (!string.IsNullOrEmpty(approvalname))
+                    send.ToEmailId = obj.Employees.Where(x => x.EmployeeNo == approvalname).FirstOrDefault().EMail;
+
+                //send.FrmEmailId = "Developer4@in.yokogawa.com";
+                //send.ToEmailId = "Developer4@in.yokogawa.com";
+                send.Subject = "Scrap Request For Approval - "+ scrapid;
+                send.Body = "<html><meta charset=\"ISO-8859-1\"><head><link rel = 'stylesheet' href = 'https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css' ></head><body><div class='container'><br/><b>Please click the below link to Approve Scrap Request:</b><br/>&nbsp<a href='" + ipaddress + "'>" + ipaddress + " </a></div></body></html>";
+            }
+            if (type == "sorequest")
+            {
+                if (!string.IsNullOrEmpty(Requestedby))
+                    send.FrmEmailId = obj.Employees.Where(x => x.EmployeeNo == Requestedby).FirstOrDefault().EMail;
+
+                if (!string.IsNullOrEmpty(approvalname))
+                    send.ToEmailId = obj.Employees.Where(x => x.EmployeeNo == approvalname).FirstOrDefault().EMail;
+
+                send.Subject = "Scrap Request Waiting For SO Creation  - " + scrapid;
+                send.Body = "<html><meta charset=\"ISO-8859-1\"><head><link rel = 'stylesheet' href = 'https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css' ></head><body><div class='container'><br/><b>SO Creation is Pending:</b><br/>&nbsp<a href='" + ipaddress + "'>" + ipaddress + " </a></div></body></html>";
+            }
+            if (type == "vatinvoice")
+            {
+                if (!string.IsNullOrEmpty(Requestedby))
+                    send.FrmEmailId = obj.Employees.Where(x => x.EmployeeNo == Requestedby).FirstOrDefault().EMail;
+
+                if (!string.IsNullOrEmpty(approvalname))
+                    send.ToEmailId = obj.Employees.Where(x => x.EmployeeNo == approvalname).FirstOrDefault().EMail;
+
+                send.Subject = "Scrap Request Waiting For VAT Invoice Creation - " + scrapid;
+                send.Body = "<html><meta charset=\"ISO-8859-1\"><head><link rel = 'stylesheet' href = 'https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css' ></head><body><div class='container'><br/><b> Scrap Requset Waiting For Invoice Prepration:</b><br/>&nbsp<a href='" + ipaddress + "'>" + ipaddress + " </a></div></body></html>";
+            }
+            if (type == "FundVerification")
+            {
+                if (!string.IsNullOrEmpty(Requestedby))
+                    send.FrmEmailId = obj.Employees.Where(x => x.EmployeeNo == Requestedby).FirstOrDefault().EMail;
+
+                if (!string.IsNullOrEmpty(approvalname))
+                    send.ToEmailId = obj.Employees.Where(x => x.EmployeeNo == approvalname).FirstOrDefault().EMail;
+
+                send.Subject = "Scrap Request Waiting For Fund Verification  - " + scrapid;
+                send.Body = "<html><meta charset=\"ISO-8859-1\"><head><link rel = 'stylesheet' href = 'https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css' ></head><body><div class='container'><br/><b>Scrap Requset Waiting For Fund Verification:</b><br/>&nbsp<a href='" + ipaddress + "'>" + ipaddress + " </a></div></body></html>";
+            }
+            if (type == "ReadyToDisPatch")
+            {
+                if (!string.IsNullOrEmpty(Requestedby))
+                    send.FrmEmailId = obj.Employees.Where(x => x.EmployeeNo == Requestedby).FirstOrDefault().EMail;
+
+                if (!string.IsNullOrEmpty(approvalname))
+                    send.ToEmailId = obj.Employees.Where(x => x.EmployeeNo == approvalname).FirstOrDefault().EMail;
+
+                send.Subject = "Scrap Request Waiting For Dispatch Clearance  - " + scrapid;
+                send.Body = "<html><meta charset=\"ISO-8859-1\"><head><link rel = 'stylesheet' href = 'https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css' ></head><body><div class='container'><br/><b>Scrap Requset Waiting For Dispatch Clearance:</b><br/>&nbsp<a href='" + ipaddress + "'>" + ipaddress + " </a></div></body></html>";
+            }
+            if (type == "DisPatchDone")
+            {
+                if (!string.IsNullOrEmpty(Requestedby))
+                    send.FrmEmailId = obj.Employees.Where(x => x.EmployeeNo == Requestedby).FirstOrDefault().EMail;
+
+                if (!string.IsNullOrEmpty(approvalname))
+                    send.ToEmailId = obj.Employees.Where(x => x.EmployeeNo == approvalname).FirstOrDefault().EMail;
+
+                send.Subject = "Scrap Request Completed- " + scrapid;
+                send.Body = "<html><meta charset=\"ISO-8859-1\"><head><link rel = 'stylesheet' href = 'https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css' ></head><body><div class='container'><br/><b>TAX Invoice is Pending:</b><br/>&nbsp<a href='" + ipaddress + "'>" + ipaddress + " </a></div></body></html>";
+            }
+            if (!string.IsNullOrEmpty(send.FrmEmailId) && !string.IsNullOrEmpty(send.ToEmailId))
+            {
+                sendEmail(send);
+            }
+            return true;
+        }
+
         public bool sendEmail(EmailSend emlSndngList)
         {
             bool validEmail = IsValidEmail(emlSndngList.ToEmailId);

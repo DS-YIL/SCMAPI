@@ -12,6 +12,8 @@ namespace SCMModels.RFQModels
         public string StatusMesssage { get; set; }
         public string StatusRole { get; set; }
         public Nullable<int> rfqitemid { get; set; }
+        public int Scrapstatusid { get; set; }
+        public string Scrapstatusname { get; set; }
     }
     public class PAApproverDetailsInputModel
     {

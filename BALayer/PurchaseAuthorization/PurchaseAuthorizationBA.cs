@@ -369,8 +369,57 @@ namespace BALayer.PurchaseAuthorization
         {
 			return await _purchaseDataAcess.InsertScrapRregister(msa);
         }
+		public async Task<DataTable> getscraplist(scrapsearchmodel model)
+		{
+			return await _purchaseDataAcess.getscraplist(model);
+		}
 
-        public DataSet GetCMMMonthlyPerformance1(string spName, SqlParameter[] paramArr)
+		public async Task<ScrapRegisterMasterModel> getscrapitembyid(int scrapid)
+		{
+			return await _purchaseDataAcess.getscrapitembyid(scrapid);
+		}
+
+		public async Task<statuscheckmodel> UpdateScrapRequest(ScrapRegisterMasterModel msa)
+		{
+			return await _purchaseDataAcess.UpdateScrapRequest(msa);
+		}
+
+		public async Task<statuscheckmodel> UpdateScrapRregister(ScrapRegisterMasterModel msa)
+		{
+			return await _purchaseDataAcess.UpdateScrapRregister(msa);
+		}
+
+		public async Task<statuscheckmodel> InsertScarpflowIncharge(ScrapflowModel model)
+		{
+			return await _purchaseDataAcess.InsertScarpflowIncharge(model);
+		}
+
+		public async Task<List<ScrapflowModel>> Getincharelist()
+		{
+			return await _purchaseDataAcess.Getincharelist();
+		}
+
+		public async Task<ScrapitemRatecontract> Getscrapitemdetails(string itemcode)
+		{
+			return await _purchaseDataAcess.Getscrapitemdetails(itemcode);
+		}
+
+		public async Task<List<ScrapflowModel>> Getincharepermissionlist(scrapsearchmodel search)
+		{
+			return await _purchaseDataAcess.Getincharepermissionlist(search);
+
+		}
+
+		public async Task<DataTable> getscraplistbysearch(scrapsearchmodel model)
+		{
+			return await _purchaseDataAcess.getscraplistbysearch(model);
+		}
+
+		public async Task<List<ScrapflowModel>> getauthorizescrapflowlist(string employeeno)
+		{
+			return await _purchaseDataAcess.getauthorizescrapflowlist(employeeno);
+		}
+		public DataSet GetCMMMonthlyPerformance1(string spName, SqlParameter[] paramArr)
         {
 			return _purchaseDataAcess.GetCMMMonthlyPerformance1(spName, paramArr);
 		}
@@ -379,5 +428,25 @@ namespace BALayer.PurchaseAuthorization
         {
 			return _purchaseDataAcess.GetCMMMonthlyPerformance2(spName, paramArr);
 		}
+
+        public async Task<List<Loadpaforpocration>> LoadItemsforpocreation(PADetailsModel masters)
+        {
+			return await _purchaseDataAcess.LoadItemsforpocreation(masters);
+        }
+
+        public async Task<List<LoadItemsforpo>> LoadItemsforpogeneration(List<int> paid)
+        {
+			return await _purchaseDataAcess.LoadItemsforpogeneration(paid);
+        }
+
+        public async Task<List<LoadItemsByPAID>> LoadItemsforpogenerationbasedonvendor(string VendorId, List<int> PAId)
+        {
+			return await _purchaseDataAcess.LoadItemsforpogenerationbasedonvendor(VendorId,PAId);
+        }
+
+        public async Task<statuscheckmodel> InsertPOItems(POMasterModel model)
+        {
+			return await _purchaseDataAcess.InsertPOItems(model);
+        }
     }
 }

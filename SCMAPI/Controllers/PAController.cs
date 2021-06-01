@@ -21,6 +21,8 @@ using System.Net;
 using SCMModels.RemoteModel;
 using System.Net.Http.Headers;
 using System.Reflection;
+using System.Collections;
+using DALayer.Common;
 
 namespace SCMAPI.Controllers
 {
@@ -28,7 +30,8 @@ namespace SCMAPI.Controllers
     public class PAController : ApiController
     {
         private readonly IPurchaseAuthorizationBA _paBusenessAcess;
-        
+        private ErrorLog log = new ErrorLog();
+
         public PAController(IPurchaseAuthorizationBA purchase)
         {
             this._paBusenessAcess = purchase;
@@ -938,7 +941,7 @@ namespace SCMAPI.Controllers
                     {
                         entities.RFQItems_N.Add(new RFQItems_N
                         {
-                            FreightAmount= Convert.ToDecimal(row["FreightAmount"].ToString()),
+                            FreightAmount = Convert.ToDecimal(row["FreightAmount"].ToString()),
                             FreightPercentage = Convert.ToDecimal(row["FreightPercentage"].ToString()),
                             PFAmount = Convert.ToDecimal(row["P & F Amount"].ToString()),
                             PFPercentage = Convert.ToDecimal(row["P & F Percentage"].ToString()),
@@ -962,7 +965,7 @@ namespace SCMAPI.Controllers
                 {
                     throw e;
                 }
-                
+
             }
             return Ok(filename);
 
@@ -1076,7 +1079,7 @@ namespace SCMAPI.Controllers
                                 mSALineItem1.note1 = string.IsNullOrWhiteSpace(row["note1"].ToString()) ? null : row["note1"].ToString();
                                 mSALineItem1.note2 = string.IsNullOrWhiteSpace(row["note3"].ToString()) ? null : row["note3"].ToString();
                                 mSALineItem1.note3 = paitemid.ToString();
-                                mSALineItem1.note4 = string.IsNullOrWhiteSpace(row["note2"].ToString()) ? null :Convert.ToDateTime(row["note2"].ToString()).ToString("yyyyMMdd");
+                                mSALineItem1.note4 = string.IsNullOrWhiteSpace(row["note2"].ToString()) ? null : Convert.ToDateTime(row["note2"].ToString()).ToString("yyyyMMdd");
                                 mSALineItem1.lt = string.IsNullOrWhiteSpace(row["lt"].ToString()) ? null : row["lt"].ToString();
                                 mSALineItem1.deadline = string.IsNullOrWhiteSpace(row["deadline"].ToString()) ? null : row["deadline"].ToString();
                                 mSALineItem1.deliverydate = string.IsNullOrWhiteSpace(row["deliverydate"].ToString()) ? null : row["deliverydate"].ToString();
@@ -1221,7 +1224,7 @@ namespace SCMAPI.Controllers
             Microsoft.Office.Interop.Excel._Application docExcel = new Microsoft.Office.Interop.Excel.Application();
             //docExcel.ActiveWorkbook.Sheets[1].Activate();
             //docExcel.Sheets[1].Activate();
-           // docExcel.ActiveSheet;
+            // docExcel.ActiveSheet;
             docExcel.Visible = false;
             docExcel.DisplayAlerts = false;
             //xlWorkSheet = (Worksheet)xlWorkBook.Sheets["SheetName"];
@@ -1238,12 +1241,12 @@ namespace SCMAPI.Controllers
             {
                 if (item.PAItemID != null)
                 {
-                    if(!string.IsNullOrEmpty(item.Item_No_))
+                    if (!string.IsNullOrEmpty(item.Item_No_))
                         (range.Worksheet.Cells["2", "A"]).Value2 = item.Item_No_;
                     else
                         (range.Worksheet.Cells["2", "A"]).Value2 = 0;
 
-                    if(!string.IsNullOrEmpty(item.deletionflag))
+                    if (!string.IsNullOrEmpty(item.deletionflag))
                         (range.Worksheet.Cells["2", "B"]).Value2 = item.deletionflag;
                     else
                         (range.Worksheet.Cells["2", "B"]).Value2 = 0;
@@ -1599,13 +1602,223 @@ namespace SCMAPI.Controllers
         [Route("Downloadexcel/{revisionid}")]
         public HttpResponseMessage Downloadexcel(int revisionid)
         {
+
             try
             {
-                string sourcePath = "C:\\Users\\developer4\\Desktop\\";
-                //string sourcePath = "D:\\Excelpath\\";
+                //Microsoft.Office.Interop.Excel.Application xlApp = new
+                //string sourcePath = "C:\\Users\\developer4\\Desktop\\";
+                string sourcePath = ConfigurationManager.AppSettings["RFQTemplate"];
                 string targetpath = ConfigurationManager.AppSettings["DownloadVexcel"];
                 string srcfilename = "RFQDownloadTemplate.xlsx";
-                string targetfilename = "Akil" + DateTime.Now.ToString("ddMMyyyyhhmmss") + ".xlsx";
+                string targetfilename = "RFQ" + DateTime.Now.ToString("ddMMyyyyhhmmss") + revisionid + ".xlsx";
+                string sourceFile = System.IO.Path.Combine(sourcePath, srcfilename);
+                string destFile = System.IO.Path.Combine(targetpath, targetfilename);
+                if (!System.IO.Directory.Exists(targetpath))
+                {
+                    System.IO.Directory.CreateDirectory(targetpath);
+                }
+                System.IO.File.Copy(sourceFile, destFile, false);
+                try
+                {
+                    Microsoft.Office.Interop.Excel.Application docExcel = new Microsoft.Office.Interop.Excel.Application();
+                    docExcel.Visible = false;
+                    docExcel.DisplayAlerts = false;
+                    //Microsoft.Office.Interop.Excel._Workbook workbooksExcel = docExcel.Workbooks.Open(destFile);
+                    Microsoft.Office.Interop.Excel.Workbook workbooksExcel = docExcel.Workbooks.Open(destFile, ReadOnly: false);
+                    //Microsoft.Office.Interop.Excel._Workbook workbooksExcel = docExcel.Workbooks.Open(destFile, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing);
+                    //Microsoft.Office.Interop.Excel._Workbook workbooksExcel = docExcel.Workbooks.Open(destFile, 0, false, 5, "", "", false, Microsoft.Office.Interop.Excel.XlPlatform.xlWindows, "",true, false, 0, true, false, false);
+                    Microsoft.Office.Interop.Excel.Worksheet worksheetExcel = (Microsoft.Office.Interop.Excel.Worksheet)workbooksExcel.ActiveSheet;
+                    Microsoft.Office.Interop.Excel.Range range = worksheetExcel.UsedRange;
+                    YSCMEntities obj = new YSCMEntities();
+                    var data = obj.RfqForVendorDownloads.Where(x => x.rfqRevisionId == revisionid).ToList();
+                    foreach (var item in data)
+                    {
+                        if (!string.IsNullOrEmpty(item.RFQNo))
+                            (range.Worksheet.Cells["2", "G"]).Value2 = item.RFQNo;
+                        if (!string.IsNullOrEmpty(item.rfqRevisionId.ToString()))
+                            (range.Worksheet.Cells["2", "O"]).Value2 = item.rfqRevisionId;
+                        if (!string.IsNullOrEmpty(item.RFQValidDate.ToString()))
+                            (range.Worksheet.Cells["3", "G"]).Value2 = item.RFQValidDate;
+                        if (!string.IsNullOrEmpty(item.ReqRemarks))
+                            (range.Worksheet.Cells["3", "L"]).Value2 = item.ReqRemarks;
+                        if (!string.IsNullOrEmpty(item.RFQValidDate.ToString()))
+                            (range.Worksheet.Cells["2", "L"]).Value2 = item.RFQValidDate;
+                    }
+
+                    int i = 6;
+                    foreach (var item1 in data)
+                    {
+                        if (!string.IsNullOrEmpty(item1.RFQItemsId.ToString()))
+                            (range.Worksheet.Cells[i, "A"]).Value2 = item1.RFQItemsId;
+                        else
+                            (range.Worksheet.Cells[i, "A"]).Value2 = 0;
+
+                        (range.Worksheet.Cells[i, "B"]).Value2 = i - 5;
+
+                        if (!string.IsNullOrEmpty(item1.ItemId.ToString()))
+                            (range.Worksheet.Cells[i, "C"]).Value2 = item1.ItemId;
+                        else
+                            (range.Worksheet.Cells[i, "C"]).Value2 = "";
+
+                        if (!string.IsNullOrEmpty(item1.ItemDescription))
+                            (range.Worksheet.Cells[i, "D"]).Value2 = item1.ItemDescription;
+                        else
+                            (range.Worksheet.Cells[i, "D"]).Value2 = "";
+
+                        if (!string.IsNullOrEmpty(item1.QuotationQty.ToString()))
+                            (range.Worksheet.Cells[i, "E"]).Value2 = item1.QuotationQty;
+                        else
+                            (range.Worksheet.Cells[i, "E"]).Value2 = 0;
+
+                        if (item1.UOM != null)
+                            (range.Worksheet.Cells[i, "F"]).Value2 = item1.UOM;
+                        else
+                            (range.Worksheet.Cells[i, "F"]).Value2 = 0;
+
+                        if (!string.IsNullOrEmpty(item1.CurrencyValue.ToString()))
+                            (range.Worksheet.Cells[i, "G"]).Value2 = item1.CurrencyValue;
+                        else
+                            (range.Worksheet.Cells[i, "G"]).Value2 = 0;
+
+                        if (!string.IsNullOrEmpty(item1.UnitPrice.ToString()))
+                            (range.Worksheet.Cells[i, "H"]).Value2 = item1.UnitPrice;
+                        else
+                            (range.Worksheet.Cells[i, "H"]).Value2 = 0;
+
+                        //if (item1.HSNCode != null)
+                        //    (range.Worksheet.Cells[i, "I"]).Value2 = item1.HSNCode;
+                        //else
+                        //    (range.Worksheet.Cells[i, "I"]).Value2 = 0;
+
+                        if (!string.IsNullOrEmpty(item1.DiscountPercentage.ToString()))
+                            (range.Worksheet.Cells[i, "J"]).Value2 = item1.DiscountPercentage;
+                        else
+                            (range.Worksheet.Cells[i, "J"]).Value2 = 0;
+
+                        if (!string.IsNullOrEmpty(item1.Discount.ToString()))
+                            (range.Worksheet.Cells[i, "K"]).Value2 = item1.Discount;
+                        else
+                            (range.Worksheet.Cells[i, "K"]).Value2 = 0;
+
+                        if (!string.IsNullOrEmpty(item1.VendorModelNo))
+                            (range.Worksheet.Cells[i, "L"]).Value2 = item1.VendorModelNo;
+                        else
+                            (range.Worksheet.Cells[i, "L"]).Value2 = "";
+
+                        if (!string.IsNullOrEmpty(item1.MfgPartNo))
+                            (range.Worksheet.Cells[i, "M"]).Value2 = item1.MfgPartNo;
+                        else
+                            (range.Worksheet.Cells[i, "M"]).Value2 = "";
+
+                        if (!string.IsNullOrEmpty(item1.MfgModelNo))
+                            (range.Worksheet.Cells[i, "N"]).Value2 = item1.MfgModelNo;
+                        else
+                            (range.Worksheet.Cells[i, "N"]).Value2 = "";
+
+                        if (!string.IsNullOrEmpty(item1.ManufacturerName))
+                            (range.Worksheet.Cells[i, "O"]).Value2 = item1.ManufacturerName;
+                        else
+                            (range.Worksheet.Cells[i, "O"]).Value2 = "";
+
+                        if (!string.IsNullOrEmpty(item1.CGSTPercentage.ToString()))
+                            (range.Worksheet.Cells[i, "P"]).Value2 = item1.CGSTPercentage;
+                        else
+                            (range.Worksheet.Cells[i, "P"]).Value2 = 0;
+
+                        if (!string.IsNullOrEmpty(item1.IGSTPercentage.ToString()))
+                            (range.Worksheet.Cells[i, "Q"]).Value2 = item1.IGSTPercentage;
+                        else
+                            (range.Worksheet.Cells[i, "Q"]).Value2 = 0;
+
+                        if (!string.IsNullOrEmpty(item1.SGSTPercentage.ToString()))
+                            (range.Worksheet.Cells[i, "R"]).Value2 = item1.SGSTPercentage;
+                        else
+                            (range.Worksheet.Cells[i, "R"]).Value2 = 0;
+
+                        if (!string.IsNullOrEmpty(item1.PFAmount.ToString()))
+                            (range.Worksheet.Cells[i, "S"]).Value2 = item1.PFAmount;
+                        else
+                            (range.Worksheet.Cells[i, "S"]).Value2 = 0;
+
+                        if (!string.IsNullOrEmpty(item1.PFPercentage.ToString()))
+                            (range.Worksheet.Cells[i, "T"]).Value2 = item1.PFPercentage;
+                        else
+                            (range.Worksheet.Cells[i, "T"]).Value2 = 0;
+
+                        if (!string.IsNullOrEmpty(item1.FreightAmount.ToString()))
+                            (range.Worksheet.Cells[i, "U"]).Value2 = item1.FreightAmount;
+                        else
+                            (range.Worksheet.Cells[i, "U"]).Value2 = 0;
+
+                        if (!string.IsNullOrEmpty(item1.FreightPercentage.ToString()))
+                            (range.Worksheet.Cells[i, "V"]).Value2 = item1.FreightPercentage;
+                        else
+                            (range.Worksheet.Cells[i, "V"]).Value2 = 0;
+
+                        if (!string.IsNullOrEmpty(item1.DeliveryDate.ToString()))
+                        {
+                            string date = Convert.ToDateTime(item1.DeliveryDate).Day.ToString() + "/" + Convert.ToDateTime(item1.DeliveryDate).Month.ToString() + "/" + Convert.ToDateTime(item1.DeliveryDate).Year.ToString();
+                            (range.Worksheet.Cells[i, "W"]).Value2 = date;
+                        }
+                        else
+                            (range.Worksheet.Cells[i, "W"]).Value2 = "";
+
+                        if (item1.Remarks != null && !string.IsNullOrEmpty(item1.Remarks))
+                            (range.Worksheet.Cells[i, "X"]).Value2 = item1.Remarks;
+                        else
+                            (range.Worksheet.Cells[i, "X"]).Value2 = "";
+                        //if (!string.IsNullOrEmpty(item1.RFQSplitItemId.ToString()))
+                        //    (range.Worksheet.Cells[i, "Y"]).Value2 = item1.RFQSplitItemId;
+                        //else
+                        //    (range.Worksheet.Cells[i, "Y"]).Value2 = 0;
+                        i++;
+                    }
+                    workbooksExcel.Save();
+                    workbooksExcel.Close(false, Type.Missing, Type.Missing);
+                    docExcel.Application.DisplayAlerts = true;
+                    docExcel.Application.Quit();
+                }
+                catch (Exception ex)
+                {
+
+                    log.ErrorMessage("PAController", "uploadexcel", ex.Message + "; " + ex.StackTrace.ToString());
+                }
+
+
+
+
+                //range.Worksheet.Protect("password", Missing.Value, Missing.Value, Missing.Value, Missing.Value, Missing.Value, Missing.Value, Missing.Value, Missing.Value, Missing.Value, Missing.Value, Missing.Value, Missing.Value, Missing.Value, Missing.Value, Missing.Value);
+
+
+                //return webResponse.StatusCode.ToString();
+                return getGenetatedExcel(destFile);
+                //return Request.CreateResponse(HttpStatusCode.OK);
+
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+
+        }
+
+        [HttpGet]
+        [Route("GetPolineItemsToExcel/{revisionid}")]
+        public HttpResponseMessage GetPolineItemsToExcel(int revisionid)
+        {
+            try
+            {
+                //string sourcePath = "C:\\Users\\developer4\\Desktop\\";
+                Microsoft.Office.Interop.Excel.Application xlApp = new Microsoft.Office.Interop.Excel.Application();
+                Microsoft.Office.Interop.Excel.Workbook excelBook = xlApp.Workbooks.Open("D:\\POLineItemTemplate\\Copy of PO Temp.xlsx");
+
+                String[] excelSheets = new String[excelBook.Worksheets.Count];
+                int j = 0;
+
+                string sourcePath = ConfigurationManager.AppSettings["POLineItemTemplate"];
+                string targetpath = ConfigurationManager.AppSettings["DownloadPoitems"];
+                string srcfilename = "POItemTemp.xlsx";
+                string targetfilename = "PONO" + DateTime.Now.ToString("ddMMyyyyhhmmss") + revisionid + ".xlsx";
                 string sourceFile = System.IO.Path.Combine(sourcePath, srcfilename);
                 string destFile = System.IO.Path.Combine(targetpath, targetfilename);
                 if (!System.IO.Directory.Exists(targetpath))
@@ -1616,155 +1829,123 @@ namespace SCMAPI.Controllers
                 Microsoft.Office.Interop.Excel._Application docExcel = new Microsoft.Office.Interop.Excel.Application();
                 docExcel.Visible = false;
                 docExcel.DisplayAlerts = false;
+
                 Microsoft.Office.Interop.Excel._Workbook workbooksExcel = docExcel.Workbooks.Open(destFile, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing);
                 Microsoft.Office.Interop.Excel._Worksheet worksheetExcel = (Microsoft.Office.Interop.Excel._Worksheet)workbooksExcel.ActiveSheet;
 
+                string varienttype = "";
                 YSCMEntities obj = new YSCMEntities();
-                var data = obj.RfqForVendorDownloads.Where(x => x.rfqRevisionId == revisionid).ToList();
+                var data = obj.PoLineItemstoExcels.Where(x => x.POID == revisionid).ToList();
                 Microsoft.Office.Interop.Excel.Range range = worksheetExcel.UsedRange;
+                foreach (Microsoft.Office.Interop.Excel.Worksheet wSheet in excelBook.Worksheets)
+                {
+                    excelSheets[j] = wSheet.Name;
+                    j++;
+                    if (excelSheets[0] == "POHeader")
+                    {
+                        var ws = workbooksExcel.Worksheets;
+                        var worksheet = (Microsoft.Office.Interop.Excel.Worksheet)ws.get_Item("POHeader");
+                        range = worksheet.UsedRange;
+                        foreach (var item in data)
+                        {
+                            if (!string.IsNullOrEmpty(item.DocumentNo))
+                                (range.Worksheet.Cells["2", "A"]).Value2 = item.DocumentNo;
+                            if (!string.IsNullOrEmpty(item.PAId.ToString()))
+                                (range.Worksheet.Cells["2", "B"]).Value2 = item.PAId;
+                            if (!string.IsNullOrEmpty(item.potype))
+                                (range.Worksheet.Cells["2", "C"]).Value2 = item.potype;
+                            if (item.collectiveno != 0)
+                                (range.Worksheet.Cells["2", "D"]).Value2 = item.collectiveno;
+                            if (!string.IsNullOrEmpty(item.PaymentTermCode))
+                                (range.Worksheet.Cells["2", "E"]).Value2 = item.PaymentTermCode;
+                            if (!string.IsNullOrEmpty(item.incoterms))
+                                (range.Worksheet.Cells["2", "F"]).Value2 = item.incoterms;
+                            //if (!string.IsNullOrEmpty(item.pono))
+                            //    (range.Worksheet.Cells["2", "G"]).Value2 = item.pono;
+                            if(item.poterms!=null)
+                                (range.Worksheet.Cells["2", "I"]).Value2 = item.poterms;
+                            if (!string.IsNullOrEmpty(item.poinsurance))
+                                (range.Worksheet.Cells["2", "K"]).Value2 = item.poinsurance;
+                            if(!string.IsNullOrEmpty(item.Remarks))
+                                (range.Worksheet.Cells["2", "J"]).Value2 = item.Remarks;
+
+                            varienttype = item.Remarks;
+                        }
+                    }
+                    int i = 2;
+                    int pono = 10;
+                    if (excelSheets[1] == "POLineItems")
+                    {
+                        var ws = workbooksExcel.Worksheets;
+                        var worksheet = (Microsoft.Office.Interop.Excel.Worksheet)ws.get_Item("POLineItems");
+                        range = worksheet.UsedRange;
+                        foreach (var item in data)
+                        {
+                            if (item.PAItemID!=0)
+                                (range.Worksheet.Cells[i, "B"]).Value2 = item.PAItemID;
+                            if (!string.IsNullOrEmpty(item.POItemType))
+                                (range.Worksheet.Cells[i, "C"]).Value2 = item.POItemType;
+                            if (!string.IsNullOrEmpty(item.PRno))
+                                (range.Worksheet.Cells[i, "D"]).Value2 = item.PRno;
+                            if (!string.IsNullOrEmpty(item.PRLineItemNo))
+                                (range.Worksheet.Cells[i, "E"]).Value2 = item.PRLineItemNo;
+                            if (item.UnitPrice>=0)
+                                (range.Worksheet.Cells[i, "F"]).Value2 = item.UnitPrice;
+                            if (!string.IsNullOrEmpty(item.purchasetype))
+                                (range.Worksheet.Cells[i, "G"]).Value2 = item.purchasetype;
+                            if (!string.IsNullOrEmpty(item.incoterms))
+                                (range.Worksheet.Cells[i, "H"]).Value2 = "Y001";
+                            if (!string.IsNullOrEmpty(item.PriorVendor))
+                                (range.Worksheet.Cells[i, "I"]).Value2 = item.PriorVendor;
+                            if (!string.IsNullOrEmpty(item.ABConfirmation))
+                                (range.Worksheet.Cells[i, "J"]).Value2 = item.ABConfirmation;
+                           
+                                (range.Worksheet.Cells[i, "K"]).Value2 = pono;
+
+                            if (!string.IsNullOrEmpty(item.ProjectDefinition))
+                                (range.Worksheet.Cells[i, "L"]).Value2 = item.ProjectDefinition;
+                            if (!string.IsNullOrEmpty(item.WBS))
+                                (range.Worksheet.Cells[i, "M"]).Value2 = item.WBS;
+                            //if (DateTime.(item.Reqdeliverydate))
+                            //    (range.Worksheet.Cells[i, "M"]).Value2 = item.Reqdeliverydate;
+                            if (item.Quantity!=0)
+                                (range.Worksheet.Cells[i, "O"]).Value2 = item.Quantity;
+                            
+                            if (!string.IsNullOrEmpty(item.ItemDescription))
+                                (range.Worksheet.Cells[i, "Q"]).Value2 = item.ItemDescription;
+
+                            (range.Worksheet.Cells[i, "N"]).Value2 = item.Reqdeliverydate.ToString();
+                            if (varienttype == "Material")
+                                (range.Worksheet.Cells[i, "H"]).Value2 = "Y001";
+                            else
+                                (range.Worksheet.Cells[i, "H"]).Value2 = "Y002";
+                            //if (!string.IsNullOrEmpty(item.tex))
+                            //    (range.Worksheet.Cells["2", "G"]).Value2 = item.pono;
+                            i++;
+
+                           pono= pono +10;
+                        }
+                    }
+                }
                 foreach (var item in data)
                 {
-                    if (!string.IsNullOrEmpty(item.RFQNo))
-                        (range.Worksheet.Cells["2", "G"]).Value2 = item.RFQNo;
-                    if (!string.IsNullOrEmpty(item.rfqRevisionId.ToString()))
-                        (range.Worksheet.Cells["2", "O"]).Value2 = item.rfqRevisionId;
-                    if (!string.IsNullOrEmpty(item.RFQValidDate.ToString()))
-                        (range.Worksheet.Cells["3", "G"]).Value2 = item.RFQValidDate;
-                    if (!string.IsNullOrEmpty(item.ReqRemarks))
-                        (range.Worksheet.Cells["3", "L"]).Value2 = item.ReqRemarks;
-                    if (!string.IsNullOrEmpty(item.RFQValidDate.ToString()))
-                        (range.Worksheet.Cells["2", "L"]).Value2 = item.RFQValidDate;
+                    //if (!string.IsNullOrEmpty(item.RFQNo))
+                    //    (range.Worksheet.Cells["2", "G"]).Value2 = item.RFQNo;
+                    //if (!string.IsNullOrEmpty(item.rfqRevisionId.ToString()))
+                    //    (range.Worksheet.Cells["2", "O"]).Value2 = item.rfqRevisionId;
+                    //if (!string.IsNullOrEmpty(item.RFQValidDate.ToString()))
+                    //    (range.Worksheet.Cells["3", "G"]).Value2 = item.RFQValidDate;
+                    //if (!string.IsNullOrEmpty(item.ReqRemarks))
+                    //    (range.Worksheet.Cells["3", "L"]).Value2 = item.ReqRemarks;
+                    //if (!string.IsNullOrEmpty(item.RFQValidDate.ToString()))
+                    //    (range.Worksheet.Cells["2", "L"]).Value2 = item.RFQValidDate;
                 }
 
-                int i = 6;
+                //int i = 6;
                 foreach (var item1 in data)
                 {
-                    if (!string.IsNullOrEmpty(item1.RFQItemsId.ToString()))
-                        (range.Worksheet.Cells[i, "A"]).Value2 = item1.RFQItemsId;
-                    else
-                        (range.Worksheet.Cells[i, "A"]).Value2 = 0;
-
-                    (range.Worksheet.Cells[i, "B"]).Value2 = i - 5;
-
-                    if (!string.IsNullOrEmpty(item1.ItemId.ToString()))
-                        (range.Worksheet.Cells[i, "C"]).Value2 = item1.ItemId;
-                    else
-                        (range.Worksheet.Cells[i, "C"]).Value2 = "";
-
-                    if (!string.IsNullOrEmpty(item1.ItemDescription))
-                        (range.Worksheet.Cells[i, "D"]).Value2 = item1.ItemDescription;
-                    else
-                        (range.Worksheet.Cells[i, "D"]).Value2 = "";
-
-                    if (!string.IsNullOrEmpty(item1.QuotationQty.ToString()))
-                        (range.Worksheet.Cells[i, "E"]).Value2 = item1.QuotationQty;
-                    else
-                        (range.Worksheet.Cells[i, "E"]).Value2 = 0;
-
-                    if (item1.UOM != null)
-                        (range.Worksheet.Cells[i, "F"]).Value2 = item1.UOM;
-                    else
-                        (range.Worksheet.Cells[i, "F"]).Value2 = 0;
-
-                    if (!string.IsNullOrEmpty(item1.CurrencyValue.ToString()))
-                        (range.Worksheet.Cells[i, "G"]).Value2 = item1.CurrencyValue;
-                    else
-                        (range.Worksheet.Cells[i, "G"]).Value2 = 0;
-
-                    if (!string.IsNullOrEmpty(item1.UnitPrice.ToString()))
-                        (range.Worksheet.Cells[i, "H"]).Value2 = item1.UnitPrice;
-                    else
-                        (range.Worksheet.Cells[i, "H"]).Value2 = 0;
-
-                    //if (item1.HSNCode != null)
-                    //    (range.Worksheet.Cells[i, "I"]).Value2 = item1.HSNCode;
-                    //else
-                    //    (range.Worksheet.Cells[i, "I"]).Value2 = 0;
-
-                    if (!string.IsNullOrEmpty(item1.DiscountPercentage.ToString()))
-                        (range.Worksheet.Cells[i, "J"]).Value2 = item1.DiscountPercentage;
-                    else
-                        (range.Worksheet.Cells[i, "J"]).Value2 = 0;
-
-                    if (!string.IsNullOrEmpty(item1.Discount.ToString()))
-                        (range.Worksheet.Cells[i, "K"]).Value2 = item1.Discount;
-                    else
-                        (range.Worksheet.Cells[i, "K"]).Value2 = 0;
-
-                    if (!string.IsNullOrEmpty(item1.VendorModelNo))
-                        (range.Worksheet.Cells[i, "L"]).Value2 = item1.VendorModelNo;
-                    else
-                        (range.Worksheet.Cells[i, "L"]).Value2 = "";
-
-                    if (!string.IsNullOrEmpty(item1.MfgPartNo))
-                        (range.Worksheet.Cells[i, "M"]).Value2 = item1.MfgPartNo;
-                    else
-                        (range.Worksheet.Cells[i, "M"]).Value2 = "";    
-
-                    if (!string.IsNullOrEmpty(item1.MfgModelNo))
-                        (range.Worksheet.Cells[i, "N"]).Value2 = item1.MfgModelNo;
-                    else
-                        (range.Worksheet.Cells[i, "N"]).Value2 = "";
-
-                    if (!string.IsNullOrEmpty(item1.ManufacturerName))
-                        (range.Worksheet.Cells[i, "O"]).Value2 = item1.ManufacturerName;
-                    else
-                        (range.Worksheet.Cells[i, "O"]).Value2 = "";
-
-                    if (!string.IsNullOrEmpty(item1.CGSTPercentage.ToString()))
-                        (range.Worksheet.Cells[i, "P"]).Value2 = item1.CGSTPercentage;
-                    else
-                        (range.Worksheet.Cells[i, "P"]).Value2 = 0;
-
-                    if (!string.IsNullOrEmpty(item1.IGSTPercentage.ToString()))
-                        (range.Worksheet.Cells[i, "Q"]).Value2 = item1.IGSTPercentage;
-                    else
-                        (range.Worksheet.Cells[i, "Q"]).Value2 = 0;
-
-                    if (!string.IsNullOrEmpty(item1.SGSTPercentage.ToString()))
-                        (range.Worksheet.Cells[i, "R"]).Value2 = item1.SGSTPercentage;
-                    else
-                        (range.Worksheet.Cells[i, "R"]).Value2 = 0;
-
-                    if (!string.IsNullOrEmpty(item1.PFAmount.ToString()))
-                        (range.Worksheet.Cells[i, "S"]).Value2 = item1.PFAmount;
-                    else
-                        (range.Worksheet.Cells[i, "S"]).Value2 = 0;
-
-                    if (!string.IsNullOrEmpty(item1.PFPercentage.ToString()))
-                        (range.Worksheet.Cells[i, "T"]).Value2 = item1.PFPercentage;
-                    else
-                        (range.Worksheet.Cells[i, "T"]).Value2 = 0;
-
-                    if (!string.IsNullOrEmpty(item1.FreightAmount.ToString()))
-                        (range.Worksheet.Cells[i, "U"]).Value2 = item1.FreightAmount;
-                    else
-                        (range.Worksheet.Cells[i, "U"]).Value2 = 0;
-
-                    if (!string.IsNullOrEmpty(item1.FreightPercentage.ToString()))
-                        (range.Worksheet.Cells[i, "V"]).Value2 = item1.FreightPercentage;
-                    else
-                        (range.Worksheet.Cells[i, "V"]).Value2 = 0;
-
-                    if (!string.IsNullOrEmpty(item1.DeliveryDate.ToString()))
-                    {
-                        string date = Convert.ToDateTime(item1.DeliveryDate).Day.ToString() + "/" + Convert.ToDateTime(item1.DeliveryDate).Month.ToString() + "/" + Convert.ToDateTime(item1.DeliveryDate).Year.ToString();
-                        (range.Worksheet.Cells[i, "W"]).Value2 = date;
-                    }
-                    else
-                        (range.Worksheet.Cells[i, "W"]).Value2 = "";
-
-                    if (item1.Remarks != null && !string.IsNullOrEmpty(item1.Remarks))
-                        (range.Worksheet.Cells[i, "X"]).Value2 = item1.Remarks;
-                    else
-                        (range.Worksheet.Cells[i, "X"]).Value2 = "";
-                    //if (!string.IsNullOrEmpty(item1.RFQSplitItemId.ToString()))
-                    //    (range.Worksheet.Cells[i, "Y"]).Value2 = item1.RFQSplitItemId;
-                    //else
-                    //    (range.Worksheet.Cells[i, "Y"]).Value2 = 0;
-                    i++;
                 }
-                range.Worksheet.Protect("password", Missing.Value, Missing.Value, Missing.Value, Missing.Value, Missing.Value, Missing.Value, Missing.Value, Missing.Value, Missing.Value, Missing.Value, Missing.Value, Missing.Value, Missing.Value, Missing.Value, Missing.Value);
+                //range.Worksheet.Protect("password", Missing.Value, Missing.Value, Missing.Value, Missing.Value, Missing.Value, Missing.Value, Missing.Value, Missing.Value, Missing.Value, Missing.Value, Missing.Value, Missing.Value, Missing.Value, Missing.Value, Missing.Value);
 
                 workbooksExcel.Save();
                 workbooksExcel.Close(false, Type.Missing, Type.Missing);
@@ -1779,7 +1960,6 @@ namespace SCMAPI.Controllers
             }
 
         }
-
         public HttpResponseMessage getGenetatedExcel(string filepath)
         {
             var path = filepath;
@@ -2076,10 +2256,10 @@ namespace SCMAPI.Controllers
                 //var directory = new DirectoryInfo(@"\\10.29.15.68\\D$\\SODetails\\ActualPath");
                 var directory = new DirectoryInfo(Actualpath);
                 string myFile = (from f in directory.GetFiles()
-                              orderby f.LastWriteTime descending
-                              select f).First().ToString();
+                                 orderby f.LastWriteTime descending
+                                 select f).First().ToString();
                 //string filePath =Actualpath + "'\'" + myFile;
-                string filePath= @"C:\\SODetails\\ActualPath\\" + myFile;
+                string filePath = @"C:\\SODetails\\ActualPath\\" + myFile;
                 string filePath1 = @"C:\\SODetails\\CopyPath\\" + myFile;
                 System.IO.File.Move(filePath, filePath1);
                 if (Directory.Exists(filePath))
@@ -2182,7 +2362,7 @@ namespace SCMAPI.Controllers
         {
             return Ok(await _paBusenessAcess.getincotermmaster());
         }
-        [HttpGet]   
+        [HttpGet]
         [Route("updatetokuchubyid/{tokuchuid}")]
         public async Task<IHttpActionResult> updatetokuchubyid(int tokuchuid)
         {
@@ -2206,7 +2386,190 @@ namespace SCMAPI.Controllers
         {
             return Ok(await _paBusenessAcess.InsertScrapRregister(msa));
         }
+        [Route("uploadscrapExcel")]
+        public IHttpActionResult uploadscrapExcel()
+        {
+            var scrapid = "";
+            int documentid = 0;
+            var httpRequest = HttpContext.Current.Request;
+            var serverPath = HttpContext.Current.Server.MapPath("~/ScrapDocuments");
+            string parsedFileName = "";
+            string filename = "";
 
+            if (httpRequest.Files.Count > 0)
+            {
+                scrapid = httpRequest.Files.AllKeys[0];
+                //var type = httpRequest.Files.AllKeys[1];
+                //string employeeno = httpRequest.Files.AllKeys[1];
+                var postedFile = httpRequest.Files[0];
+                parsedFileName = string.Format(DateTime.Now.Year.ToString() + "\\" + DateTime.Now.ToString("MMM") + "\\" + scrapid + "\\" + ToValidFileName(postedFile.FileName));
+                serverPath = serverPath + string.Format("\\" + DateTime.Now.Year.ToString() + "\\" + DateTime.Now.ToString("MMM")) + "\\" + scrapid;
+                var filePath = Path.Combine(serverPath, ToValidFileName(postedFile.FileName));
+                if (!Directory.Exists(serverPath))
+                    Directory.CreateDirectory(serverPath);
+                postedFile.SaveAs(filePath);
+                try
+                {
+                    YSCMEntities entities = new YSCMEntities();
+
+                    var data = new ScrapRegisterDocumentTypeMaster();
+                    data.DocumentName = postedFile.FileName;
+                    data.DeleteFlag = false;
+                    data.CreatedDate = System.DateTime.Now;
+                    //data.CreatedBY = Convert.ToInt32(paid);
+
+                    entities.ScrapRegisterDocumentTypeMasters.Add(data);
+                    entities.SaveChanges();
+                    documentid = data.DocumentTypeId;
+                    filename = data.DocumentName;
+
+                    var data1 = new ScapRegisterDocument();
+                    data1.Scrapentryid = Convert.ToInt32(scrapid);
+                    data1.DocumentTypeId = documentid;
+                    data1.path = parsedFileName;
+                    data1.DocumentNAme = filename;
+                    entities.ScapRegisterDocuments.Add(data1);
+                    entities.SaveChanges();
+
+                    //entities.MPRPADocuments.Add(new MPRPADocument
+                    //{
+                    //    Filename = postedFile.FileName,
+                    //    Filepath = parsedFileName,
+                    //    uploadeddate = System.DateTime.Now,
+                    //    paid = Convert.ToInt32(paid)
+                    //});
+                    //entities.SaveChanges();
+
+                    // int succRecs = iSucceRows;
+                }
+                catch (Exception e)
+                {
+                    throw e;
+                }
+                //for (int i = 0; i < httpRequest.Files.Count; i++)
+                //{
+
+
+                //}
+
+
+            }
+            return Ok(filename);
+
+        }
+        [Route("uploadscrapfileExcel")]
+        public IHttpActionResult uploadscrapfileExcel()
+        {
+            var scrapid = "";
+            int documentid = 0;
+            var httpRequest = HttpContext.Current.Request;
+            var serverPath = HttpContext.Current.Server.MapPath("~/scrapDocuments");
+            string parsedFileName = "";
+            string filename = "";
+
+            if (httpRequest.Files.Count > 0)
+            {
+                scrapid = httpRequest.Files.AllKeys[0];
+                var postedFile = httpRequest.Files[0];
+                var filetype = postedFile.FileName.Substring(postedFile.FileName.IndexOf('-') + 1);
+                var scrapfilename = postedFile.FileName.Substring(0, postedFile.FileName.IndexOf('-'));
+                parsedFileName = string.Format(DateTime.Now.Year.ToString() + "\\" + DateTime.Now.ToString("MMM") + "\\" + scrapid + "\\" + ToValidFileName(scrapfilename));
+                serverPath = serverPath + string.Format("\\" + DateTime.Now.Year.ToString() + "\\" + DateTime.Now.ToString("MMM")) + "\\" + scrapid;
+                var filePath = Path.Combine(serverPath, ToValidFileName(scrapfilename));
+                if (!Directory.Exists(serverPath))
+                    Directory.CreateDirectory(serverPath);
+                postedFile.SaveAs(filePath);
+                try
+                {
+                    YSCMEntities entities = new YSCMEntities();
+
+                    var data = new ScrapRegisterDocumentTypeMaster();
+                    data.DocumentName = scrapfilename;
+                    data.DeleteFlag = false;
+                    data.CreatedDate = System.DateTime.Now;
+                    entities.ScrapRegisterDocumentTypeMasters.Add(data);
+                    entities.SaveChanges();
+                    documentid = data.DocumentTypeId;
+                    filename = data.DocumentName;
+
+                    var data1 = new ScapRegisterDocument();
+                    data1.Scrapentryid = Convert.ToInt32(scrapid);
+                    data1.DocumentTypeId = documentid;
+                    data1.path = filePath;
+                    data1.DocumentNAme = filename;
+                    data1.DocumentType = filetype;
+                    entities.ScapRegisterDocuments.Add(data1);
+                    entities.SaveChanges();
+
+                }
+                catch (Exception e)
+                {
+                    throw e;
+                }
+            }
+            return Ok(filename);
+
+        }
+        [HttpPost]
+        [Route("getscraplist")]
+        public async Task<IHttpActionResult> getscraplist(scrapsearchmodel model)
+        {
+            return Ok(await _paBusenessAcess.getscraplist(model));
+        }
+        [HttpGet]
+        [Route("getscrapitembyid/{scrapid}")]
+        public async Task<IHttpActionResult> getscrapitembyid(int scrapid)
+        {
+            return Ok(await _paBusenessAcess.getscrapitembyid(scrapid));
+        }
+        [HttpPost]
+        [Route("UpdateScrapRequest")]
+        public async Task<IHttpActionResult> UpdateScrapRequest(ScrapRegisterMasterModel msa)
+        {
+            return Ok(await _paBusenessAcess.UpdateScrapRequest(msa));
+        }
+        [HttpPost]
+        [Route("UpdateScrapRregister")]
+        public async Task<IHttpActionResult> UpdateScrapRregister(ScrapRegisterMasterModel msa)
+        {
+            return Ok(await _paBusenessAcess.UpdateScrapRregister(msa));
+        }
+        [HttpPost]
+        [Route("InsertScarpflowIncharge")]
+        public async Task<IHttpActionResult> InsertScarpflowIncharge(ScrapflowModel msa)
+        {
+            return Ok(await _paBusenessAcess.InsertScarpflowIncharge(msa));
+        }
+        [HttpGet]
+        [Route("Getincharelist")]
+        public async Task<IHttpActionResult> Getincharelist()
+        {
+            return Ok(await _paBusenessAcess.Getincharelist());
+        }
+        [HttpGet]
+        [Route("Getscrapitemdetails/{itemcode}")]
+        public async Task<IHttpActionResult> Getscrapitemdetails(string itemcode)
+        {
+            return Ok(await _paBusenessAcess.Getscrapitemdetails(itemcode));
+        }
+        [HttpPost]
+        [Route("Getincharepermissionlist")]
+        public async Task<IHttpActionResult> Getincharepermissionlist(scrapsearchmodel search)
+        {
+            return Ok(await _paBusenessAcess.Getincharepermissionlist(search));
+        }
+        [HttpPost]
+        [Route("getscraplistbysearch")]
+        public async Task<IHttpActionResult> getscraplistbysearch(scrapsearchmodel search)
+        {
+            return Ok(await _paBusenessAcess.getscraplistbysearch(search));
+        }
+        [HttpGet]
+        [Route("getauthorizescrapflowlist/{employeeno}")]
+        public async Task<IHttpActionResult> getauthorizescrapflowlist(string employeeno)
+        {
+            return Ok(await _paBusenessAcess.getauthorizescrapflowlist(employeeno));
+        }
         [HttpPost]
         [Route("GetCMMMonthlyPerformancereport1")]
         [ResponseType(typeof(DataSet))]
@@ -2285,8 +2648,8 @@ namespace SCMAPI.Controllers
                     Param[3].Value = DBNull.Value;
                 }
                 else
-                Param[3] = new SqlParameter("@Departmentid", model.DepartmentId);
-               
+                    Param[3] = new SqlParameter("@Departmentid", model.DepartmentId);
+
             }
             else
             {
@@ -2303,6 +2666,30 @@ namespace SCMAPI.Controllers
             }
             ds = _paBusenessAcess.GetCMMMonthlyPerformance1("SP_GetMonthlyReport2", Param);
             return ds;
+        }
+        [HttpPost]
+        [Route("LoadItemsforpocreation")]
+        public async Task<IHttpActionResult> LoadItemsforpocreation(PADetailsModel masters)
+        {
+            return Ok(await _paBusenessAcess.LoadItemsforpocreation(masters));
+        }
+        [HttpPost]
+        [Route("LoadItemsforpogeneration")]
+        public async Task<IHttpActionResult> LoadItemsforpogeneration(List<int> PAId)
+        {
+            return Ok(await _paBusenessAcess.LoadItemsforpogeneration(PAId));
+        }
+        [HttpPost]
+        [Route("LoadItemsforpogenerationbasedonvendor/{VendorId}")]
+        public async Task<IHttpActionResult> LoadItemsforpogenerationbasedonvendor(List<int> PAId, string VendorId)
+        {
+            return Ok(await _paBusenessAcess.LoadItemsforpogenerationbasedonvendor(VendorId,PAId));
+        }
+        [HttpPost]
+        [Route("InsertPOItems")]
+        public async Task<IHttpActionResult> InsertPOItems(POMasterModel model)
+        {
+            return Ok(await _paBusenessAcess.InsertPOItems(model));
         }
     }
 }

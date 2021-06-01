@@ -12,5 +12,6 @@ namespace DALayer.PAEmailDA
         bool paemailstatus(int paid, int statusid,int mprrevisionid,string ApprovalStatus,string employeeno);
         bool PAEmailRequestForApproval(int paid, string ToEmailId,string EmployeeNo);
         bool msaconfirmationmail(int paid);
+        bool ScrapApprovalRequest(int scrapid, string approvalname, string Requestedby, string type);
     }
 }

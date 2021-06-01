@@ -71,6 +71,7 @@ namespace SCMModels.RFQModels
 		public Nullable<decimal> FinalNetAmount { get; set; }
 		public string RequestRemarks { get; set; }
 		public Nullable<decimal> HandlingPercentage { get; set; }
+		public decimal rawdiscount { get; set; }
 		public Nullable<decimal> ImportFreightPercentage { get; set; }
 		public Nullable<decimal> InsurancePercentage { get; set; }
 		public Nullable<decimal> DutyPercentage { get; set; }

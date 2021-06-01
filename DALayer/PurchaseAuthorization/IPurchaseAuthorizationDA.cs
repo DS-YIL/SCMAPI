@@ -89,7 +89,21 @@ namespace DALayer.PurchaseAuthorization
         Task<statuscheckmodel> UpdateMsaprconfirmation(List<ItemsViewModel> msa);
         Task<List<MSAProcessTrack>> getmsaprocesstrackbyId(int paid);
         Task<statuscheckmodel> InsertScrapRregister(ScrapRegisterMasterModel msa);
+        Task<DataTable> getscraplist(scrapsearchmodel model);
+        Task<ScrapRegisterMasterModel> getscrapitembyid(int scrapid);
+        Task<statuscheckmodel> UpdateScrapRequest(ScrapRegisterMasterModel msa);
+        Task<statuscheckmodel> UpdateScrapRregister(ScrapRegisterMasterModel msa);
+        Task<statuscheckmodel> InsertScarpflowIncharge(ScrapflowModel model);
+        Task<List<ScrapflowModel>> Getincharelist();
+        Task<ScrapitemRatecontract> Getscrapitemdetails(string itemcode);
+        Task<List<ScrapflowModel>> Getincharepermissionlist(scrapsearchmodel search);
+        Task<DataTable> getscraplistbysearch(scrapsearchmodel model);
+        Task<List<ScrapflowModel>> getauthorizescrapflowlist(string employeeno);
         DataSet GetCMMMonthlyPerformance1(string spName, SqlParameter[] paramArr);
         DataSet GetCMMMonthlyPerformance2(string spName, SqlParameter[] paramArr);
+        Task<List<Loadpaforpocration>> LoadItemsforpocreation(PADetailsModel masters);
+        Task<List<LoadItemsforpo>> LoadItemsforpogeneration(List<int> paid);
+        Task<List<LoadItemsByPAID>> LoadItemsforpogenerationbasedonvendor(string VendorId, List<int> PAId);
+        Task<statuscheckmodel> InsertPOItems(POMasterModel model);
     }
 }

@@ -1326,7 +1326,8 @@ Review Date :<<>>   Reviewed By :<<>>*/
 						MPRRevisionId = Convert.ToInt32(x.MPRRevisionId),
                         POText = x.POText,
                         PODescription = x.PODescription,
-                        itemtypesupplier = x.POItemType
+                        itemtypesupplier = x.POItemType,
+						rawdiscount=x.rawdiscount
                     }).ToList();
 					//var taxes = obj.ShowAdditionalcharges.Where(x => x.PAId == PID).ToList();
 					//model.additionaltaxes = taxes.Select(x => new Additionaltaxes()
@@ -1967,6 +1968,14 @@ Review Date :<<>>   Reviewed By :<<>>*/
 					var data = obj.MPRPADetails.Where(x => x.PAId == status.Sid).FirstOrDefault();
 					data.POStatus = "PO Released";
 					data.POStatusUpdate = System.DateTime.Now;
+					obj.SaveChanges();
+					var mprstatus = obj.LoadItemsByPAIDs.Where(x => x.PAId == status.Sid).FirstOrDefault();
+					MPRStatusTrack status1 = new MPRStatusTrack();
+					status1.RevisionId =Convert.ToInt32(mprstatus.MPRRevisionId);
+					status1.RequisitionId = mprstatus.RequisitionId;
+					status1.StatusId = 12;
+					status1.UpdatedDate = System.DateTime.Now;
+					obj.MPRStatusTracks.Add(status1);
 					obj.SaveChanges();
 				}
 				else
@@ -3381,17 +3390,19 @@ Review Date :<<>>   Reviewed By :<<>>*/
 		public async Task<statuscheckmodel> UpdateMsaprconfirmation(List<ItemsViewModel> msa)
 		{
 			statuscheckmodel status = new statuscheckmodel();
-            try
+			int paid = msa[0].paid;
+			try
             {
-                foreach (var item in msa)
+				var podata = obj.PAItems.Where(x => x.PAID == paid).ToList();
+				foreach (var item in msa)
                 {
 					var data = obj.PAItems.Where(x => x.PAItemID == item.paitemid).FirstOrDefault();
-					//data.PRno = item.PRno;
-					//data.PRLineItemNo = item.PRLineItemNo;
-					//data.PRcreatedOn = System.DateTime.Now;
-					//data.PRcreatedBy = item.PRcreatedBy;
-					//obj.MSALineItems.Add(item);
-					obj.SaveChanges();
+                    data.PRno = item.PRno;
+                    data.PRLineItemNo = item.PRLineItemNo;
+                    data.PRcreatedOn = System.DateTime.Now;
+                    //data.PRcreatedBy = item.PRcreatedBy;
+                    //obj.MSALineItems.Add(item);
+                    obj.SaveChanges();
 				}
 				//var data = obj.MSALineItems.Where(x => x.PAItemID == msa.PAItemID).FirstOrDefault();
 				//MSALineItem item = new MSALineItem();
@@ -3441,46 +3452,590 @@ Review Date :<<>>   Reviewed By :<<>>*/
         public async Task<statuscheckmodel> InsertScrapRregister(ScrapRegisterMasterModel msa)
         {
 			statuscheckmodel status = new statuscheckmodel();
-            try
-            {
+			try
+			{
 				ScrapEntryMaster scrap = new ScrapEntryMaster();
 				scrap.TruckNo = msa.TruckNo;
 				scrap.Dateofentry = msa.DateOfEntry;
-				//scrap.PreparedDate = msa.PreparedDate;
+				scrap.PreparedDate = System.DateTime.Now;
 				scrap.RequesterDepartmentID = msa.RequesterDepartmentID;
 				scrap.RequestedBY = msa.RequestedBY;
-				scrap.PreparedBY ="400108";
-
+				scrap.ApprovalBy = msa.ApprovalBy;
+				scrap.PreparedBY = msa.PreparedBY;
+				scrap.Vendor = msa.Vendor;
+				scrap.Vendorid = msa.Vendorcode;
 				obj.ScrapEntryMasters.Add(scrap);
 				obj.SaveChanges();
-
-                foreach (var item in msa.scrapitems)
-                {
+				status.Sid = scrap.ScrapentryId;
+				foreach (var item in msa.scrapitems)
+				{
 					var item1 = new ScrapItem();
+					item1.UOM = item.UOM;
+					item1.Description = item.Description;
 					item1.BasicPrice = item.BAsicPrice;
 					item1.CGSTAmount = item.cgstamount;
 					item1.SGSTAmount = item.sgstamount;
 					item1.IGSTAmount = item.igstamount;
-					//item1.ItemId = item.ItemId;
+					item1.ItemId = item.ItemId;
 					item1.Qty = item.Qty;
 					item1.UnitPrice = item.UnitPrice;
+					item1.Scrapentryid = status.Sid;
+					item1.Scraptype = item.Scraptype;
+					item1.TCS = item.tcs;
+					item1.Itemcode = item.Itemcode;
 					obj.ScrapItems.Add(item1);
 					obj.SaveChanges();
-                }
+				}
+				updatetotalprice(status.Sid);
+
+				if (msa.ScrapStatusId == 0)
+				{
+					ScrapStatusTrack scarpstatus = new ScrapStatusTrack();
+					scarpstatus.scrapid = status.Sid;
+					scarpstatus.stausid = 1;
+					scarpstatus.UpdatedBy = msa.PreparedBY;
+					scarpstatus.UpdatedDate = System.DateTime.Now;
+					obj.ScrapStatusTracks.Add(scarpstatus);
+					obj.SaveChanges();
+					status.Scrapstatusid = Convert.ToInt32(scarpstatus.stausid);
+				}
+				this.emailDA.ScrapApprovalRequest(status.Sid, msa.ApprovalBy, msa.PreparedBY, "Approverequest");
 				return status;
-            }
-            catch (Exception ex)
-            {
-                throw;
-            }
-        }
+			}
+			catch (Exception ex)
+			{
+				throw;
+			}
+		}
+		public bool updatetotalprice(int scrapid)
+		{
+			var sqlquery = "update ScrapItems set TotalPrice=((UnitPrice * Qty) + (((UnitPrice * Qty)  *  ISNULL(sgstamount,0)/100 ) + ((UnitPrice * Qty)  * ISNULL(CGSTAmount,0)/100))) where Scrapentryid='" + scrapid + "'";
+			//var sqlquery = "insert into scrapstatustrack(stausid,scrapid,UpdatedBy,UpdatedDate) values(6,'" + msa.scrapid + "','400108','" + dt.ToString("yyyy-MM-dd hh:mm:ss") + "')";
+			var cmd = obj.Database.Connection.CreateCommand();
+			cmd.CommandText = sqlquery;
+			cmd.Connection.Open();
+			cmd.ExecuteReader();
+			cmd.Connection.Close();
+			//SqlParameter[] paramArr = new SqlParameter[1];
+			//paramArr[0] = new SqlParameter("@scrapid", scrapid);
+			//string con = obj.Database.Connection.ConnectionString;
+			//SqlConnection Conn1 = new SqlConnection(con);
+			//SqlCommand Cmd = new SqlCommand();
+			//Cmd.Connection = Conn1;
+			//Cmd.CommandText = "UpdatescrapTotalprice";
+			//Cmd.CommandTimeout = 0;
+			//Cmd.CommandType = CommandType.StoredProcedure;
+
+			//if (paramArr != null)
+			//{
+			//	foreach (SqlParameter sqlParam in paramArr)
+			//	{
+			//		Cmd.Parameters.Add(sqlParam);
+			//	}
+			//}
+			//SqlDataAdapter adp = new SqlDataAdapter();
+			//adp = new SqlDataAdapter(Cmd);
+			//DataSet Ds = new DataSet();
+			//Ds = new DataSet();
+			//adp.Fill(Ds);
+
+			//Cmd.Parameters.Clear();
+			return true;
+		}
+		public async Task<statuscheckmodel> UpdateScrapRregister(ScrapRegisterMasterModel msa)
+		{
+			statuscheckmodel status = new statuscheckmodel();
+			try
+			{
+				var sql = "";
+				DateTime dt = DateTime.Now;
+				if (msa.scraptype == "socreated")
+				{
+					var socreate = obj.ScrapEntryMasters.Where(x => x.ScrapentryId == msa.scrapid).FirstOrDefault();
+					if (!string.IsNullOrEmpty(socreate.SONo))
+					{
+						socreate.Soupdatedby = msa.employeeno;
+						socreate.Soupdateddate = System.DateTime.Now;
+					}
+					socreate.SoDate = msa.SoDate;
+					socreate.SONo = msa.SONO;
+
+					socreate.statusid = 2;
+					obj.SaveChanges();
+
+					var sovalue = msa.statustarck.FindIndex(x => x.stausid == 2);
+					if (sovalue == -1)
+					{
+						sql = "insert into scrapstatustrack(stausid,scrapid,UpdatedBy,UpdatedDate) values(2,'" + msa.scrapid + "','400108','" + dt.ToString("yyyy-MM-dd hh:mm:ss") + "')";
+						var cmd = obj.Database.Connection.CreateCommand();
+						cmd.CommandText = sql;
+						cmd.Connection.Open();
+						cmd.ExecuteReader();
+						cmd.Connection.Close();
+					}
+					//var sql = "insert into scrapstatustrack(stausid,scrapid,UpdatedBy,UpdatedDate) values(2,'" + msa.scrapid + "','400108','" + dt.ToString("yyyy-MM-dd hh:mm:ss") + "')";
+					//var sqlquery = "update scrapstatustrack set stausid=6,Remarks='" + msa.ApprovalRemarks + "' where scrapid='" + msa.scrapid + "'";
+
+					IEnumerable<string> vatrequstor = obj.Scrapflows.Where(x => x.Scrapflow1 == "VatInvoice").ToList().Select(y => y.incharge);
+					foreach (var item in vatrequstor)
+					{
+						this.emailDA.ScrapApprovalRequest(msa.scrapid, item, msa.employeeno, "vatinvoice");
+					}
+
+					//return status;
+				}
+				else if (msa.scraptype == "vatinvoice")
+				{
+					var vatinvoice = obj.ScrapEntryMasters.Where(x => x.ScrapentryId == msa.scrapid).FirstOrDefault();
+					if (!string.IsNullOrEmpty(vatinvoice.VATInvoiceNo))
+					{
+						vatinvoice.VATInvoiceupdatedby = msa.employeeno;
+						vatinvoice.VatInvoiceUpdatedDate = System.DateTime.Now;
+					}
+					vatinvoice.VATInvoiceNo = msa.VATInvoiceno;
+					vatinvoice.VATInvoiceDate = msa.VATInvoiceDate;
+
+					vatinvoice.statusid = 3;
+					obj.SaveChanges();
+					var sovalue = msa.statustarck.FindIndex(x => x.stausid == 3);
+					if (sovalue == -1)
+					{
+						sql = "insert into scrapstatustrack(stausid,scrapid,UpdatedBy,UpdatedDate) values(3,'" + msa.scrapid + "','400108','" + dt.ToString("yyyy-MM-dd hh:mm:ss") + "')";
+						var cmd = obj.Database.Connection.CreateCommand();
+						cmd.CommandText = sql;
+						cmd.Connection.Open();
+						cmd.ExecuteReader();
+						cmd.Connection.Close();
+					}
+					//var sql = "insert into scrapstatustrack(stausid,scrapid,UpdatedBy,UpdatedDate) values(3,'" + msa.scrapid + "','400108','" + dt.ToString("yyyy-MM-dd hh:mm:ss") + "')";
+					//var sqlquery = "update scrapstatustrack set stausid=3,Remarks='" + msa.ApprovalRemarks + "' where scrapid='" + msa.scrapid + "'";
+
+					IEnumerable<string> taxrequstor = obj.Scrapflows.Where(x => x.Scrapflow1 == "FundVerification").ToList().Select(y => y.incharge);
+					foreach (var item in taxrequstor)
+					{
+						this.emailDA.ScrapApprovalRequest(msa.scrapid, item, msa.employeeno, "FundVerification");
+					}
+					IEnumerable<string> dispatchrequstor = obj.Scrapflows.Where(x => x.Scrapflow1 == "ReadyToDisPatch").ToList().Select(y => y.incharge);
+					foreach (var item in dispatchrequstor)
+					{
+						this.emailDA.ScrapApprovalRequest(msa.scrapid, item, msa.employeeno, "ReadyToDisPatch");
+					}
+				}
+				else if (msa.scraptype == "Taxinvoice")
+				{
+					var taxinvoice = obj.ScrapEntryMasters.Where(x => x.ScrapentryId == msa.scrapid).FirstOrDefault();
+					taxinvoice.FundAvailableWithVendor = msa.fundavailablewithvendor;
+					taxinvoice.vendorVerificationremarks = msa.fundavendorremarks;
+					//taxinvoice.TaxInvoiceUpdatedY = msa.TaxInvoiceUpdatedY;
+					taxinvoice.VendorVerifierUpdateddate = System.DateTime.Now;
+					taxinvoice.statusid = 5;
+					obj.SaveChanges();
+					var sovalue = msa.statustarck.FindIndex(x => x.stausid == 5);
+					if (sovalue == -1)
+					{
+						sql = "insert into scrapstatustrack(stausid,scrapid,UpdatedBy,UpdatedDate) values(5,'" + msa.scrapid + "','400108','" + dt.ToString("yyyy-MM-dd hh:mm:ss") + "')";
+						var cmd = obj.Database.Connection.CreateCommand();
+						cmd.CommandText = sql;
+						cmd.Connection.Open();
+						cmd.ExecuteReader();
+						cmd.Connection.Close();
+					}
+					//var sql = "insert into scrapstatustrack(stausid,scrapid,UpdatedBy,UpdatedDate) values(5,'" + msa.scrapid + "','400108','"+ dt.ToString("yyyy-MM-dd hh:mm:ss") + "')";
+					//var sqlquery = "update scrapstatustrack set stausid=5,Remarks='" + msa.ApprovalRemarks + "' where scrapid='" + msa.scrapid + "'";
+
+				}
+				else if (msa.scraptype == "readytodispatch")
+				{
+					var readytodispatch = obj.ScrapEntryMasters.Where(x => x.ScrapentryId == msa.scrapid).FirstOrDefault();
+					readytodispatch.VerifierBy = msa.employeeno;
+					readytodispatch.VerifierRemarks = msa.VerifierRemarks;
+					obj.SaveChanges();
+					var sovalue = msa.statustarck.FindIndex(x => x.stausid == 7);
+					if (sovalue == -1)
+					{
+						sql = "insert into scrapstatustrack(stausid,scrapid,UpdatedBy,UpdatedDate) values(7,'" + msa.scrapid + "','400108','" + dt.ToString("yyyy-MM-dd hh:mm:ss") + "')";
+					}
+					//var sql = "insert into scrapstatustrack(stausid,scrapid,UpdatedBy,UpdatedDate) values(5,'" + msa.scrapid + "','400108','"+ dt.ToString("yyyy-MM-dd hh:mm:ss") + "')";
+					//var sqlquery = "update scrapstatustrack set stausid=5,Remarks='" + msa.ApprovalRemarks + "' where scrapid='" + msa.scrapid + "'";
+					var cmd = obj.Database.Connection.CreateCommand();
+					cmd.CommandText = sql;
+					cmd.Connection.Open();
+					cmd.ExecuteReader();
+					cmd.Connection.Close();
+					//readytodispatch.ver
+					IEnumerable<string> dispatchrequstor = obj.ScrapEntryMasters.Where(x => x.ScrapentryId == msa.scrapid).ToList().Select(y => y.ApprovalBy);
+					foreach (var item in dispatchrequstor)
+					{
+						this.emailDA.ScrapApprovalRequest(msa.scrapid, item, msa.employeeno, "DisPatchDone");
+					}
+				}
+				return status;
+			}
+			catch (Exception ex)
+			{
+				throw;
+			}
+		}
+		public async Task<DataTable> getscraplist(scrapsearchmodel model)
+		{
+			DataTable table = new DataTable();
+			try
+			{
+				var query = "";
+				query = "select  distinct TruckNo,md.Department,md.DepartmentId ,sf.ScrapentryId," +
+				"er.Name as requestedby,statusid,case when statusid = 2 then 'SoCreated' when statusid = 3 " +
+				"then 'Vat Incoice Raised' when statusid = 5 then 'TaxInvoice Raised' when statusid = 7 then 'Disptached' when statusid = 6 then 'Scrap Request Approved' else 'Scrap Request Submitted' end as Scrapstatus, " +
+				"ep.Name as preparedby,ea.Name as ApprovedBy,RequesterDepartmentID,RequestedBY,ApprovalRemarks,PreparedBY,ApprovalBy,ApprovalDate,ApprovalStatus," +
+				"SONo,VATInvoiceNo,TaxInvoiceNo,VerifierRemarks from ScrapEntryMaster sf inner join MPRDepartments md on md.DepartmentId = sf.RequesterDepartmentID " +
+				"inner join Employee er on er.EmployeeNo = sf.RequestedBY inner join Employee ep on ep.EmployeeNo = sf.PreparedBY " +
+				"inner join Employee ea on ea.EmployeeNo = sf.ApprovalBy inner join scrapstatustrack st on sf.ScrapentryId = st.scrapid " +
+				"inner join ScrapItems sii on sii.Scrapentryid=sf.ScrapentryId where sf.ScrapentryId is not null ";
+				if (model.DepartmentId != 0)
+					query += " and md.DepartmentId='" + model.DepartmentId + "'";
+				if (!string.IsNullOrEmpty(model.Vendorid))
+					query += " and Vendorid='" + model.Vendorid + "'";
+				if (model.scrapfrom != null)
+					query += " and PreparedDate>='" + model.scrapfrom + "' and PreparedDate<='" + model.scrapto + "'";
+				if (!string.IsNullOrEmpty(model.scraptype))
+					query += " and sii.Scraptype='" + model.scraptype + "'";
+				//if (model.scraptype == "Ready For Dispatch")
+				//	query += " and sf.VerifierRemarks is null";
+				if (!string.IsNullOrEmpty(model.truckno))
+					query += " and sf.TruckNo='" + model.truckno + "' ";
+
+				var cmd = obj.Database.Connection.CreateCommand();
+				cmd.CommandText = query;
+
+				cmd.Connection.Open();
+				table.Load(cmd.ExecuteReader());
+				cmd.Connection.Close();
+				return table;
+			}
+			catch (Exception ex)
+			{
+				throw;
+			}
+		}
+		public async Task<ScrapRegisterMasterModel> getscrapitembyid(int scrapid)
+		{
+			ScrapRegisterMasterModel scrap = new ScrapRegisterMasterModel();
+			try
+			{
+				var data = obj.ScrapEntryMasters.Where(x => x.ScrapentryId == scrapid).Include(x => x.ScapRegisterDocuments).FirstOrDefault();
+				scrap.RequesterDepartmentID = data.RequesterDepartmentID;
+				scrap.DepartmentName = obj.Departments.Where(x => x.DepartmentId == data.RequesterDepartmentID).FirstOrDefault().DepartmentName;
+				scrap.TruckNo = data.TruckNo;
+				scrap.DateOfEntry = data.Dateofentry;
+				scrap.ApprovalBy = data.ApprovalBy;
+				scrap.ApprovalName = obj.Employees.Where(x => x.EmployeeNo == data.ApprovalBy).FirstOrDefault().Name;
+				scrap.RequestedBY = data.RequestedBY;
+				scrap.RequestedName = obj.Employees.Where(x => x.EmployeeNo == data.RequestedBY).FirstOrDefault().Name;
+				scrap.PreparedBY = data.PreparedBY;
+				//scrap.PreparedDate = data.PreparedDate;
+				scrap.scrapid = data.ScrapentryId;
+				scrap.Approvalstatus = data.ApprovalStatus;
+				scrap.SONO = data.SONo;
+				scrap.SoDate = data.SoDate;
+                if (!string.IsNullOrEmpty(data.Soupdatedby))
+                {
+					scrap.Soupdatedby = obj.Employees.Where(x => x.EmployeeNo == data.Soupdatedby).FirstOrDefault().Name;
+					scrap.Soupdateddate = data.Soupdateddate;
+				}
+				scrap.VATInvoiceno = data.VATInvoiceNo;
+				scrap.VATInvoiceDate = data.VATInvoiceDate;
+				if (!string.IsNullOrEmpty(data.VATInvoiceupdatedby))
+                {
+					scrap.VATInvoiceupdatedby = obj.Employees.Where(x => x.EmployeeNo == data.VATInvoiceupdatedby).FirstOrDefault().Name;
+					scrap.VatInvoiceUpdatedDate = data.VatInvoiceUpdatedDate;
+				}
+				scrap.GatePAssNo = data.GatePAssNo;
+				scrap.GatePassDate = data.GatePAssDate;
+				scrap.GatePassupdateby = data.GatePassupdateby;
+				scrap.GatePassupdateddate = data.GatePassupdateddate;
+				scrap.ScrapStatusId = Convert.ToInt32(data.statusid);
+				scrap.fundavailablewithvendor =Convert.ToDecimal(data.FundAvailableWithVendor);
+				scrap.fundavendorremarks = data.vendorVerificationremarks;
+				scrap.TaxInvoiceNo = data.TaxInvoiceNo;
+				scrap.TaxInvoiceDate = data.TaxInvoiceDate;
+				scrap.TaxInvoiceUpdatedY = data.TaxInvoiceUpdatedY;
+				scrap.TaxInvoiceUpdatedDate = data.TaxInvoiceUpdatedDate;
+				scrap.Vendor = data.Vendor;
+				if (data.VerifierBy != null)
+				{
+					scrap.Verifier = obj.Employees.Where(x => x.EmployeeNo == data.VerifierBy).FirstOrDefault().Name;
+				}
+				scrap.VerifierRemarks = data.VerifierRemarks;
+
+				var scrapitem = obj.ScrapItems.Where(x => x.Scrapentryid == scrapid).ToList();
+				scrap.scrapitems = scrapitem.Select(x => new ScrapItems()
+				{
+					ItemId = x.ItemId,
+					//PriceType=x.PriceType,
+					sgstamount = x.SGSTAmount,
+					cgstamount = x.CGSTAmount,
+					igstamount = x.IGSTAmount,
+					Qty = Convert.ToDecimal(x.Qty),
+					Description = x.Description,
+					UOM = x.UOM,
+					tcs = x.TCS,
+					UnitPrice = Convert.ToDecimal(x.UnitPrice),
+					TotalPrice = x.TotalPrice,
+					Scraptype = x.Scraptype,
+					Itemcode = x.Itemcode,
+					ScrapItemid = x.ScrapItemid
+					//Scratypeid=x.scs
+				}).ToList();
+				var documentsdata = obj.ScapRegisterDocuments.Where(x => x.Scrapentryid == scrapid).ToList();
+				scrap.documents = documentsdata.Select(x => new ScapRegisterDocumentModel()
+				{
+					DocumentNAme = x.DocumentNAme,
+					path = x.path,
+					Scrapentryid = x.Scrapentryid,
+					DocumentType = x.DocumentType,
+				}).ToList();
+				var queru1 = "select sc.Status,se.ScrapentryId,st.stausid,st.scrapid,st.UpdatedDate from ScrapEntryMaster se inner join scrapstatustrack st on se.ScrapentryId=st.scrapid inner join ScrapStatus sc on sc.Statusid = st.Stausid where ScrapentryId='" + scrapid + "'";
+				scrap.statustarck = obj.Database.SqlQuery<ScrapStatustarckModel>(queru1).ToList();
+				//var scrapstatustarck = obj.scrapstatustrackviews.Where(x => x.ScrapentryId == scrapid).ToList();
+				//scrap.statustarck = scrapstatustarck.Select(x => new ScrapStatustarckModel()
+				//{
+				//	Status=x.Status,
+				//	statusid=Convert.ToInt32(x.stausid),
+				//	scrapid=Convert.ToInt32(x.scrapid)
+				//}).ToList();
+				return scrap;
+			}
+			catch (Exception)
+			{
+
+				throw;
+			}
+		}
+		public async Task<statuscheckmodel> UpdateScrapRequest(ScrapRegisterMasterModel msa)
+		{
+			statuscheckmodel status = new statuscheckmodel();
+			DateTime dt = DateTime.Now;
+			try
+			{
+				var approvedata = obj.ScrapEntryMasters.Where(x => x.ScrapentryId == msa.scrapid).FirstOrDefault();
+				approvedata.ApprovalBy = msa.ApprovalBy;
+				approvedata.ApprovalStatus = msa.Approvalstatus;
+				approvedata.ApprovalDate = System.DateTime.Now;
+				approvedata.ApprovalRemarks = msa.ApprovalRemarks;
+				if (msa.Approvalstatus == "Approved")
+				{
+					approvedata.statusid = 6;
+					status.Scrapstatusid = 6;
+					obj.SaveChanges();
+					var sqlquery = "insert into scrapstatustrack(stausid,scrapid,UpdatedBy,UpdatedDate) values(6,'" + msa.scrapid + "','400108','" + dt.ToString("yyyy-MM-dd hh:mm:ss") + "')";
+					//var sqlquery = "update scrapstatustrack set stausid=6,Remarks='"+ msa.ApprovalRemarks +"' where scrapid='" + msa.scrapid + "'";
+					var cmd = obj.Database.Connection.CreateCommand();
+					cmd.CommandText = sqlquery;
+					cmd.Connection.Open();
+					cmd.ExecuteReader();
+					cmd.Connection.Close();
+					IEnumerable<string> soincharge = obj.Scrapflows.Where(x => x.Scrapflow1 == "SoCreation").ToList().Select(y => y.incharge);
+					//string soinchargemail = obj.Employees.Where(x => x.EmployeeNo == soincharge).FirstOrDefault().EMail;
+					foreach (var item in soincharge)
+					{
+						this.emailDA.ScrapApprovalRequest(msa.scrapid, item, approvedata.ApprovalBy, "sorequest");
+					}
+				}
+				//obj.ScrapEntryMasters.Add(approvedata);				
+				return status;
+			}
+			catch (Exception ex)
+			{
+				throw;
+			}
+		}
+		public async Task<statuscheckmodel> InsertScarpflowIncharge(ScrapflowModel model)
+		{
+			statuscheckmodel status = new statuscheckmodel();
+			try
+			{
+				Scrapflow flow = new Scrapflow();
+				flow.incharge = model.Incharge;
+				flow.Scrapflow1 = model.Scrapflow;
+				flow.Createdby = model.createdby;
+				flow.Createddate = System.DateTime.Now;
+				flow.active = true;
+				obj.Scrapflows.Add(flow);
+				obj.SaveChanges();
+				return status;
+			}
+			catch (Exception ex)
+			{
+
+				throw;
+			}
+		}
+		public async Task<List<ScrapflowModel>> Getincharelist()
+		{
+			List<ScrapflowModel> flow = new List<ScrapflowModel>();
+			try
+			{
+				var sqlquery = "select sf.scrapflow,sf.incharge,e.name as inchargename,e1.name as createdby,sf.createddate from scrapflow sf inner join Employee e on e.EmployeeNo=sf.incharge inner join Employee e1 on e1.EmployeeNo = sf.createdby";
+				flow = obj.Database.SqlQuery<ScrapflowModel>(sqlquery).ToList();
+				return flow;
+			}
+			catch (Exception ex)
+			{
+
+				throw;
+			}
+		}
+		public async Task<List<ScrapflowModel>> Getincharepermissionlist(scrapsearchmodel search)
+		{
+			List<ScrapflowModel> flow = new List<ScrapflowModel>();
+			try
+			{
+				var sqlquery = "select sf.scrapflow,e.name as inchargename,e1.name as createdby,sf.createddate from scrapflow sf inner join Employee e on e.EmployeeNo=sf.incharge inner join Employee e1 on e1.EmployeeNo = sf.createdby where incharge='" + search.employeeno + "'";
+				flow = obj.Database.SqlQuery<ScrapflowModel>(sqlquery).ToList();
+				return flow;
+			}
+			catch (Exception ex)
+			{
+
+				throw;
+			}
+		}
+		public async Task<ScrapitemRatecontract> Getscrapitemdetails(string itemcode)
+		{
+			ScrapitemRatecontract scrap = new ScrapitemRatecontract();
+			try
+			{
+				scrap = obj.ScrapitemRatecontracts.Where(x => x.Material == itemcode).FirstOrDefault();
+				return scrap;
+			}
+			catch (Exception ex)
+			{
+				throw;
+			}
+		}
+		public async Task<DataTable> getscraplistbysearch(scrapsearchmodel model)
+		{
+			DataTable table = new DataTable();
+			try
+			{
+				var query = "";
+				query = "select  distinct TruckNo,md.Department,md.DepartmentId,sf.PreparedDate,sf.ScrapentryId,er.Name as requestedby,statusid," +
+						"case when statusid = 2 then 'SoCreated' when statusid = 3 then 'Vat Incoice Raised' when statusid = 5 then 'TaxInvoice Raised' when statusid = 7 then 'Disptached' when statusid=6 then 'Scrap Request Approved' else 'Scrap Request Submitted' end as Scrapstatus," +
+						"ep.Name as preparedby,ea.Name as ApprovedBy,RequesterDepartmentID,RequestedBY,ApprovalRemarks,PreparedBY,ApprovalBy," +
+						"ApprovalDate,ApprovalStatus,SONo,VATInvoiceNo,TaxInvoiceNo,VerifierRemarks from ScrapEntryMaster sf " +
+						"inner join MPRDepartments md on md.DepartmentId = sf.RequesterDepartmentID inner join Employee er on er.EmployeeNo = sf.RequestedBY" +
+						" inner join Employee ep on ep.EmployeeNo = sf.PreparedBY inner join Employee ea on ea.EmployeeNo = sf.ApprovalBy " +
+						"inner join scrapstatustrack st on sf.ScrapentryId = st.scrapid inner join ScrapItems sii on sii.Scrapentryid = sf.ScrapentryId " +
+						"where sf.ScrapentryId is not null ";
+
+				if (!string.IsNullOrEmpty(model.truckno))
+					query += " and sf.TruckNo='" + model.truckno + "' ";
+				if (!string.IsNullOrEmpty(model.scraptype))
+					query += " and sii.Scraptype='" + model.scraptype + "'";
+				if (model.DepartmentId != 0)
+					query += " and md.DepartmentId='" + model.DepartmentId + "' ";
+				if (model.scrapfrom != null)
+					query += " and PreparedDate>='" + model.scrapfrom + "'";
+				if (model.scrapto != null)
+					query += " and PreparedDate<='" + model.scrapto + "'";
+				if (!string.IsNullOrEmpty(model.scraptypeapprove))
+				{
+					if (model.scraptypeapprove == "SoCreation")
+					{
+						query += " and sf.SONo is not null ";
+					}
+					if (model.scraptypeapprove == "Vatinvoice")
+					{
+						query += " and sf.VATInvoiceNo is not null ";
+					}
+					if (model.scraptypeapprove == "taxinvoice")
+					{
+						query += " and sf.TaxInvoiceNo is not null ";
+					}
+				}
+				if (!string.IsNullOrEmpty(model.scraptypepending))
+				{
+					if (model.scraptypepending == "SoCreation")
+					{
+						query += " and sf.SONo is  null ";
+					}
+					if (model.scraptypepending == "Vatinvoice")
+					{
+						query += " and sf.VATInvoiceNo is  null ";
+					}
+					if (model.scraptypepending == "taxinvoice")
+					{
+						query += " and sf.TaxInvoiceNo is null ";
+					}
+				}
+
+				if (!string.IsNullOrEmpty(model.Vendorid))
+					query += " and Vendorid='" + model.Vendorid + "'";
+				//            if (model.scraptype == null)
+				//            {
+				//	query = "select  distinct TruckNo,md.Department,md.DepartmentId ,sf.ScrapentryId,er.Name as requestedby,statusid," +
+				//		"case when statusid = 2 then 'SoCreated' when statusid = 3 then 'Vat Incoice Raised' when statusid = 5 then 'TaxInvoice Raised' when statusid = 7 then 'Disptached' else '' end as Scrapstatus," +
+				//		"ep.Name as preparedby,ea.Name as ApprovedBy,RequesterDepartmentID,RequestedBY,ApprovalRemarks,PreparedBY,ApprovalBy," +
+				//		"ApprovalDate,ApprovalStatus,SONo,VATInvoiceNo,TaxInvoiceNo,VerifierRemarks from ScrapEntryMaster sf " +
+				//		"inner join MPRDepartments md on md.DepartmentId = sf.RequesterDepartmentID inner join Employee er on er.EmployeeNo = sf.RequestedBY" +
+				//		" inner join Employee ep on ep.EmployeeNo = sf.PreparedBY inner join Employee ea on ea.EmployeeNo = sf.ApprovalBy " +
+				//		"inner join scrapstatustrack st on sf.ScrapentryId = st.scrapid inner join ScrapItems sii on sii.Scrapentryid = sf.ScrapentryId " +
+				//		"where sf.ScrapentryId is not null ";
+				//	var sodata = model.scrapflow.Contains("SOCreated");
+				//	if (sodata == true)
+				//		query += " and sf.sono is null";
+				//	var vatdata = model.scrapflow.Contains("Vatinvoice generated");
+				//	if (vatdata == true)
+				//		query += " and sf.VATInvoiceNo is null";
+				//	var taxdata = model.scrapflow.Contains("Taxinvoice raised");
+				//	if (taxdata == true)
+				//		query += " and sf.TaxInvoiceNo is null";
+				//	var dispatchdata = model.scrapflow.Contains("Ready For Dispatch");
+				//	if (dispatchdata == true)
+				//		query += " and sf.VerifierRemarks is null";
+				//}
+				//            else
+				//            {
+
+				//}
+				var cmd = obj.Database.Connection.CreateCommand();
+				cmd.CommandText = query;
+
+				cmd.Connection.Open();
+				table.Load(cmd.ExecuteReader());
+				cmd.Connection.Close();
+				return table;
+			}
+			catch (Exception ex)
+			{
+				throw;
+			}
+		}
+		public async Task<List<ScrapflowModel>> getauthorizescrapflowlist(string employeeno)
+		{
+			List<ScrapflowModel> flow = new List<ScrapflowModel>();
+			try
+			{
+				var scrapflow = obj.Scrapflows.Where(x => x.incharge == employeeno && x.active == true).ToList();
+				flow = scrapflow.Select(x => new ScrapflowModel()
+				{
+					Scrapflow = x.Scrapflow1,
+
+				}).ToList();
+				return flow;
+			}
+			catch (Exception ex)
+			{
+				throw;
+			}
+		}
 		/*Name of Function : <<GetCMMMonthlyPerformance1>>  Author :<<Rahul>>  
 Date of Creation <<>>
 Purpose : <<Getting Monthly Performance report buyer group wise >>
 Review Date :<<>>   Reviewed By :<<>>*/
 		public DataSet GetCMMMonthlyPerformance1(string spName, SqlParameter[] paramArr)
         {
-			SqlConnection Conn1 = new SqlConnection(@"Data Source=10.29.15.68;User ID=sa;Password=yil@1234;initial catalog=YSCM;Integrated Security=false;");
+			string con = obj.Database.Connection.ConnectionString;
+			SqlConnection Conn1 = new SqlConnection(con);
 			EmployeModel employee = new EmployeModel();
 			DataSet Ds = new DataSet();
 			try
@@ -3522,7 +4077,8 @@ Purpose : <<Getting Monthly Performance report buyer group wise >>
 Review Date :<<>>   Reviewed By :<<>>*/
 		public DataSet GetCMMMonthlyPerformance2(string spName, SqlParameter[] paramArr)
         {
-			SqlConnection Conn1 = new SqlConnection(@"Data Source=10.29.15.68;User ID=sa;Password=yil@1234;initial catalog=YSCM;Integrated Security=false;");
+			string con = obj.Database.Connection.ConnectionString;
+			SqlConnection Conn1 = new SqlConnection(con);
 			EmployeModel employee = new EmployeModel();
 			DataSet Ds = new DataSet();
 			try
@@ -3558,5 +4114,123 @@ Review Date :<<>>   Reviewed By :<<>>*/
 				throw;
 			}
 		}
-    }
+		public async Task<List<Loadpaforpocration>> LoadItemsforpocreation(PADetailsModel masters)
+		{
+			List<Loadpaforpocration> pocreation = new List<Loadpaforpocration>();
+			try
+			{
+				var query = "select * from Loadpaforpocration where paid is not null ";
+				if (masters.Paid != 0)
+					query += " and paid=" + masters.Paid + "";
+				if (!string.IsNullOrEmpty(masters.DocumentNumber))
+					query += " and DocumentNo='"+masters.DocumentNumber+"'"; 
+				pocreation= obj.Database.SqlQuery<Loadpaforpocration>(query).ToList();
+				return pocreation;
+			}
+			catch (Exception ex)
+			{
+				throw;
+			}
+		}
+		public async Task<List<LoadItemsforpo>> LoadItemsforpogeneration(List<int> paid)
+		{
+			List<LoadItemsforpo> pocreation = new List<LoadItemsforpo>();
+			string padata = "";
+			try
+			{
+				padata = string.Join(" ',' ", paid);
+				var query = "select * from LoadItemsforpo where paid in ('" + padata + "') and PAStatus='Approved' ";
+				pocreation = obj.Database.SqlQuery<LoadItemsforpo>(query).ToList();
+				return pocreation;
+			}
+			catch (Exception ex)
+			{
+				throw;
+			}
+		}
+		public async Task<List<LoadItemsByPAID>> LoadItemsforpogenerationbasedonvendor(string VendorId, List<int> PAId)
+		{
+			List<LoadItemsByPAID> pocreation = new List<LoadItemsByPAID>();
+			string padata = "";
+			try
+			{
+				padata = string.Join(" ',' ", PAId);
+				var query = "select * from LoadItemsforpo where VendorId ='" + VendorId + "' and PAStatus='Approved' and POStatus='Pending' and paid not in ('" + padata + "') ";
+				pocreation = obj.Database.SqlQuery<LoadItemsByPAID>(query).ToList();
+				return pocreation;
+			}
+			catch (Exception ex)
+			{
+				throw;
+			}
+		}
+		public async Task<statuscheckmodel> InsertPOItems(POMasterModel model)
+		{
+			statuscheckmodel status = new statuscheckmodel();
+			try
+			{
+				POMaster master = new POMaster();
+                int sequenceNo = Convert.ToInt32(obj.POMasters.Max(li => li.POID));
+                if (sequenceNo == null || sequenceNo == 0)
+                    sequenceNo = 1;
+                else
+                {
+                    sequenceNo = sequenceNo + 1;
+                }
+                var value = obj.SP_sequenceNumber(sequenceNo).FirstOrDefault();
+                master.pono = "PO/" + DateTime.Now.ToString("MMyy") + "/" + value;
+				master.preparedby = model.preparedby;
+				master.prepareddate = System.DateTime.Now;
+				master.podate = System.DateTime.Now;
+				master.poremarks = model.poremarks;
+				master.poterms = model.poterms;
+				master.potype = model.potype;
+				master.collectiveno = model.collectiveno;
+				master.priorvendor = 5000000;
+				master.BuyerGroupID = model.BuyerGroupID;
+				master.departmentid = model.departmentid;
+				master.Reqdeliverydate = model.Reqdeliverydate;
+				master.scmpoconfirmation = model.scmpoconfirmation;
+				master.potype = model.potype;
+				master.POVariant = model.itemtype;
+				if (model.insurance == "ByYil")
+					master.insurance = "0.015";
+				else
+					master.insurance = "0.00";
+				obj.POMasters.Add(master);
+				obj.SaveChanges();
+				status.Sid = master.POID;
+                foreach (var item in model.poitems)
+                {
+				  SCMModels.SCMModels.POItem items = new SCMModels.SCMModels.POItem();
+					items.paitemid = item.paitemid;
+					items.poid = status.Sid;
+					items.date = System.DateTime.Now;
+					obj.POItems.Add(items);
+					obj.SaveChanges();
+                }
+				//padata = string.Join(" ',' ", paid);
+				//var query = "select * from LoadItemsByPAID where paid in ('" + padata + "') and PAStatus='Approved' ";
+				//pocreation = obj.Database.SqlQuery<LoadItemsByPAID>(query).ToList();
+
+				return status;
+			}
+			catch (Exception ex)
+			{
+				throw;
+			}
+		}
+		//public async Task<PoLineItemstoExcel> GetpoitemsByPoId(int revisionid)
+  //      {
+  //          try
+  //          {
+		//		var query
+  //          }
+  //          catch (Exception ex)
+  //          {
+
+  //              throw;
+  //          }
+  //      }
+	}
 }
