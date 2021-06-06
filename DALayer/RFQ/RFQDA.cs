@@ -278,7 +278,7 @@ namespace DALayer.RFQ
 
 				//string query = "select mprdet.DocumentNo,mprdet.DocumentDescription,mprdet.IssuePurposeId,mprdet.DepartmentName,mprdet.ProjectManagerName,mprdet.JobCode,mprdet.JobName,mprdet.GEPSApprovalId,mprdet.SaleOrderNo,mprdet.ClientName,mprdet.PlantLocation,mprdet.BuyerGroupName, * from RFQQuoteView inner join MPRRevisionDetails mprdet on mprdet.RevisionId = RFQQuoteView.MPRRevisionId where (Status not like '%Approved%' or Status is null) and MPRRevisionId=" + RevisionId + "";
 				// string query = "select mprdet.DocumentNo,mprdet.DocumentDescription,mprdet.IssuePurposeId,mprdet.DepartmentName,mprdet.ProjectManagerName,mprdet.JobCode,mprdet.JobName,mprdet.GEPSApprovalId,mprdet.SaleOrderNo,mprdet.ClientName,mprdet.PlantLocation,mprdet.BuyerGroupName, RFQCompareView.* from RFQCompareView inner join MPRRevisionDetails mprdet on mprdet.RevisionId = RFQCompareView.MPRRevisionId where  MPRRevisionId=" + RevisionId + " and RFQCompareView.RowNumber=1 and mprdet.RowNumber=1";
-				string query = "select * from rfqcompareItemDetails where MPRRevisionId=" + RevisionId + " Order by Itemdetailsid";
+				string query = "select * from rfqcompareItemDetails  rfqcm left join MPRRevisions mpr on mpr.RevisionId=rfqcm.MPRRevisionId left join MPRPurchaseTypes MPT on MPT.PurchaseTypeId=mpr.PurchaseTypeId where MPRRevisionId=" + RevisionId + " Order by Itemdetailsid";
 				var cmd = Context.Database.Connection.CreateCommand();
 				cmd.CommandText = query;
 				cmd.Connection.Open();
@@ -6973,6 +6973,94 @@ namespace DALayer.RFQ
 				return -1;
 			}
 		}
-		#endregion
-	}
+
+        public async Task<MPRMVJustification> GetMPRMVJustificationById(int id)
+        {
+			MPRMVJustification model = new MPRMVJustification();
+			try
+			{
+				var data = obj.MPRMVJustifications.SqlQuery("select * from  MPRMVJustification where MVJustificationId=@id and delFlag=0", new SqlParameter("@id", id)).FirstOrDefault();
+				model.MVjustification = data.MVjustification;
+				
+				return model;
+			}
+			catch (Exception ex)
+			{
+				throw;
+			}
+		}
+
+        public async Task<List<MPRMVJustification>> GetAllMPRMVJustification()
+        {
+			List<MPRMVJustification> model = new List<MPRMVJustification>();
+			try
+			{
+				var data = obj.MPRMVJustifications.SqlQuery("select * from  MPRMVJustification where  delFlag=0");
+				model = data.Select(x => new MPRMVJustification()
+				{
+					MVJustificationId = x.MVJustificationId,
+					MVjustification = x.MVjustification
+					
+				}).ToList();
+				return model;
+			}
+			catch (Exception ex)
+			{
+				throw;
+			}
+		}
+
+        public async Task<statuscheckmodel> InsertMPRMVJustification(MPRMVJustification model)
+        {
+			statuscheckmodel status = new statuscheckmodel();
+			try
+			{
+				var data = new MPRMVJustification();
+				if (model != null && model.MVJustificationId == 0)
+				{
+					// data.BuyerGroupId = model.BuyerGroupId;
+					data.MVjustification = model.MVjustification;
+					data.delFlag = model.delFlag;
+					data.Createdby = model.Createdby;
+					data.CreatedDate = System.DateTime.Now;
+				}
+				obj.MPRMVJustifications.Add(data);
+				obj.SaveChanges();
+
+				int id = data.MVJustificationId;
+				status.Sid = id;
+				return status;
+			}
+			catch (Exception ex)
+			{
+				throw;
+			}
+		}
+
+        public async Task<statuscheckmodel> UpdateMPRMVJustification(MPRMVJustification model)
+        {
+			statuscheckmodel status = new statuscheckmodel();
+			try
+			{
+				var data = obj.MPRMVJustifications.Where(x => x.MVJustificationId == model.MVJustificationId).FirstOrDefault();
+				if (model != null)
+				{
+					data.MVjustification = model.MVjustification;
+					data.delFlag = model.delFlag;
+					data.CreatedDate = System.DateTime.Now;
+                    data.Createdby = model.Createdby;
+                    obj.SaveChanges();
+				}
+				int id = data.MVJustificationId;
+				status.Sid = id;
+				return status;
+			}
+			catch (Exception ex)
+			{
+
+				throw;
+			}
+		}
+        #endregion
+    }
 }

@@ -612,5 +612,25 @@ namespace BALayer.RFQ
         {
             return _rfqDataAcess.UnMappingRFQDocument(rFQDocument);
         }
+
+        public async Task<MPRMVJustification> GetMPRMVJustificationById(int id)
+        {
+            return await _rfqDataAcess.GetMPRMVJustificationById(id);
+        }
+
+        public async Task<List<MPRMVJustification>> GetAllMPRMVJustification()
+        {
+            return await _rfqDataAcess.GetAllMPRMVJustification();
+        }
+
+        public async Task<statuscheckmodel> InsertMPRMVJustification(MPRMVJustification model)
+        {
+            return await _rfqDataAcess.InsertMPRMVJustification(model);
+        }
+
+        public async Task<statuscheckmodel> UpdateMPRMVJustification(MPRMVJustification model)
+        {
+            return await _rfqDataAcess.UpdateMPRMVJustification(model);
+        }
     }
 }

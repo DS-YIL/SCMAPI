@@ -444,9 +444,16 @@ namespace BALayer.PurchaseAuthorization
 			return await _purchaseDataAcess.LoadItemsforpogenerationbasedonvendor(VendorId,PAId);
         }
 
+      
+
+        public async Task<DataTable> getscrapRegisterReport(scrapsearchmodel model)
+        {
+			return await _purchaseDataAcess.getscrapRegisterReport(model);
+		}
+
         public async Task<statuscheckmodel> InsertPOItems(POMasterModel model)
         {
 			return await _purchaseDataAcess.InsertPOItems(model);
-        }
+		}
     }
 }

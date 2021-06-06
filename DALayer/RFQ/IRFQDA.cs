@@ -139,5 +139,9 @@ namespace DALayer.RFQ
         int MappingRfqMissedItems(List<RfqItemModel> rfqItemModel, List<MPRRFQDocument> mPRRFQDocuments);
         int MappingMPRDocumentToRFQDocument(MPRDocument mPRDocument);
         int UnMappingRFQDocument(RFQDocument rFQDocument);
+        Task<MPRMVJustification> GetMPRMVJustificationById(int id);
+        Task<List<MPRMVJustification>> GetAllMPRMVJustification();
+        Task<statuscheckmodel> InsertMPRMVJustification(MPRMVJustification model);
+        Task<statuscheckmodel> UpdateMPRMVJustification(MPRMVJustification model);
     }
 }

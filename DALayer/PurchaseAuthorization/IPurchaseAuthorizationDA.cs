@@ -105,5 +105,6 @@ namespace DALayer.PurchaseAuthorization
         Task<List<LoadItemsforpo>> LoadItemsforpogeneration(List<int> paid);
         Task<List<LoadItemsByPAID>> LoadItemsforpogenerationbasedonvendor(string VendorId, List<int> PAId);
         Task<statuscheckmodel> InsertPOItems(POMasterModel model);
+        Task<DataTable> getscrapRegisterReport(scrapsearchmodel model);
     }
 }

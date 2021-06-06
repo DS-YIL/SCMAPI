@@ -96,13 +96,14 @@ namespace BALayer.PurchaseAuthorization
         Task<List<ScrapflowModel>> Getincharelist();
         Task<ScrapitemRatecontract> Getscrapitemdetails(string itemcode);
         Task<List<ScrapflowModel>> Getincharepermissionlist(scrapsearchmodel search);
-        Task<DataTable> getscraplistbysearch(scrapsearchmodel model);
-        Task<List<ScrapflowModel>> getauthorizescrapflowlist(string employeeno);
+        Task<DataTable> getscraplistbysearch(scrapsearchmodel model); 
+         Task<List<ScrapflowModel>> getauthorizescrapflowlist(string employeeno);
         DataSet GetCMMMonthlyPerformance1(string spName, SqlParameter[] paramArr);
         DataSet GetCMMMonthlyPerformance2(string spName, SqlParameter[] paramArr);
         Task<List<Loadpaforpocration>> LoadItemsforpocreation(PADetailsModel masters);
         Task<List<LoadItemsforpo>> LoadItemsforpogeneration(List<int> paid);
         Task<List<LoadItemsByPAID>> LoadItemsforpogenerationbasedonvendor(string VendorId, List<int> PAId);
         Task<statuscheckmodel> InsertPOItems(POMasterModel model);
+        Task<DataTable> getscrapRegisterReport(scrapsearchmodel model); 
     }
 }

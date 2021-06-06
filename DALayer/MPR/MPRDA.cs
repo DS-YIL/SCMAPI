@@ -447,6 +447,8 @@ Review Date :<<>>   Reviewed By :<<>>
 						//mprRevisionDetails.OThirdApproverStatusChangedOn = DateTime.Now;
 						mprRevisionDetails.CheckedBy = mpr.CheckedBy;
 						mprRevisionDetails.ApprovedBy = mpr.ApprovedBy;
+						mprRevisionDetails.MVJustificationId = mpr.MVJustificationId;
+						mprRevisionDetails.VendorRemarks = mpr.VendorRemarks;
 						int cnt = DB.MPRStatusTrackDetails.Where(li => li.RequisitionId == mpr.RequisitionId && li.RevisionId == mpr.RevisionId && li.StatusId == 1).Count();//checking mpr generated already or not 
 						if (!string.IsNullOrEmpty(mpr.CheckedBy))
 						{
@@ -1203,6 +1205,8 @@ Review Date :<<>>   Reviewed By :<<>>
 				//mprRevisionDetails.MPRCommunications = DB.MPRCommunications.Include("MPRReminderTrackings").Where(li=>li.RevisionId==mprRevisionDetails.RevisionId).ToList();
 				mprRevisionDetails.MPRCommunications = DB.MPRCommunications.Where(x => x.RevisionId == mprRevisionDetails.RevisionId).Include(li => li.Employee).Include(li => li.MPRReminderTrackings).ToList();
 				mprRevisionDetails.MPR_Assignment = DB.MPR_Assignment.Where(li => li.MprRevisionId == mprRevisionDetails.RevisionId).ToList();
+				if(mprRevisionDetails.MVJustificationId>0 && mprRevisionDetails.MVJustificationId!=null)
+					mprRevisionDetails.MVjustification=DB.MPRMVJustifications.Where(li=>li.MVJustificationId== mprRevisionDetails.MVJustificationId).FirstOrDefault().MVjustification;
 			}
 			foreach (MPRItemInfo item in mprRevisionDetails.MPRItemInfoes)
 			{
