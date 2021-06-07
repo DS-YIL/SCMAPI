@@ -466,6 +466,38 @@ namespace SCMAPI.Controllers
 		}
 		#endregion
 
+		[Route("GetAllMPRMVJustification")]
+		[ResponseType(typeof(List<MPRMVJustification>))]
+		public async Task<IHttpActionResult> GetAllMPRMVJustification()
+		{
+			List<MPRMVJustification> model = new List<MPRMVJustification>();
+			model = await _rfqBusenessAcess.GetAllMPRMVJustification();
+			return Ok(model);
+		}
+		[Route("InsertMPRMVJustification")]
+		[ResponseType(typeof(statuscheckmodel))]
+		public async Task<IHttpActionResult> InsertMPRMVJustification(MPRMVJustification model)
+		{
+			statuscheckmodel status = new statuscheckmodel();
+			status = await _rfqBusenessAcess.InsertMPRMVJustification(model);
+			return Ok(status);
+		}
+		[Route("UpdateMPRMVJustification")]
+		[ResponseType(typeof(statuscheckmodel))]
+		public async Task<IHttpActionResult> UpdateMPRMVJustification(MPRMVJustification model)
+		{
+			statuscheckmodel status = new statuscheckmodel();
+			status = await _rfqBusenessAcess.UpdateMPRMVJustification(model);
+			return Ok(status);
+		}
+		[Route("GetMPRMVJustificationById")]
+		[ResponseType(typeof(MPRMVJustification))]
+		public async Task<IHttpActionResult> GetMPRMVJustificationById(int id)
+		{
+			MPRMVJustification status = new MPRMVJustification();
+			status = await _rfqBusenessAcess.GetMPRMVJustificationById(id);
+			return Ok(status);
+		}
 
 	}
 }
