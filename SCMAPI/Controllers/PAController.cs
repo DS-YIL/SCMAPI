@@ -2691,5 +2691,11 @@ namespace SCMAPI.Controllers
         {
             return Ok(await _paBusenessAcess.InsertPOItems(model));
         }
+        [HttpPost]
+        [Route("getscrapRegisterReport")]
+        public async Task<IHttpActionResult> getscrapRegisterReport(scrapsearchmodel search)
+        {
+            return Ok(await _paBusenessAcess.getscrapRegisterReport(search));
+        }
     }
 }
