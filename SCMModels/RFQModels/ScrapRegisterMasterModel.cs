@@ -123,5 +123,6 @@ namespace SCMModels.RFQModels
         public Nullable<DateTime> scrapto { get; set; }
         public string scraptypepending { get; set; }
         public string scraptypeapprove { get; set; }
+        public string Datetype { get; set; }
     }
 }
