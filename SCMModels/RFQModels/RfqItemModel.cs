@@ -110,7 +110,10 @@ namespace SCMModels.RFQModels
 		public string itemtypematerial { get; set; }
         public string PODescription { get; set; }
 		public string POText { get; set; }
-	}
+        public string PRno { get; set; }
+        public string PRLineItemNo { get; set; }
+        public bool prapproval { get; set; }
+    }
 	public class PADetailsModel
 	{
 		public string rfqnumber { get; set; }
@@ -154,6 +157,7 @@ namespace SCMModels.RFQModels
         public string PRno { get; set; }
 		public string PRLineItemNo { get; set; }
 		public string PRcreatedBy { get; set; }
+		public bool prapproval { get; set; }
 	}
 	public class EmployeeFilterModel
 	{

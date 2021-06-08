@@ -20,6 +20,7 @@ namespace SCMModels.RFQModels
         public string poterms { get; set; }
         public string insurance { get; set; }
         public string potype { get; set; }
+        public string purchasetype { get; set; }
         public decimal collectiveno{ get; set; }
         public decimal priorvendor { get; set; }
         public DateTime Reqdeliverydate { get; set; }
@@ -34,9 +35,20 @@ namespace SCMModels.RFQModels
         public string scmpoconfirmation { get; set; }
         public string itemtype { get; set; }
         public List<POItem> poitems { get; set; }
+        public string VendorCode { get; set; }
     }
     public class POItem
     {
         public int paitemid { get; set; }
+    }
+    public class posearchmodel
+    {
+        public int poid { get; set; }
+        public int Buyergroupid { get; set; }
+        public int DepartmentId { get; set; }
+        public string potype { get; set; }
+        public string VendorId { get; set; }
+        //public int MyProperty { get; set; }
+        //public int MyProperty { get; set; }
     }
 }

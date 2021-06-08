@@ -455,5 +455,19 @@ namespace BALayer.PurchaseAuthorization
         {
 			return await _purchaseDataAcess.InsertPOItems(model);
 		}
-    }
+		public async Task<List<PoLineItemstoExcel>> GetpoitemsByPoId(int revisionid)
+		{
+			return await _purchaseDataAcess.GetpoitemsByPoId(revisionid);
+		}
+
+		public async Task<List<Loadpolist>> LoadPolist(posearchmodel posearch)
+		{
+			return await _purchaseDataAcess.LoadPolist(posearch);
+		}
+
+		public async Task<statuscheckmodel> ApprovePRNos(List<ItemsViewModel> msa)
+		{
+			return await _purchaseDataAcess.ApprovePRNos(msa);
+		}
+	}
 }

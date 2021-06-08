@@ -1808,155 +1808,146 @@ namespace SCMAPI.Controllers
         {
             try
             {
+                string destFile = "";
                 //string sourcePath = "C:\\Users\\developer4\\Desktop\\";
                 Microsoft.Office.Interop.Excel.Application xlApp = new Microsoft.Office.Interop.Excel.Application();
-                Microsoft.Office.Interop.Excel.Workbook excelBook = xlApp.Workbooks.Open("D:\\POLineItemTemplate\\Copy of PO Temp.xlsx");
-
-                String[] excelSheets = new String[excelBook.Worksheets.Count];
-                int j = 0;
-
-                string sourcePath = ConfigurationManager.AppSettings["POLineItemTemplate"];
-                string targetpath = ConfigurationManager.AppSettings["DownloadPoitems"];
-                string srcfilename = "POItemTemp.xlsx";
-                string targetfilename = "PONO" + DateTime.Now.ToString("ddMMyyyyhhmmss") + revisionid + ".xlsx";
-                string sourceFile = System.IO.Path.Combine(sourcePath, srcfilename);
-                string destFile = System.IO.Path.Combine(targetpath, targetfilename);
-                if (!System.IO.Directory.Exists(targetpath))
+                try
                 {
-                    System.IO.Directory.CreateDirectory(targetpath);
-                }
-                System.IO.File.Copy(sourceFile, destFile, false);
-                Microsoft.Office.Interop.Excel._Application docExcel = new Microsoft.Office.Interop.Excel.Application();
-                docExcel.Visible = false;
-                docExcel.DisplayAlerts = false;
+                    Microsoft.Office.Interop.Excel.Workbook excelBook = xlApp.Workbooks.Open("C:\\POLineItemTemplate\\POItemTemp.xlsx");
 
-                Microsoft.Office.Interop.Excel._Workbook workbooksExcel = docExcel.Workbooks.Open(destFile, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing);
-                Microsoft.Office.Interop.Excel._Worksheet worksheetExcel = (Microsoft.Office.Interop.Excel._Worksheet)workbooksExcel.ActiveSheet;
+                    String[] excelSheets = new String[excelBook.Worksheets.Count];
+                    int j = 0;
 
-                string varienttype = "";
-                YSCMEntities obj = new YSCMEntities();
-                var data = obj.PoLineItemstoExcels.Where(x => x.POID == revisionid).ToList();
-                Microsoft.Office.Interop.Excel.Range range = worksheetExcel.UsedRange;
-                foreach (Microsoft.Office.Interop.Excel.Worksheet wSheet in excelBook.Worksheets)
-                {
-                    excelSheets[j] = wSheet.Name;
-                    j++;
-                    if (excelSheets[0] == "POHeader")
+                    string sourcePath = ConfigurationManager.AppSettings["POLineItemTemplate"];
+                    string targetpath = ConfigurationManager.AppSettings["DownloadPoitems"];
+                    string srcfilename = "POItemTemp.xlsx";
+                    string targetfilename = "PONO" + DateTime.Now.ToString("ddMMyyyyhhmmss") + revisionid + ".xlsx";
+                    string sourceFile = System.IO.Path.Combine(sourcePath, srcfilename);
+                    destFile = System.IO.Path.Combine(targetpath, targetfilename);
+                    if (!System.IO.Directory.Exists(targetpath))
                     {
-                        var ws = workbooksExcel.Worksheets;
-                        var worksheet = (Microsoft.Office.Interop.Excel.Worksheet)ws.get_Item("POHeader");
-                        range = worksheet.UsedRange;
-                        foreach (var item in data)
-                        {
-                            if (!string.IsNullOrEmpty(item.DocumentNo))
-                                (range.Worksheet.Cells["2", "A"]).Value2 = item.DocumentNo;
-                            if (!string.IsNullOrEmpty(item.PAId.ToString()))
-                                (range.Worksheet.Cells["2", "B"]).Value2 = item.PAId;
-                            if (!string.IsNullOrEmpty(item.potype))
-                                (range.Worksheet.Cells["2", "C"]).Value2 = item.potype;
-                            if (item.collectiveno != 0)
-                                (range.Worksheet.Cells["2", "D"]).Value2 = item.collectiveno;
-                            if (!string.IsNullOrEmpty(item.PaymentTermCode))
-                                (range.Worksheet.Cells["2", "E"]).Value2 = item.PaymentTermCode;
-                            if (!string.IsNullOrEmpty(item.incoterms))
-                                (range.Worksheet.Cells["2", "F"]).Value2 = item.incoterms;
-                            //if (!string.IsNullOrEmpty(item.pono))
-                            //    (range.Worksheet.Cells["2", "G"]).Value2 = item.pono;
-                            if(item.poterms!=null)
-                                (range.Worksheet.Cells["2", "I"]).Value2 = item.poterms;
-                            if (!string.IsNullOrEmpty(item.poinsurance))
-                                (range.Worksheet.Cells["2", "K"]).Value2 = item.poinsurance;
-                            if(!string.IsNullOrEmpty(item.Remarks))
-                                (range.Worksheet.Cells["2", "J"]).Value2 = item.Remarks;
-
-                            varienttype = item.Remarks;
-                        }
+                        System.IO.Directory.CreateDirectory(targetpath);
                     }
-                    int i = 2;
-                    int pono = 10;
-                    if (excelSheets[1] == "POLineItems")
+                    System.IO.File.Copy(sourceFile, destFile, false);
+
+                    Microsoft.Office.Interop.Excel._Application docExcel = new Microsoft.Office.Interop.Excel.Application();
+                    docExcel.Visible = false;
+                    docExcel.DisplayAlerts = false;
+
+                    Microsoft.Office.Interop.Excel._Workbook workbooksExcel = docExcel.Workbooks.Open(destFile, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing);
+                    Microsoft.Office.Interop.Excel._Worksheet worksheetExcel = (Microsoft.Office.Interop.Excel._Worksheet)workbooksExcel.ActiveSheet;
+
+                    string varienttype = "";
+                    YSCMEntities obj = new YSCMEntities();
+                    var data = obj.PoLineItemstoExcels.Where(x => x.POID == revisionid).ToList();
+                    Microsoft.Office.Interop.Excel.Range range = worksheetExcel.UsedRange;
+                    foreach (Microsoft.Office.Interop.Excel.Worksheet wSheet in excelBook.Worksheets)
                     {
-                        var ws = workbooksExcel.Worksheets;
-                        var worksheet = (Microsoft.Office.Interop.Excel.Worksheet)ws.get_Item("POLineItems");
-                        range = worksheet.UsedRange;
-                        foreach (var item in data)
+                        excelSheets[j] = wSheet.Name;
+                        j++;
+                        if (excelSheets[0] == "POHeader")
                         {
-                            if (item.PAItemID!=0)
-                                (range.Worksheet.Cells[i, "B"]).Value2 = item.PAItemID;
-                            if (!string.IsNullOrEmpty(item.POItemType))
-                                (range.Worksheet.Cells[i, "C"]).Value2 = item.POItemType;
-                            if (!string.IsNullOrEmpty(item.PRno))
-                                (range.Worksheet.Cells[i, "D"]).Value2 = item.PRno;
-                            if (!string.IsNullOrEmpty(item.PRLineItemNo))
-                                (range.Worksheet.Cells[i, "E"]).Value2 = item.PRLineItemNo;
-                            if (item.UnitPrice>=0)
-                                (range.Worksheet.Cells[i, "F"]).Value2 = item.UnitPrice;
-                            if (!string.IsNullOrEmpty(item.purchasetype))
-                                (range.Worksheet.Cells[i, "G"]).Value2 = item.purchasetype;
-                            if (!string.IsNullOrEmpty(item.incoterms))
-                                (range.Worksheet.Cells[i, "H"]).Value2 = "Y001";
-                            if (!string.IsNullOrEmpty(item.PriorVendor))
-                                (range.Worksheet.Cells[i, "I"]).Value2 = item.PriorVendor;
-                            if (!string.IsNullOrEmpty(item.ABConfirmation))
-                                (range.Worksheet.Cells[i, "J"]).Value2 = item.ABConfirmation;
-                           
+                            var ws = workbooksExcel.Worksheets;
+                            var worksheet = (Microsoft.Office.Interop.Excel.Worksheet)ws.get_Item("POHeader");
+                            range = worksheet.UsedRange;
+                            foreach (var item in data)
+                            {
+                                if (!string.IsNullOrEmpty(item.DocumentNo))
+                                    (range.Worksheet.Cells["2", "A"]).Value2 = item.DocumentNo;
+                                if (!string.IsNullOrEmpty(item.PAId.ToString()))
+                                    (range.Worksheet.Cells["2", "B"]).Value2 = item.PAId;
+                                if (!string.IsNullOrEmpty(item.potype))
+                                    (range.Worksheet.Cells["2", "C"]).Value2 = item.potype;
+                                if (item.collectiveno != 0)
+                                    (range.Worksheet.Cells["2", "D"]).Value2 = item.collectiveno;
+                                if (!string.IsNullOrEmpty(item.PaymentTermCode))
+                                    (range.Worksheet.Cells["2", "E"]).Value2 = item.PaymentTermCode;
+                                if (!string.IsNullOrEmpty(item.incoterms))
+                                    (range.Worksheet.Cells["2", "F"]).Value2 = item.incoterms;
+                                //if (!string.IsNullOrEmpty(item.pono))
+                                //    (range.Worksheet.Cells["2", "G"]).Value2 = item.pono;
+                                if (item.poterms != null)
+                                    (range.Worksheet.Cells["2", "I"]).Value2 = item.poterms;
+                                if (!string.IsNullOrEmpty(item.poinsurance))
+                                    (range.Worksheet.Cells["2", "K"]).Value2 = item.poinsurance;
+                                if (!string.IsNullOrEmpty(item.Remarks))
+                                    (range.Worksheet.Cells["2", "J"]).Value2 = item.Remarks;
+
+                                varienttype = item.Remarks;
+                            }
+                        }
+                        int i = 2;
+                        int pono = 10;
+                        if (excelSheets[1] == "POLineItems")
+                        {
+                            var ws = workbooksExcel.Worksheets;
+                            var worksheet = (Microsoft.Office.Interop.Excel.Worksheet)ws.get_Item("POLineItems");
+                            range = worksheet.UsedRange;
+                            foreach (var item in data)
+                            {
+                                if (item.PAItemID != 0)
+                                    (range.Worksheet.Cells[i, "B"]).Value2 = item.PAItemID;
+                                if (!string.IsNullOrEmpty(item.POItemType))
+                                    (range.Worksheet.Cells[i, "C"]).Value2 = item.POItemType;
+                                if (!string.IsNullOrEmpty(item.PRno))
+                                    (range.Worksheet.Cells[i, "D"]).Value2 = item.PRno;
+                                if (!string.IsNullOrEmpty(item.PRLineItemNo))
+                                    (range.Worksheet.Cells[i, "E"]).Value2 = item.PRLineItemNo;
+                                if (item.UnitPrice >= 0)
+                                    (range.Worksheet.Cells[i, "F"]).Value2 = item.UnitPrice;
+                                if (!string.IsNullOrEmpty(item.purchasetype))
+                                    (range.Worksheet.Cells[i, "G"]).Value2 = item.purchasetype;
+                                if (!string.IsNullOrEmpty(item.incoterms))
+                                    (range.Worksheet.Cells[i, "H"]).Value2 = "Y001";
+                                if (!string.IsNullOrEmpty(item.PriorVendor))
+                                    (range.Worksheet.Cells[i, "I"]).Value2 = item.PriorVendor;
+                                if (!string.IsNullOrEmpty(item.ABConfirmation))
+                                    (range.Worksheet.Cells[i, "J"]).Value2 = item.ABConfirmation;
+
                                 (range.Worksheet.Cells[i, "K"]).Value2 = pono;
 
-                            if (!string.IsNullOrEmpty(item.ProjectDefinition))
-                                (range.Worksheet.Cells[i, "L"]).Value2 = item.ProjectDefinition;
-                            if (!string.IsNullOrEmpty(item.WBS))
-                                (range.Worksheet.Cells[i, "M"]).Value2 = item.WBS;
-                            //if (DateTime.(item.Reqdeliverydate))
-                            //    (range.Worksheet.Cells[i, "M"]).Value2 = item.Reqdeliverydate;
-                            if (item.Quantity!=0)
-                                (range.Worksheet.Cells[i, "O"]).Value2 = item.Quantity;
-                            
-                            if (!string.IsNullOrEmpty(item.ItemDescription))
-                                (range.Worksheet.Cells[i, "Q"]).Value2 = item.ItemDescription;
+                                if (!string.IsNullOrEmpty(item.ProjectDefinition))
+                                    (range.Worksheet.Cells[i, "L"]).Value2 = item.ProjectDefinition;
+                                if (!string.IsNullOrEmpty(item.WBS))
+                                    (range.Worksheet.Cells[i, "M"]).Value2 = item.WBS;
+                                //if (DateTime.(item.Reqdeliverydate))
+                                //    (range.Worksheet.Cells[i, "M"]).Value2 = item.Reqdeliverydate;
+                                if (item.Quantity != 0)
+                                    (range.Worksheet.Cells[i, "O"]).Value2 = item.Quantity;
 
-                            (range.Worksheet.Cells[i, "N"]).Value2 = item.Reqdeliverydate.ToString();
-                            if (varienttype == "Material")
-                                (range.Worksheet.Cells[i, "H"]).Value2 = "Y001";
-                            else
-                                (range.Worksheet.Cells[i, "H"]).Value2 = "Y002";
-                            //if (!string.IsNullOrEmpty(item.tex))
-                            //    (range.Worksheet.Cells["2", "G"]).Value2 = item.pono;
-                            i++;
+                                if (!string.IsNullOrEmpty(item.ItemDescription))
+                                    (range.Worksheet.Cells[i, "Q"]).Value2 = item.ItemDescription;
 
-                           pono= pono +10;
+                                (range.Worksheet.Cells[i, "N"]).Value2 = item.Reqdeliverydate.ToString();
+                                if (varienttype == "Material")
+                                    (range.Worksheet.Cells[i, "H"]).Value2 = "Y001";
+                                else
+                                    (range.Worksheet.Cells[i, "H"]).Value2 = "Y002";
+                                //if (!string.IsNullOrEmpty(item.tex))
+                                //    (range.Worksheet.Cells["2", "G"]).Value2 = item.pono;
+                                i++;
+
+                                pono = pono + 10;
+                            }
                         }
                     }
+
+                    workbooksExcel.Save();
+                    workbooksExcel.Close(false, Type.Missing, Type.Missing);
+                    docExcel.Application.DisplayAlerts = true;
+                    docExcel.Application.Quit();
+                    //return getGenetatedExcel(destFile);
                 }
-                foreach (var item in data)
+                catch (Exception ex)
                 {
-                    //if (!string.IsNullOrEmpty(item.RFQNo))
-                    //    (range.Worksheet.Cells["2", "G"]).Value2 = item.RFQNo;
-                    //if (!string.IsNullOrEmpty(item.rfqRevisionId.ToString()))
-                    //    (range.Worksheet.Cells["2", "O"]).Value2 = item.rfqRevisionId;
-                    //if (!string.IsNullOrEmpty(item.RFQValidDate.ToString()))
-                    //    (range.Worksheet.Cells["3", "G"]).Value2 = item.RFQValidDate;
-                    //if (!string.IsNullOrEmpty(item.ReqRemarks))
-                    //    (range.Worksheet.Cells["3", "L"]).Value2 = item.ReqRemarks;
-                    //if (!string.IsNullOrEmpty(item.RFQValidDate.ToString()))
-                    //    (range.Worksheet.Cells["2", "L"]).Value2 = item.RFQValidDate;
+                    log.ErrorMessage("PAController", "GetPolineItemsToExcel", ex.Message + "; " + ex.StackTrace.ToString());
                 }
 
-                //int i = 6;
-                foreach (var item1 in data)
-                {
-                }
-                //range.Worksheet.Protect("password", Missing.Value, Missing.Value, Missing.Value, Missing.Value, Missing.Value, Missing.Value, Missing.Value, Missing.Value, Missing.Value, Missing.Value, Missing.Value, Missing.Value, Missing.Value, Missing.Value, Missing.Value);
-
-                workbooksExcel.Save();
-                workbooksExcel.Close(false, Type.Missing, Type.Missing);
-                docExcel.Application.DisplayAlerts = true;
-                docExcel.Application.Quit();
                 return getGenetatedExcel(destFile);
-
             }
             catch (Exception ex)
             {
-                throw;
+                throw ex;
             }
 
         }
@@ -2683,7 +2674,7 @@ namespace SCMAPI.Controllers
         [Route("LoadItemsforpogenerationbasedonvendor/{VendorId}")]
         public async Task<IHttpActionResult> LoadItemsforpogenerationbasedonvendor(List<int> PAId, string VendorId)
         {
-            return Ok(await _paBusenessAcess.LoadItemsforpogenerationbasedonvendor(VendorId,PAId));
+            return Ok(await _paBusenessAcess.LoadItemsforpogenerationbasedonvendor(VendorId, PAId));
         }
         [HttpPost]
         [Route("InsertPOItems")]
@@ -2696,6 +2687,24 @@ namespace SCMAPI.Controllers
         public async Task<IHttpActionResult> getscrapRegisterReport(scrapsearchmodel search)
         {
             return Ok(await _paBusenessAcess.getscrapRegisterReport(search));
+        }
+        [HttpGet]
+        [Route("GetpoitemsByPoId/{revisionid}")]
+        public async Task<IHttpActionResult> GetpoitemsByPoId(int revisionid)
+        {
+            return Ok(await _paBusenessAcess.GetpoitemsByPoId(revisionid));
+        }
+        [HttpPost]
+        [Route("LoadPolist")]
+        public async Task<IHttpActionResult> LoadPolist(posearchmodel posearch)
+        {
+            return Ok(await _paBusenessAcess.LoadPolist(posearch));
+        }
+        [HttpPost]
+        [Route("Updateprnoapproval")]
+        public async Task<IHttpActionResult> Updateprnoapproval(List<ItemsViewModel> msa)
+        {
+            return Ok(await _paBusenessAcess.ApprovePRNos(msa));
         }
     }
 }

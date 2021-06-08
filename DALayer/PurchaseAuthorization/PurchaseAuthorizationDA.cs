@@ -1167,9 +1167,9 @@ Review Date :<<>>   Reviewed By :<<>>*/
                             RfqSplitItemId = Convert.ToInt32(splitdata),
                             Mprrfqsplititemid = items.Mprrfqsplititemid,
                             MPRItemDetailsId = items.MPRItemDetailsid,
-                            //PODescription = items.PODescription,
-                            //POText = items.POText,
-                            //POItemType = items.itemtypesupplier
+                            PODescription = items.PODescription,
+                            POText = items.POText,
+                            POItemType = items.itemtypesupplier
                         };
                         obj.PAItems.Add(paitem);
                         obj.SaveChanges();
@@ -1325,6 +1325,8 @@ Review Date :<<>>   Reviewed By :<<>>*/
                         InsuranceAmount = x.InsuranceAmount,
                         MPRRevisionId = Convert.ToInt32(x.MPRRevisionId),
                         POText = x.POText,
+                        PRno = x.PRno,
+                        PRLineItemNo = x.PRLineItemNo,
                         PODescription = x.PODescription,
                         itemtypesupplier = x.POItemType,
                         rawdiscount = x.rawdiscount
@@ -4207,8 +4209,9 @@ Review Date :<<>>   Reviewed By :<<>>*/
                 master.departmentid = model.departmentid;
                 master.Reqdeliverydate = model.Reqdeliverydate;
                 master.scmpoconfirmation = model.scmpoconfirmation;
-                master.potype = model.potype;
+                master.purchasetype = model.purchasetype;
                 master.POVariant = model.itemtype;
+                master.Vendorcode = model.VendorCode;
                 if (model.insurance == "ByYil")
                     master.insurance = "0.015";
                 else
@@ -4219,7 +4222,7 @@ Review Date :<<>>   Reviewed By :<<>>*/
                 foreach (var item in model.poitems)
                 {
                     SCMModels.SCMModels.POItem items = new SCMModels.SCMModels.POItem();
-                    //items.paitemid = item.paitemid;
+                    items.paitemid = item.paitemid;
                     items.poid = status.Sid;
                     items.date = System.DateTime.Now;
                     obj.POItems.Add(items);
@@ -4276,6 +4279,75 @@ Review Date :<<>>   Reviewed By :<<>>*/
             catch (Exception ex)
             {
                 throw;
+            }
+        }
+        public async Task<List<PoLineItemstoExcel>> GetpoitemsByPoId(int revisionid)
+        {
+            List<PoLineItemstoExcel> poitems = new List<PoLineItemstoExcel>();
+            try
+            {
+                var query = "";
+                query = "select * from PoLineItemstoExcel where POID=" + revisionid + "";
+                poitems = obj.Database.SqlQuery<PoLineItemstoExcel>(query).ToList();
+                return poitems;
+            }
+            catch (Exception ex)
+            {
+
+                throw;
+            }
+        }
+        public async Task<List<Loadpolist>> LoadPolist(posearchmodel posearch)
+        {
+            List<Loadpolist> polist = new List<Loadpolist>();
+            try
+            {
+                var sqlquery = "select * from Loadpolist where POID is not null";
+                if (posearch.DepartmentId != 0)
+                    sqlquery += " and DepartmentId=" + posearch.DepartmentId + "";
+                if (posearch.Buyergroupid != 0)
+                    sqlquery += " and BuyerGroupId=" + posearch.Buyergroupid + "";
+                if (!string.IsNullOrEmpty(posearch.VendorId))
+                    sqlquery += " and BuyerGroupId=" + posearch.Buyergroupid + "";
+
+                sqlquery += " order by POID desc";
+                polist = obj.Database.SqlQuery<Loadpolist>(sqlquery).ToList();
+                return polist;
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+        }
+        public async Task<statuscheckmodel> ApprovePRNos(List<ItemsViewModel> msa)
+        {
+            statuscheckmodel status = new statuscheckmodel();
+            int paid = msa[0].paid;
+            try
+            {
+                var podata = obj.PAItems.Where(x => x.PAID == paid).ToList();
+                foreach (var item in msa)
+                {
+                    if (item.prapproval == true && !string.IsNullOrEmpty(item.PRno))
+                    {
+                        var data = obj.PAItems.Where(x => x.PAItemID == item.paitemid).FirstOrDefault();
+                        data.PRApprovedBy = msa[0].EmployeeNo;
+                        data.PRApprovedon = System.DateTime.Now;
+                        //data.PRcreatedBy = item.PRcreatedBy;
+                        //obj.MSALineItems.Add(item);
+                        obj.SaveChanges();
+                    }
+
+                }
+                //var data = obj.MSALineItems.Where(x => x.PAItemID == msa.PAItemID).FirstOrDefault();
+                //MSALineItem item = new MSALineItem();
+
+                return status;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+                //log.ErrorMessage("PAController", "UpdateMsaprconfirmation", ex.Message + "; " + ex.StackTrace.ToString());
             }
         }
         //public async Task<PoLineItemstoExcel> GetpoitemsByPoId(int revisionid)
