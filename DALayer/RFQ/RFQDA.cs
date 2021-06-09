@@ -278,7 +278,7 @@ namespace DALayer.RFQ
 
 				//string query = "select mprdet.DocumentNo,mprdet.DocumentDescription,mprdet.IssuePurposeId,mprdet.DepartmentName,mprdet.ProjectManagerName,mprdet.JobCode,mprdet.JobName,mprdet.GEPSApprovalId,mprdet.SaleOrderNo,mprdet.ClientName,mprdet.PlantLocation,mprdet.BuyerGroupName, * from RFQQuoteView inner join MPRRevisionDetails mprdet on mprdet.RevisionId = RFQQuoteView.MPRRevisionId where (Status not like '%Approved%' or Status is null) and MPRRevisionId=" + RevisionId + "";
 				// string query = "select mprdet.DocumentNo,mprdet.DocumentDescription,mprdet.IssuePurposeId,mprdet.DepartmentName,mprdet.ProjectManagerName,mprdet.JobCode,mprdet.JobName,mprdet.GEPSApprovalId,mprdet.SaleOrderNo,mprdet.ClientName,mprdet.PlantLocation,mprdet.BuyerGroupName, RFQCompareView.* from RFQCompareView inner join MPRRevisionDetails mprdet on mprdet.RevisionId = RFQCompareView.MPRRevisionId where  MPRRevisionId=" + RevisionId + " and RFQCompareView.RowNumber=1 and mprdet.RowNumber=1";
-				string query = "select * from rfqcompareItemDetails  rfqcm left join MPRRevisions mpr on mpr.RevisionId=rfqcm.MPRRevisionId left join MPRPurchaseTypes MPT on MPT.PurchaseTypeId=mpr.PurchaseTypeId where MPRRevisionId=" + RevisionId + " Order by Itemdetailsid";
+				string query = "select * from rfqcompareItemDetails  rfqcm left join MPRRevisions mpr on mpr.RevisionId=rfqcm.MPRRevisionId left join MPRPurchaseTypes MPT on MPT.PurchaseTypeId=mpr.PurchaseTypeId left join MPRMVJustification MV on mpr.RfqMVJustificationId=MV.MVJustificationId where MPRRevisionId=" + RevisionId + " Order by Itemdetailsid";
 				var cmd = Context.Database.Connection.CreateCommand();
 				cmd.CommandText = query;
 				cmd.Connection.Open();
@@ -349,6 +349,13 @@ namespace DALayer.RFQ
 				MPRRevision mprrevision = new MPRRevision();
 				mprrevision = Context.MPRRevisions.Find(mPRStatusTrackDetails.RevisionId);
 				mprrevision.StatusId = Convert.ToByte(mPRStatusTrackDetails.StatusId);
+
+				MPRRevision mPRRevisionUpdate=Context.MPRRevisions.Where(li => li.RevisionId == mPRStatusTrackDetails.RevisionId).FirstOrDefault<MPRRevision>();
+				mPRRevisionUpdate.RfqMVJustificationId =vendorList[0].MVJustificationId;
+				Context.SaveChanges();
+
+
+
 				this.emailTemplateDA.mailtoRequestor(mPRStatusTrackDetails.RevisionId, mPRStatusTrackDetails.UpdatedBy);//send mail to requestor when rfq finalized
 			}
 			return true;
