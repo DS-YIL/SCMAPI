@@ -45,7 +45,7 @@ namespace DALayer.MPR
                 try
                 {
                     if (model.GroupName != "")
-                    { var some1 = _context.AccessGroupMasters.Where(x => model.GroupName.Contains(x.GroupName)).ToList();
+                    { var some1 = _context.AccessGroupMasters.Where(x => model.GroupName.Contains(x.GroupName) && x.DeleteFlag==false).ToList();
                         if (some1.Count == 0)
                         {
                             _context.AccessGroupMasters.Add(new AccessGroupMaster
@@ -108,12 +108,12 @@ namespace DALayer.MPR
             {
                 try
                 {
-                    var res = _context.AccessGroupMasters.Where(e => e.GroupName == model.GroupName).FirstOrDefault<AccessGroupMaster>();
+                    var res = _context.AccessGroupMasters.Where(e => e.AccessGroupId == model.AccessGroupId).FirstOrDefault<AccessGroupMaster>();
                   if(res != null)
                     {
                         res.DeleteFlag = true;
                         res.DeleteDate = DateTime.Now;
-                        res.DeletedBy = "190455";
+						res.DeletedBy = model.DeletedBy;
                         await _context.SaveChangesAsync();
                     }
                     else
@@ -161,14 +161,14 @@ namespace DALayer.MPR
                 {
                     if (model.AccessName != "")
                     {
-                        var some1 = _context.AccessNames.Where(x => model.AccessName.Contains(x.AccessName1)).ToList();
+                        var some1 = _context.AccessNames.Where(x => model.AccessName.Contains(x.AccessName1) && x.DeleteFlag==false).ToList();
                         if (some1.Count == 0)
                         {
-                            _context.AccessNames.Add(new AccessName
-                            {
-                                AccessName1 = model.AccessName,
-                                AccessGroupId = model.AccessGroupId,
-                                updatedBy = "190455",
+							_context.AccessNames.Add(new AccessName
+							{
+								AccessName1 = model.AccessName,
+								AccessGroupId = model.AccessGroupId,
+								updatedBy = model.updatedBy,
                                 updatedDate = DateTime.Now
                             });
                             await _context.SaveChangesAsync();
@@ -202,7 +202,7 @@ namespace DALayer.MPR
                     if (obj != null)
                     {
                         obj.AccessName1 = model.AccessName;
-                        obj.updatedBy = "190455";
+                        obj.updatedBy = model.updatedBy;
                         obj.updatedDate = DateTime.Now;
                         await _context.SaveChangesAsync();
                     }
@@ -230,7 +230,7 @@ namespace DALayer.MPR
                     if (obj != null)
                     {
                         //obj.AccessName = model.AccessName;
-                        obj.DeletedBy = "190455";
+                        obj.DeletedBy = model.DeletedBy;
                         obj.DeleteFlag = true;
                         obj.DeletedDate = DateTime.Now;
                         await _context.SaveChangesAsync();
@@ -702,7 +702,7 @@ namespace DALayer.MPR
                     {
                         res.DeleteFlag = true;
                         res.DeletedDate = DateTime.Now;
-                        res.DeletedBy = "190455";
+                        res.DeletedBy = model.DeletedBy;
                         await _context.SaveChangesAsync();
                     }
                     else

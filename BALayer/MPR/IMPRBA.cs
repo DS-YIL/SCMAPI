@@ -72,8 +72,8 @@ namespace BALayer.MPR
 		List<SCMModels.Models.RFQ> CheckMprRevision(int mprrevisionId);
 
 		bool updateBG(BankGuarantee bg);
-		List<getBGPAdetail> getBGApplicableList(BGfilters BGfilters);
-		List<BankGuarantee> getBGList(BGfilters BGfilters);
+		DataTable getBGApplicableList(BGfilters BGfilters);
+		DataTable getBGList(BGfilters BGfilters);
 		BankGuarantee getBGDetails(int bgid);
 		BankGuarantee updateBGStatus(BGStatusTrack bgsttrack);
 	}

@@ -44,8 +44,8 @@ namespace SCMAPI.Controllers
             GroupMasterDomainModel groupMasterDomainModel = new GroupMasterDomainModel();
 
             groupMasterDomainModel.GroupName = groupMaster.GroupName;
-            groupMasterDomainModel.UpdatedBy = "190455";
-            groupMasterDomainModel.DeleteFlag = groupMaster.DeleteFlag;
+			groupMasterDomainModel.UpdatedBy = groupMaster.UpdatedBy;
+			groupMasterDomainModel.DeleteFlag = groupMaster.DeleteFlag;
             groupMasterDomainModel.UpdatedDate = DateTime.Now;
 
             var result = _iConfigAccessInterface.AddNewGroupMaster(groupMasterDomainModel);
@@ -146,8 +146,8 @@ namespace SCMAPI.Controllers
             AddRoleDomainModel dmodel = new AddRoleDomainModel();
 
             dmodel.RoleName = model.RoleName;
-            dmodel.UpdatedBy = "190455";
-            dmodel.DeleteFlag = model.DeleteFlag;
+			dmodel.UpdatedBy = model.UpdatedBy;
+			dmodel.DeleteFlag = model.DeleteFlag;
             dmodel.updatedDate = DateTime.Now;
 
             var result = _iConfigAccessInterface.AddRoleAccess(dmodel);

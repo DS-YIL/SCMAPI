@@ -120,7 +120,7 @@ namespace DALayer.RFQ
 					MPRRfqItemInfo mprRfqInfo = new MPRRfqItemInfo();
 					mprRfqInfo.rfqsplititemid = item.RFQSplitItemId;
 					mprRfq.MPRRfqItemInfos.Add(mprRfqInfo);
-					log.ErrorMessage("RFQController", "addNewRfqRevision_test_createMPRRFQItems", "MPR Revisionid:" + mprRfq.MPRRevisionId + "; RFQ Revisionid: ;RFQ ItemId:" + mprRfq.RfqItemsid);
+					log.ErrorMessage("RFQDA", "addNewRfqRevision_test_createMPRRFQItems", "MPR Revisionid:" + mprRfq.MPRRevisionId + "; RFQ Revisionid: ;RFQ ItemId:" + mprRfq.RfqItemsid);
 					createMPRRFQItems(mprRfq);
 					//if (item.RFQType == "Repeat Order")
 					//{
@@ -423,7 +423,7 @@ namespace DALayer.RFQ
 						catch (Exception ex)
 						{
 							//dbcxtransaction.Rollback();
-							log.ErrorMessage("RFQController", "CreateRfQ", ex.Message + "; " + ex.StackTrace.ToString());
+							log.ErrorMessage("RFQDA", "CreateRfQ", ex.Message + "; " + ex.StackTrace.ToString());
 						}
 					}
 
@@ -476,7 +476,7 @@ namespace DALayer.RFQ
 						catch (Exception ex)
 						{
 							//dbcxtransaction.Rollback();
-							log.ErrorMessage("RFQController", "CreateRfQ", ex.Message + "; " + ex.StackTrace.ToString());
+							log.ErrorMessage("RFQDA", "CreateRfQ", ex.Message + "; " + ex.StackTrace.ToString());
 						}
 					}
 					else
@@ -512,7 +512,7 @@ namespace DALayer.RFQ
 						catch (Exception ex)
 						{
 							//dbcxtransaction.Rollback();
-							log.ErrorMessage("RFQController", "CreateRfQ", ex.Message + "; " + ex.StackTrace.ToString());
+							log.ErrorMessage("RFQDA", "CreateRfQ", ex.Message + "; " + ex.StackTrace.ToString());
 						}
 					}
 
@@ -615,7 +615,7 @@ namespace DALayer.RFQ
 								catch (Exception ex)
 								{
 									//dbcxtransaction.Rollback();
-									log.ErrorMessage("RFQController", "CreateRfQ", ex.Message + "; " + ex.StackTrace.ToString());
+									log.ErrorMessage("RFQDA", "CreateRfQ", ex.Message + "; " + ex.StackTrace.ToString());
 								}
 							}
 						}
@@ -640,7 +640,7 @@ namespace DALayer.RFQ
 						//		catch (Exception ex)
 						//		{
 
-						//			log.ErrorMessage("RFQController", "CreateRfQ", ex.Message + "; " + ex.StackTrace.ToString());
+						//			log.ErrorMessage("RFQDA", "CreateRfQ", ex.Message + "; " + ex.StackTrace.ToString());
 						//		}
 						//	}
 						//}
@@ -689,7 +689,7 @@ namespace DALayer.RFQ
 						{
 							//dbcxtransaction.Rollback();
 							//dbcxtransactionLocal.Rollback();
-							log.ErrorMessage("RFQController", "CreateRfQ", ex.Message + "; " + ex.StackTrace.ToString());
+							log.ErrorMessage("RFQDA", "CreateRfQ", ex.Message + "; " + ex.StackTrace.ToString());
 						}
 					}
 					else
@@ -711,7 +711,7 @@ namespace DALayer.RFQ
 						{
 							//dbcxtransaction.Rollback();
 							//dbcxtransactionLocal.Rollback();
-							log.ErrorMessage("RFQController", "CreateRfQ", ex.Message + "; " + ex.StackTrace.ToString());
+							log.ErrorMessage("RFQDA", "CreateRfQ", ex.Message + "; " + ex.StackTrace.ToString());
 						}
 					}
 
@@ -768,7 +768,7 @@ namespace DALayer.RFQ
 									eve.Entry.Entity.GetType().Name, eve.Entry.State);
 								foreach (var ve in eve.ValidationErrors)
 								{
-									log.ErrorMessage("RFQController", "CreateRfQ", ve.ErrorMessage);
+									log.ErrorMessage("RFQDA", "CreateRfQ", ve.ErrorMessage);
 									Console.WriteLine("- Property: \"{0}\", Error: \"{1}\"",
 										ve.PropertyName, ve.ErrorMessage);
 								}
@@ -778,7 +778,7 @@ namespace DALayer.RFQ
 						//                  {
 						//	dbcxtransaction.Rollback();
 						//	dbcxtransactionLocal.Rollback();
-						//	log.ErrorMessage("RFQController", "CreateRfQ", ex.Message + "; " + ex.StackTrace.ToString());
+						//	log.ErrorMessage("RFQDA", "CreateRfQ", ex.Message + "; " + ex.StackTrace.ToString());
 						//                  }
 
 					}
@@ -816,7 +816,7 @@ namespace DALayer.RFQ
 						{
 							//dbcxtransaction.Rollback();
 							//dbcxtransactionLocal.Rollback();
-							log.ErrorMessage("RFQController", "CreateRfQ", ex.Message + "; " + ex.StackTrace.ToString());
+							log.ErrorMessage("RFQDA", "CreateRfQ", ex.Message + "; " + ex.StackTrace.ToString());
 						}
 					}
 
@@ -864,7 +864,7 @@ namespace DALayer.RFQ
 								{
 									//dbcxtransaction.Rollback();
 									//dbcxtransactionLocal.Rollback();
-									log.ErrorMessage("RFQController", "CreateRfQ", ex.Message + "; " + ex.StackTrace.ToString());
+									log.ErrorMessage("RFQDA", "CreateRfQ", ex.Message + "; " + ex.StackTrace.ToString());
 								}
 
 							}
@@ -899,7 +899,7 @@ namespace DALayer.RFQ
 								{
 									//dbcxtransaction.Rollback();
 									//dbcxtransactionLocal.Rollback();
-									log.ErrorMessage("RFQController", "CreateRfQ", ex.Message + "; " + ex.StackTrace.ToString());
+									log.ErrorMessage("RFQDA", "CreateRfQ", ex.Message + "; " + ex.StackTrace.ToString());
 								}
 
 							}
@@ -928,7 +928,7 @@ namespace DALayer.RFQ
 								//	mprRfqInfo.rfqsplititemid = null;
 								//	mprRfq.MPRRfqItemInfos.Add(mprRfqInfo);
 								//}
-								log.ErrorMessage("RFQController", "test_createMPRRFQItems", "MPR Revisionid:" + mprRfq.MPRRevisionId + "; RFQ Revisionid:" + revisionid + ";RFQ ItemId" + mprRfq.RfqItemsid);
+								log.ErrorMessage("RFQDA", "test_createMPRRFQItems", "MPR Revisionid:" + mprRfq.MPRRevisionId + "; RFQ Revisionid:" + revisionid + ";RFQ ItemId" + mprRfq.RfqItemsid);
 								createMPRRFQItems(mprRfq);
 							}
 
@@ -969,7 +969,7 @@ namespace DALayer.RFQ
 								{
 									//dbcxtransaction.Rollback();
 									//dbcxtransactionLocal.Rollback();
-									log.ErrorMessage("RFQController", "CreateRfQ", ex.Message + "; " + ex.StackTrace.ToString());
+									log.ErrorMessage("RFQDA", "CreateRfQ", ex.Message + "; " + ex.StackTrace.ToString());
 								}
 							}
 						}
@@ -978,7 +978,7 @@ namespace DALayer.RFQ
 						{
 							//dbcxtransaction.Rollback();
 							//dbcxtransactionLocal.Rollback();
-							log.ErrorMessage("RFQController", "CreateRfQ", ex.Message + "; " + ex.StackTrace.ToString());
+							log.ErrorMessage("RFQDA", "CreateRfQ", ex.Message + "; " + ex.StackTrace.ToString());
 						}
 					}
 					//update mpr status
@@ -1008,7 +1008,7 @@ namespace DALayer.RFQ
 						{
 							//dbcxtransaction.Rollback();
 							//dbcxtransactionLocal.Rollback();
-							log.ErrorMessage("RFQController", "CreateRfQ", ex.Message + "; " + ex.StackTrace.ToString());
+							log.ErrorMessage("RFQDA", "CreateRfQ", ex.Message + "; " + ex.StackTrace.ToString());
 						}
 					}
 				}
@@ -1026,7 +1026,7 @@ namespace DALayer.RFQ
 						   eve.Entry.Entity.GetType().Name, eve.Entry.State);
 					foreach (var ve in eve.ValidationErrors)
 					{
-						log.ErrorMessage("RFQController", "CreateRfQ", ve.ErrorMessage.ToString());
+						log.ErrorMessage("RFQDA", "CreateRfQ", ve.ErrorMessage.ToString());
 
 					}
 				}
@@ -1381,7 +1381,7 @@ namespace DALayer.RFQ
 							mprRfq.MPRRfqItemInfos.Add(mprRfqInfo);
 
 						}
-						log.ErrorMessage("RFQController", "addNewRfqRevision_test_createMPRRFQItems", "MPR Revisionid:" + mprRfq.MPRRevisionId + "; RFQ Revisionid:" + Localrevision.rfqRevisionId + ";RFQ ItemId:" + mprRfq.RfqItemsid);
+						log.ErrorMessage("RFQDA", "addNewRfqRevision_test_createMPRRFQItems", "MPR Revisionid:" + mprRfq.MPRRevisionId + "; RFQ Revisionid:" + Localrevision.rfqRevisionId + ";RFQ ItemId:" + mprRfq.RfqItemsid);
 						createMPRRFQItems(mprRfq);
 					}
 				}
@@ -1756,7 +1756,7 @@ namespace DALayer.RFQ
 							mprRfq.MPRRfqItemInfos.Add(mprRfqInfo);
 
 						}
-						log.ErrorMessage("RFQController", "RecreateNewRfqRevision_test_createMPRRFQItems", "MPR Revisionid:" + mprRfq.MPRRevisionId + "; RFQ Revisionid:" + Localrevision.rfqRevisionId + ";RFQ ItemId:" + mprRfq.RfqItemsid);
+						log.ErrorMessage("RFQDA", "RecreateNewRfqRevision_test_createMPRRFQItems", "MPR Revisionid:" + mprRfq.MPRRevisionId + "; RFQ Revisionid:" + Localrevision.rfqRevisionId + ";RFQ ItemId:" + mprRfq.RfqItemsid);
 
 						createMPRRFQItems(mprRfq);
 					}
@@ -2038,7 +2038,7 @@ namespace DALayer.RFQ
 
 			catch (Exception ex)
 			{
-				log.ErrorMessage("RFQController", "GetAllrevisionRFQs", ex.Message + "; " + ex.StackTrace.ToString());
+				log.ErrorMessage("RFQDA", "GetAllrevisionRFQs", ex.Message + "; " + ex.StackTrace.ToString());
 				return rfq;
 			}
 
@@ -2121,7 +2121,7 @@ namespace DALayer.RFQ
 						   eve.Entry.Entity.GetType().Name, eve.Entry.State);
 					foreach (var ve in eve.ValidationErrors)
 					{
-						log.ErrorMessage("RFQController", "GetRFQById", ve.ErrorMessage);
+						log.ErrorMessage("RFQDA", "GetRFQById", ve.ErrorMessage);
 						Console.WriteLine("- Property: \"{0}\", Error: \"{1}\"",
 							   ve.PropertyName, ve.ErrorMessage);
 					}
@@ -2227,7 +2227,7 @@ namespace DALayer.RFQ
 			}
 			catch (Exception ex)
 			{
-				log.ErrorMessage("RFQController", "UpdateRfqRevision", ex.Message + "; " + ex.StackTrace.ToString());
+				log.ErrorMessage("RFQDA", "UpdateRfqRevision", ex.Message + "; " + ex.StackTrace.ToString());
 				return status;
 				//throw;
 			}
@@ -3234,7 +3234,7 @@ namespace DALayer.RFQ
 			}
 			catch (Exception ex)
 			{
-				log.ErrorMessage("RFQController", "InsertRfqItemInfo", ex.Message + "; " + ex.StackTrace.ToString());
+				log.ErrorMessage("RFQDA", "InsertRfqItemInfo", ex.Message + "; " + ex.StackTrace.ToString());
 				RfqRevisionModel rq = new RfqRevisionModel();
 				return rq;
 				//throw;
@@ -6654,7 +6654,7 @@ namespace DALayer.RFQ
 			}
 			catch (Exception errmsg)
 			{
-				log.ErrorMessage("RFQController", "updateHandlingCharges", errmsg.Message.ToString());
+				log.ErrorMessage("RFQDA", "updateHandlingCharges", errmsg.Message.ToString());
 			}
 			return true;
 		}
@@ -6778,7 +6778,7 @@ namespace DALayer.RFQ
 							}
 							catch (Exception ex)
 							{
-								log.ErrorMessage("RFQController", "MappingRfqMissedItems", ex.Message + "; " + ex.StackTrace.ToString());
+								log.ErrorMessage("RFQDA", "MappingRfqMissedItems", ex.Message + "; " + ex.StackTrace.ToString());
 								return -1;
 							}
 						}
@@ -6825,7 +6825,7 @@ namespace DALayer.RFQ
 							}
 							catch (Exception ex)
 							{
-								log.ErrorMessage("RFQController", "MappingRfqMissedItems", ex.Message + "; " + ex.StackTrace.ToString());
+								log.ErrorMessage("RFQDA", "MappingRfqMissedItems", ex.Message + "; " + ex.StackTrace.ToString());
 							}
 						}
 						List<MPRDocument> mprdocumnts = obj.MPRDocuments.Where(li => li.ItemDetailsId == data.MPRItemDetailsid).ToList();
@@ -6852,14 +6852,14 @@ namespace DALayer.RFQ
 							}
 							catch (Exception ex)
 							{
-								log.ErrorMessage("RFQController", "MappingRfqMissedItems", ex.Message + "; " + ex.StackTrace.ToString());
+								log.ErrorMessage("RFQDA", "MappingRfqMissedItems", ex.Message + "; " + ex.StackTrace.ToString());
 								return -1;
 							}
 						}
 					}
 					catch (Exception ex)
 					{
-						log.ErrorMessage("RFQController", "MappingRfqMissedItems", ex.Message + "; " + ex.StackTrace.ToString());
+						log.ErrorMessage("RFQDA", "MappingRfqMissedItems", ex.Message + "; " + ex.StackTrace.ToString());
 						return -1;
 					}
 				}
@@ -6908,7 +6908,7 @@ namespace DALayer.RFQ
 				}
 				catch (Exception ex)
 				{
-					log.ErrorMessage("RFQController", "MappedMPRDocumnetToRFQDocumnet", ex.Message + "; " + ex.StackTrace.ToString());
+					log.ErrorMessage("RFQDA", "MappedMPRDocumnetToRFQDocumnet", ex.Message + "; " + ex.StackTrace.ToString());
 					return -1;
 				}
 
@@ -6936,7 +6936,7 @@ namespace DALayer.RFQ
 					}
 					catch (Exception ex)
 					{
-						log.ErrorMessage("RFQController", "MappedMPRDocumnetToRFQDocumnet", ex.Message + "; " + ex.StackTrace.ToString());
+						log.ErrorMessage("RFQDA", "MappedMPRDocumnetToRFQDocumnet", ex.Message + "; " + ex.StackTrace.ToString());
 						return -1;
 					}
 				}
@@ -6944,7 +6944,7 @@ namespace DALayer.RFQ
 			}
 			catch (Exception ex)
 			{
-				log.ErrorMessage("RFQController", "MappedMPRDocumnetToRFQDocumnet", ex.Message + "; " + ex.StackTrace.ToString());
+				log.ErrorMessage("RFQDA", "MappedMPRDocumnetToRFQDocumnet", ex.Message + "; " + ex.StackTrace.ToString());
 				return -1;
 			}
 		}
@@ -6976,7 +6976,7 @@ namespace DALayer.RFQ
 			}
 			catch (Exception ex)
 			{
-				log.ErrorMessage("RFQController", "UnMappingRFQDocument", ex.Message + "; " + ex.StackTrace.ToString());
+				log.ErrorMessage("RFQDA", "UnMappingRFQDocument", ex.Message + "; " + ex.StackTrace.ToString());
 				return -1;
 			}
 		}

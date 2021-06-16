@@ -244,11 +244,11 @@ namespace BALayer.MPR
 		{
 			return this._mprDataAcess.updateBG(bg);
 		}
-		public List<getBGPAdetail> getBGApplicableList(BGfilters BGfilters)
+		public DataTable getBGApplicableList(BGfilters BGfilters)
 		{
 			return this._mprDataAcess.getBGApplicableList(BGfilters);
 		}
-		public List<BankGuarantee> getBGList(BGfilters BGfilters)
+		public DataTable getBGList(BGfilters BGfilters)
 		{
 			return this._mprDataAcess.getBGList(BGfilters);
 

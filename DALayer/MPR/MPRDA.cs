@@ -3627,16 +3627,16 @@ Review Date :<<>>   Reviewed By :<<>>
 		}
 		/*Name of Function : <<getBGApplicableList>>  Author :<<Prasanna>>  
 		Date of Creation <<05-03-2021>>
-		Purpose : <<function is used to  get getBGList>>
+		Purpose : <<function is used to  get getBGApplicableList>>
 		Review Date :<<>>   Reviewed By :<<>>*/
-		public List<getBGPAdetail> getBGApplicableList(BGfilters BGfilters)
+		public DataTable getBGApplicableList(BGfilters BGfilters)
 		{
-			List<getBGPAdetail> BGList = new List<getBGPAdetail>();
+			DataTable table = new DataTable();
 			try
 			{
 				using (YSCMEntities Context = new YSCMEntities())
 				{
-					Context.Configuration.ProxyCreationEnabled = false;
+					//Context.Configuration.ProxyCreationEnabled = false;
 					var query = default(string);
 					query = "select * from getBGPAdetails where PAId !=0 ";
 					if (!string.IsNullOrEmpty(BGfilters.ToDate))
@@ -3654,29 +3654,38 @@ Review Date :<<>>   Reviewed By :<<>>
 					if (!string.IsNullOrEmpty(BGfilters.BuyerGroupId))
 						query += "  and BuyerGroupId =" + BGfilters.BuyerGroupId + "";
 					query += " order by MPRRevisionId desc ";
-					BGList = Context.getBGPAdetails.SqlQuery(query).ToList<getBGPAdetail>();
+					var cmd = Context.Database.Connection.CreateCommand();
+					cmd.CommandText = query;
+
+					cmd.Connection.Open();
+					table.Load(cmd.ExecuteReader());
+					cmd.Connection.Close();
+					//BGList = Context.getBGPAdetails.SqlQuery(query).ToList<getBGPAdetail>();
 				}
 			}
 			catch (Exception ex)
 			{
 				log.ErrorMessage("MPRDA", "getBGApplicableList", ex.Message + "; " + ex.StackTrace.ToString());
 			}
-			return BGList;
+			return table;
 		}
+
+
 		/*Name of Function : <<getBGList>>  Author :<<Prasanna>>  
 		Date of Creation <<15-02-2021>>
 		Purpose : <<function is used to  get getBGList>>
 		Review Date :<<>>   Reviewed By :<<>>*/
-		public List<BankGuarantee> getBGList(BGfilters BGfilters)
+
+		public DataTable getBGList(BGfilters BGfilters)
 		{
-			List<BankGuarantee> BGList = new List<BankGuarantee>();
+			DataTable table = new DataTable();
 			try
 			{
 				using (YSCMEntities Context = new YSCMEntities())
 				{
 					Context.Configuration.ProxyCreationEnabled = false;
 					var query = default(string);
-					query = "select * from BankGuarantee where ( Deleteflag=1 or Deleteflag is null)";
+					query = "select * from BankGuarantee where ( Deleteflag=0 or Deleteflag is null)";
 					if (!string.IsNullOrEmpty(BGfilters.ToDate))
 						query += " and CreatedDate <= '" + BGfilters.ToDate + "'";
 					if (!string.IsNullOrEmpty(BGfilters.FromDate))
@@ -3690,14 +3699,20 @@ Review Date :<<>>   Reviewed By :<<>>
 					if (!string.IsNullOrEmpty(BGfilters.BGStatus))
 						query += "  and BGStatus = '" + BGfilters.BGStatus + "'";
 					query += " order by BGId desc ";
-					BGList = Context.BankGuarantees.SqlQuery(query).ToList<BankGuarantee>();
+					var cmd = Context.Database.Connection.CreateCommand();
+					cmd.CommandText = query;
+
+					cmd.Connection.Open();
+					table.Load(cmd.ExecuteReader());
+					cmd.Connection.Close();
+					//BGList = Context.BankGuarantees.SqlQuery(query).ToList<BankGuarantee>();
 				}
 			}
 			catch (Exception ex)
 			{
 				log.ErrorMessage("MPRDA", "getBGList", ex.Message + "; " + ex.StackTrace.ToString());
 			}
-			return BGList;
+			return table;
 		}
 
 		/*Name of Function : <<getBGDetails>>  Author :<<Prasanna>>  
