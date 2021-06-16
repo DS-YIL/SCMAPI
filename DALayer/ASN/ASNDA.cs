@@ -29,7 +29,7 @@ namespace DALayer.ASN
 
 		/*Name of Function : <<ASNInitiate>>  Author :<<Prasanna>>  
 		Date of Creation <<18-12-2020>>
-		Purpose : <<function is used to  get getAsnList>>
+		Purpose : <<function is used to  get ASN Initiate>>
 		Review Date :<<>>   Reviewed By :<<>>*/
 		public bool ASNInitiate(ASNInitiation asnASNInitiation)
 		{
@@ -134,20 +134,36 @@ namespace DALayer.ASN
 				{
 					Context.Configuration.ProxyCreationEnabled = false;
 					var query = default(string);
-					query = "select * from ASNShipmentHeader where ( Deleteflag=0 or Deleteflag is null)";
-					if (!string.IsNullOrEmpty(ASNfilters.ToDate))
-						query += " and CreatedDate <= '" + ASNfilters.ToDate + "'";
-					if (!string.IsNullOrEmpty(ASNfilters.FromDate))
-						query += "  and CreatedDate >= '" + ASNfilters.FromDate + "'";
+					if (ASNfilters.ReportType == "Insurance")
+						query = "select * from ASNShipmentHeader asn inner join InvoiceDetails inv on inv.ASNId=asn.ASNId where ( Deleteflag=0 or Deleteflag is null)";
+					else
+						query = "select * from ASNShipmentHeader asn where ( Deleteflag=0 or Deleteflag is null)";
+					if (!string.IsNullOrEmpty(ASNfilters.ToDate) && ASNfilters.Type == "CreatedDate")
+						query += " and asn.CreatedDate <= '" + ASNfilters.ToDate + "'";
+					if (!string.IsNullOrEmpty(ASNfilters.FromDate) && ASNfilters.Type == "CreatedDate")
+						query += "  and asn.CreatedDate >= '" + ASNfilters.FromDate + "'";
+
+					if (!string.IsNullOrEmpty(ASNfilters.ToDate) && ASNfilters.Type == "InvoiceDate")
+						query += " and asn.InvoiceDate <= '" + ASNfilters.ToDate + "'";
+					if (!string.IsNullOrEmpty(ASNfilters.FromDate) && ASNfilters.Type == "InvoiceDate")
+						query += "  and asn.InvoiceDate >= '" + ASNfilters.FromDate + "'";
+
+					if (!string.IsNullOrEmpty(ASNfilters.ToDate) && ASNfilters.Type == "ShippingDate")
+						query += " and asn.ShippingDate <= '" + ASNfilters.ToDate + "'";
+					if (!string.IsNullOrEmpty(ASNfilters.FromDate) && ASNfilters.Type == "ShippingDate")
+						query += "  and asn.ShippingDate >= '" + ASNfilters.FromDate + "'";
+
 					if (!string.IsNullOrEmpty(ASNfilters.Vendorid))
-						query += "  and VendorId = '" + ASNfilters.Vendorid + "'";
+						query += "  and asn.VendorId = '" + ASNfilters.Vendorid + "'";
+					if (!string.IsNullOrEmpty(ASNfilters.InvoiceNo))
+						query += "  and asn.InvoiceNo = '" + ASNfilters.InvoiceNo + "'";
 					if (!string.IsNullOrEmpty(ASNfilters.VendorName))
-						query += "  and VendorName like'%" + ASNfilters.VendorName + "%'";
+						query += "  and asn.VendorName like'%" + ASNfilters.VendorName + "%'";
 					if (!string.IsNullOrEmpty(ASNfilters.ASNNo))
-						query += "  and ASNNo = '" + ASNfilters.ASNNo + "'";
+						query += "  and asn.ASNNo = '" + ASNfilters.ASNNo + "'";
 					if (!string.IsNullOrEmpty(ASNfilters.PONo))
-						query += "  and PONos = '" + ASNfilters.PONo + "'";
-					query += " order by ASNId desc ";
+						query += "  and asn.PONos = '" + ASNfilters.PONo + "'";
+					query += " order by asn.ASNId desc ";
 					asnList = Context.ASNShipmentHeaders.SqlQuery(query).ToList<ASNShipmentHeader>();
 				}
 			}
