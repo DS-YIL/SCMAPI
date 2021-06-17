@@ -54,10 +54,12 @@ namespace SCMAPI.Models
     }
 
     public class DeleteGroupMasterDomainModel
-    {
-        public bool DeleteFlag { get; set; }
+	{
+		public int AccessGroupId { get; set; }
+		public bool DeleteFlag { get; set; }
         public string GroupName { get; set; }
-    }
+		public string DeletedBy { get; set; }
+	}
 
     public class AccessViewModel
     {
