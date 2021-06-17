@@ -304,6 +304,10 @@ namespace SCMModels
 		public string VendorName { get; set; }
 		public string IntiatedBy { get; set; }
 		public string PONo { get; set; }
+		public string Type { get; set; }
+		public string ReportType { get; set; }
+		public string InvoiceNo { get; set; }
+		
 	}
 
 	public partial class BGfilters
@@ -317,6 +321,21 @@ namespace SCMModels
 		public string OrgDepartmentId { get; set; }
 		public string MPRRevisionId { get; set; }
 		public string BuyerGroupId { get; set; }
+	}
+
+	public partial class ASNStatusTracker
+	{
+		public int ASNStatusId { get; set; }
+		public int ASNId { get; set; }
+		public string Status { get; set; }
+		public string Remarks { get; set; }
+		public string UpdatedBy { get; set; }
+		public Nullable<System.DateTime> UpdatedOn { get; set; }
+		public Nullable<bool> DeleteFlag { get; set; }
+		public string DeletedBy { get; set; }
+		public Nullable<System.DateTime> DeletedDate { get; set; }
+
+		public string typeOfuser { get; set; }
 	}
 
 }
