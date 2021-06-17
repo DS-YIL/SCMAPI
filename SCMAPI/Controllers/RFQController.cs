@@ -1,10 +1,18 @@
 ﻿using BALayer.RFQ;
 using DALayer.Emails;
+using SCMAPI.Common;
 using SCMModels;
+using SCMModels.Models;
 using SCMModels.MPRMasterModels;
 using SCMModels.RFQModels;
 using SCMModels.SCMModels;
+using System;
 using System.Collections.Generic;
+using System.Data;
+using System.IO;
+using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
@@ -16,6 +24,8 @@ namespace SCMAPI.Controllers
 	{
 		private readonly IRFQBA _rfqBusenessAcess;
 		private IEmailTemplateDA emailTemplateDA = default(IEmailTemplateDA);
+
+		public static DataSet ExportdataSet;
 		public RFQController(IRFQBA rfqBA, IEmailTemplateDA EmailTemplateDA)
 		{
 			this._rfqBusenessAcess = rfqBA;
@@ -37,7 +47,10 @@ namespace SCMAPI.Controllers
 		[Route("getRFQCompareItems/{MPRRevisionId}")]
 		public IHttpActionResult getRFQCompareItems(int MPRRevisionId)
 		{
-			return Ok(this._rfqBusenessAcess.getRFQCompareItems(MPRRevisionId));
+			
+			DataSet DS = this._rfqBusenessAcess.getRFQCompareItems(MPRRevisionId);
+			ExportdataSet = DS;
+			return Ok(DS);
 		}
 		[HttpGet]
 		[Route("GetAllMasterCurrency")]
@@ -497,6 +510,37 @@ namespace SCMAPI.Controllers
 			MPRMVJustification status = new MPRMVJustification();
 			status = await _rfqBusenessAcess.GetMPRMVJustificationById(id);
 			return Ok(status);
+		}
+
+		[HttpGet]
+		[Route("IsExcelExported")]
+		public HttpResponseMessage IsExcelExported()
+		{
+			string DestinationPath = "";
+			try {
+				if (ExportdataSet != null)
+				{
+					utilities utilities = new utilities();
+					utilities.ExportExcel(ExportdataSet, out DestinationPath);
+				}
+				return getGenetatedExcel(DestinationPath);
+			}
+			catch (Exception ex)
+			{
+				throw ex;
+			}
+
+		}
+		
+		public HttpResponseMessage getGenetatedExcel(string filepath)
+		{
+			var path = filepath;
+			HttpResponseMessage result = new HttpResponseMessage(HttpStatusCode.OK);
+			var stream = new FileStream(path, FileMode.Open, FileAccess.Read);
+			result.Content = new StreamContent(stream);
+			//result.Content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
+			result.Content.Headers.ContentType = new MediaTypeHeaderValue("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+			return (result);
 		}
 
 	}

@@ -281,6 +281,7 @@ namespace DALayer.RFQ
 				string query = "select * from rfqcompareItemDetails  rfqcm left join MPRRevisions mpr on mpr.RevisionId=rfqcm.MPRRevisionId left join MPRPurchaseTypes MPT on MPT.PurchaseTypeId=mpr.PurchaseTypeId left join MPRMVJustification MV on mpr.RfqMVJustificationId=MV.MVJustificationId where MPRRevisionId=" + RevisionId + " Order by Itemdetailsid";
 				var cmd = Context.Database.Connection.CreateCommand();
 				cmd.CommandText = query;
+				cmd.CommandTimeout = 120;
 				cmd.Connection.Open();
 				compareDet.Load(cmd.ExecuteReader());
 				var res = Context.RFQCompareViews.Where(li => li.rfqRevisionId == RevisionId).GroupBy(li => li.rfqRevisionId).ToList();
