@@ -1054,7 +1054,81 @@ namespace DALayer.Emails
 					//SmtpClient mailClient = new SmtpClient("10.29.15.9", 25);
 					//mailClient.EnableSsl = true;
 					mailClient.DeliveryMethod = SmtpDeliveryMethod.Network;
+					var sendEmail = ConfigurationManager.AppSettings["EmailSend"];
+					if (sendEmail=="True")
 					mailClient.Send(mailMessage);
+
+				}
+			}
+			catch (Exception ex)
+			{
+				log.ErrorMessage("EmailTemplate", "sendEmail" + ";" + emlSndngList.ToEmailId.ToString() + "", ex.ToString());
+			}
+			return true;
+		}
+
+		/*Name of Function : <<sendEmail>>  Author :<<Prasanna>>  
+		  Date of Creation <<01-12-2019>>
+		  Purpose : <<Sending mail method>>
+		  Review Date :<<>>   Reviewed By :<<>>*/
+		public bool sendVendorEmail(EmailSend emlSndngList)
+		{
+			//bool validEmail = IsValidEmail(emlSndngList.ToEmailId);
+			try
+			{
+				if (!string.IsNullOrEmpty(emlSndngList.ToEmailId) && !string.IsNullOrEmpty(emlSndngList.FrmEmailId))
+				{
+					var BCC = ConfigurationManager.AppSettings["BCC"];
+					var SMTPServer = ConfigurationManager.AppSettings["SMTPServer"];
+					var scmfrommail = ConfigurationManager.AppSettings["fromemail"];
+					MailMessage mailMessage = new MailMessage();
+					mailMessage.From = new MailAddress(scmfrommail.Trim(), ""); //From Email Id
+					string[] ToMuliId = emlSndngList.ToEmailId.Split(',');
+					foreach (string ToEMailId in ToMuliId)
+					{
+						if (!string.IsNullOrEmpty(ToEMailId))
+							mailMessage.To.Add(new MailAddress(ToEMailId.Trim(), "")); //adding multiple TO Email Id
+					}
+					SmtpClient client = new SmtpClient();
+					if (!string.IsNullOrEmpty(emlSndngList.Subject))
+						mailMessage.Subject = emlSndngList.Subject;
+
+					if (!string.IsNullOrEmpty(emlSndngList.CC))
+					{
+						string[] CCId = emlSndngList.CC.Split(',');
+
+						foreach (string CCEmail in CCId)
+						{
+							if (!string.IsNullOrEmpty(CCEmail))
+								mailMessage.CC.Add(new MailAddress(CCEmail.Trim(), "")); //Adding Multiple CC email Id
+						}
+					}
+
+					if (!string.IsNullOrEmpty(emlSndngList.BCC))
+					{
+						string[] bccid = emlSndngList.BCC.Split(',');
+
+
+						foreach (string bccEmailId in bccid)
+						{
+							if (!string.IsNullOrEmpty(bccEmailId))
+								mailMessage.Bcc.Add(new MailAddress(bccEmailId.Trim(), "")); //Adding Multiple BCC email Id
+						}
+					}
+
+					if (!string.IsNullOrEmpty(BCC))
+						mailMessage.Bcc.Add(new MailAddress(BCC.Trim(), ""));
+					//mailMessage.Body = emlSndngList.Body;
+					mailMessage.Body =emlSndngList.Body;
+					mailMessage.IsBodyHtml = true;
+					mailMessage.BodyEncoding = Encoding.UTF8;
+					SmtpClient mailClient = new SmtpClient(SMTPServer, 25);
+					//SmtpClient mailClient = new SmtpClient("10.29.15.9", 25);
+					//mailClient.EnableSsl = true;
+					mailClient.DeliveryMethod = SmtpDeliveryMethod.Network;
+					var sendEmail = ConfigurationManager.AppSettings["EmailSend"];
+					if (sendEmail == "True")
+						mailClient.Send(mailMessage);
 
 				}
 			}

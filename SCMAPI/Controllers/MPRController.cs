@@ -842,10 +842,10 @@ namespace SCMAPI.Controllers
 		[HttpPost]
 		public IHttpActionResult sendVSCMEmail(EmailSend emlSndngList)
 		{
-			log.ErrorMessage("MPRController", "sendVSCMEmail", emlSndngList.FrmEmailId);
+			//log.ErrorMessage("MPRController", "sendVSCMEmail", emlSndngList.FrmEmailId);
 			try
 			{
-				this.emailTemplateDA.sendEmail(emlSndngList);
+				this.emailTemplateDA.sendVendorEmail(emlSndngList);
 			}
 			catch (Exception e)
 			{
