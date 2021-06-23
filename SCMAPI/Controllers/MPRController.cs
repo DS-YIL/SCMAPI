@@ -276,7 +276,7 @@ namespace SCMAPI.Controllers
 		[Route("DeleteTermGroup/{TermGroupId}/{DeletedBy}")]
 		public IHttpActionResult DeleteTermGroup(int TermGroupId, string DeletedBy)
 		{
-			return Ok(this._mprBusenessAcess.DeleteTermGroup(TermGroupId,  DeletedBy));
+			return Ok(this._mprBusenessAcess.DeleteTermGroup(TermGroupId, DeletedBy));
 		}
 		[HttpGet]
 		[Route("DeleteTermsAndConditions/{TermId}/{DeletedBy}")]
@@ -833,6 +833,24 @@ namespace SCMAPI.Controllers
 					bgst.UpdatedBy = item.CreatedBy;
 					this._mprBusenessAcess.updateBGStatus(bgst);
 				}
+			}
+			return Ok(true);
+		}
+
+
+		[Route("sendVSCMEmail")]
+		[HttpPost]
+		public IHttpActionResult sendVSCMEmail(EmailSend emlSndngList)
+		{
+			log.ErrorMessage("MPRController", "sendVSCMEmail", emlSndngList.FrmEmailId);
+			try
+			{
+				this.emailTemplateDA.sendEmail(emlSndngList);
+			}
+			catch (Exception e)
+			{
+				log.ErrorMessage("MPRController", "sendVSCMEmail", e.Message.ToString());
+				return Ok(e);
 			}
 			return Ok(true);
 		}
