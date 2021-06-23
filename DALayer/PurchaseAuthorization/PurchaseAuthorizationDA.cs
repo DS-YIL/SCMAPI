@@ -1115,6 +1115,7 @@ Review Date :<<>>   Reviewed By :<<>>*/
                     authorization.Aribarequired = model.AribaRequired;
                     authorization.MSArequired = model.msarequired;
                     authorization.incoterms = model.incoterms;
+                    authorization.PACreatedBy = model.pacreatedby;
                     obj.MPRPADetails.Add(authorization);
                     obj.SaveChanges();
                     status.Sid = authorization.PAId;
@@ -1288,6 +1289,7 @@ Review Date :<<>>   Reviewed By :<<>>*/
                     model.potype = data.POtype;
                     model.AribaRequired = data.Aribarequired;
                     model.msarequired = data.MSArequired;
+                    model.incoterms = data.incoterms;
                     model.Deleteflag = data.DeleteFlag;
 
                     var statusdata = obj.ShowAdditionalcharges.Where(x => x.itemstatus == "Approved" && x.PAId == PID).ToList();
@@ -3402,7 +3404,7 @@ Review Date :<<>>   Reviewed By :<<>>*/
                     data.PRno = item.PRno;
                     data.PRLineItemNo = item.PRLineItemNo;
                     data.PRcreatedOn = System.DateTime.Now;
-                    //data.PRcreatedBy = item.PRcreatedBy;
+                    data.PRcreatedBy = msa[0].PRcreatedBy;
                     //obj.MSALineItems.Add(item);
                     obj.SaveChanges();
                 }
@@ -4157,7 +4159,7 @@ Review Date :<<>>   Reviewed By :<<>>*/
             try
             {
                 padata = string.Join(" ',' ", paid);
-                var query = "select * from LoadItemsforpo where paid in ('" + padata + "') and PAStatus='Approved' ";
+                var query = "select * from LoadItemsforpo where paid in ('" + padata + "') ";
                 pocreation = obj.Database.SqlQuery<LoadItemsforpo>(query).ToList();
                 return pocreation;
             }
@@ -4166,15 +4168,15 @@ Review Date :<<>>   Reviewed By :<<>>*/
                 throw;
             }
         }
-        public async Task<List<LoadItemsByPAID>> LoadItemsforpogenerationbasedonvendor(string VendorId, List<int> PAId)
+        public async Task<List<LoadItemsforpo>> LoadItemsforpogenerationbasedonvendor(string VendorId, List<int> PAId)
         {
-            List<LoadItemsByPAID> pocreation = new List<LoadItemsByPAID>();
+            List<LoadItemsforpo> pocreation = new List<LoadItemsforpo>();
             string padata = "";
             try
             {
                 padata = string.Join(" ',' ", PAId);
                 var query = "select * from LoadItemsforpo where VendorId ='" + VendorId + "' and PAStatus='Approved' and POStatus='Pending' and paid not in ('" + padata + "') ";
-                pocreation = obj.Database.SqlQuery<LoadItemsByPAID>(query).ToList();
+                pocreation = obj.Database.SqlQuery<LoadItemsforpo>(query).ToList();
                 return pocreation;
             }
             catch (Exception ex)
@@ -4348,6 +4350,20 @@ Review Date :<<>>   Reviewed By :<<>>*/
             {
                 throw ex;
                 //log.ErrorMessage("PAController", "UpdateMsaprconfirmation", ex.Message + "; " + ex.StackTrace.ToString());
+            }
+        }
+        public async Task<List<POCreationProcessTrack>> Getpostatus(int poid)
+        {
+            List<POCreationProcessTrack> postatus = new List<POCreationProcessTrack>();
+            try
+            {
+                var sqlquery = "select * from POCreationProcessTrack where POid=" + poid + "";
+                postatus = obj.Database.SqlQuery<POCreationProcessTrack>(sqlquery).ToList();
+                return postatus;
+            }
+            catch (Exception ex)
+            {
+                throw;
             }
         }
         //public async Task<PoLineItemstoExcel> GetpoitemsByPoId(int revisionid)

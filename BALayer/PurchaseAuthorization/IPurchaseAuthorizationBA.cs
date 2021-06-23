@@ -102,11 +102,12 @@ namespace BALayer.PurchaseAuthorization
         DataSet GetCMMMonthlyPerformance2(string spName, SqlParameter[] paramArr);
         Task<List<Loadpaforpocration>> LoadItemsforpocreation(PADetailsModel masters);
         Task<List<LoadItemsforpo>> LoadItemsforpogeneration(List<int> paid);
-        Task<List<LoadItemsByPAID>> LoadItemsforpogenerationbasedonvendor(string VendorId, List<int> PAId);
+        Task<List<LoadItemsforpo>> LoadItemsforpogenerationbasedonvendor(string VendorId, List<int> PAId);
         Task<statuscheckmodel> InsertPOItems(POMasterModel model);
         Task<DataTable> getscrapRegisterReport(scrapsearchmodel model);
         Task<List<PoLineItemstoExcel>> GetpoitemsByPoId(int revisionid);
         Task<List<Loadpolist>> LoadPolist(posearchmodel posearch);
         Task<statuscheckmodel> ApprovePRNos(List<ItemsViewModel> msa);
+        Task<List<POCreationProcessTrack>> Getpostatus(int poid);
     }
 }

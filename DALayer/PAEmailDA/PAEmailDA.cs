@@ -155,9 +155,12 @@ namespace DALayer.PAEmailDA
             bool validEmail = IsValidEmail(emlSndngList.ToEmailId);
             if (!string.IsNullOrEmpty(emlSndngList.ToEmailId) && !string.IsNullOrEmpty(emlSndngList.FrmEmailId) && validEmail)
             {
+                string noreply = "<font color='#808080'><i>Note : This is system generated notification email, do not reply to the sender.<br><br>Pls email your response to : " + emlSndngList.FrmEmailId + "</i></font>";
+                //Mail.Body = noreply + "<br><br>" + Body;
                 var BCC = ConfigurationManager.AppSettings["PABCC"];
                 var SMTPServer = ConfigurationManager.AppSettings["SMTPServer"];
-                MailMessage mailMessage = new MailMessage(emlSndngList.FrmEmailId, emlSndngList.ToEmailId);
+                var scmfrommail = ConfigurationManager.AppSettings["fromemail"];
+                MailMessage mailMessage = new MailMessage(scmfrommail, emlSndngList.ToEmailId);
                 SmtpClient client = new SmtpClient();
                 if (!string.IsNullOrEmpty(emlSndngList.Subject))
                     mailMessage.Subject = emlSndngList.Subject;
@@ -165,7 +168,9 @@ namespace DALayer.PAEmailDA
                     mailMessage.CC.Add(emlSndngList.CC);
                 if (!string.IsNullOrEmpty(BCC))
                     mailMessage.Bcc.Add(BCC);
-                mailMessage.Body = emlSndngList.Body;
+                mailMessage.Body= noreply + "<br><br>" + emlSndngList.Body;
+                //Mail.From = ConfigurationSettings.AppSettings["AppFromEmailid"].ToString();
+                //mailMessage.Body = emlSndngList.Body;
                 mailMessage.IsBodyHtml = true;
                 mailMessage.BodyEncoding = Encoding.UTF8;
                 SmtpClient mailClient = new SmtpClient(SMTPServer, 25);

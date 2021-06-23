@@ -23,6 +23,7 @@ using System.Net.Http.Headers;
 using System.Reflection;
 using System.Collections;
 using DALayer.Common;
+using ExcelObj = Microsoft.Office.Interop.Excel;
 
 namespace SCMAPI.Controllers
 {
@@ -1617,16 +1618,16 @@ namespace SCMAPI.Controllers
                 {
                     System.IO.Directory.CreateDirectory(targetpath);
                 }
-                System.IO.File.Copy(sourceFile, destFile, false);
+                System.IO.File.Copy(sourceFile, destFile, true);
                 try
                 {
                     Microsoft.Office.Interop.Excel.Application docExcel = new Microsoft.Office.Interop.Excel.Application();
                     docExcel.Visible = false;
                     docExcel.DisplayAlerts = false;
-                    //Microsoft.Office.Interop.Excel._Workbook workbooksExcel = docExcel.Workbooks.Open(destFile);
-                    Microsoft.Office.Interop.Excel.Workbook workbooksExcel = docExcel.Workbooks.Open(destFile, ReadOnly: false);
-                    //Microsoft.Office.Interop.Excel._Workbook workbooksExcel = docExcel.Workbooks.Open(destFile, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing);
-                    //Microsoft.Office.Interop.Excel._Workbook workbooksExcel = docExcel.Workbooks.Open(destFile, 0, false, 5, "", "", false, Microsoft.Office.Interop.Excel.XlPlatform.xlWindows, "",true, false, 0, true, false, false);
+                    Microsoft.Office.Interop.Excel.Workbook workbooksExcel = docExcel.Workbooks.Open(destFile, ReadOnly: false, Editable: true);
+                    //Microsoft.Office.Interop.Excel.Workbook worksheet = workbooksExcel.Worksheets.Item[1] as docExcel.Worksheet;
+                    Microsoft.Office.Interop.Excel.Worksheet worksheet;
+                    worksheet = workbooksExcel.Worksheets.Item[1] as Microsoft.Office.Interop.Excel.Worksheet;
                     Microsoft.Office.Interop.Excel.Worksheet worksheetExcel = (Microsoft.Office.Interop.Excel.Worksheet)workbooksExcel.ActiveSheet;
                     Microsoft.Office.Interop.Excel.Range range = worksheetExcel.UsedRange;
                     YSCMEntities obj = new YSCMEntities();
@@ -1773,10 +1774,12 @@ namespace SCMAPI.Controllers
                         //    (range.Worksheet.Cells[i, "Y"]).Value2 = 0;
                         i++;
                     }
-                    workbooksExcel.Save();
-                    workbooksExcel.Close(false, Type.Missing, Type.Missing);
-                    docExcel.Application.DisplayAlerts = true;
+                    docExcel.Application.ActiveSheet.Save();
+                    //workbooksExcel.Close(false, Type.Missing, Type.Missing);
+                    //docExcel.Application.DisplayAlerts = true;
                     docExcel.Application.Quit();
+                    docExcel.Quit();
+
                 }
                 catch (Exception ex)
                 {
@@ -1840,6 +1843,12 @@ namespace SCMAPI.Controllers
                     string varienttype = "";
                     YSCMEntities obj = new YSCMEntities();
                     var data = obj.PoLineItemstoExcels.Where(x => x.POID == revisionid).ToList();
+                    Nullable<decimal> targespend = 0;
+                    foreach (var item in data)
+                    {
+                        if(item.collectiveno!=null)
+                            targespend += item.collectiveno;
+                    }
                     Microsoft.Office.Interop.Excel.Range range = worksheetExcel.UsedRange;
                     foreach (Microsoft.Office.Interop.Excel.Worksheet wSheet in excelBook.Worksheets)
                     {
@@ -1859,7 +1868,7 @@ namespace SCMAPI.Controllers
                                 if (!string.IsNullOrEmpty(item.potype))
                                     (range.Worksheet.Cells["2", "C"]).Value2 = item.potype;
                                 if (item.collectiveno != 0)
-                                    (range.Worksheet.Cells["2", "D"]).Value2 = item.collectiveno;
+                                    (range.Worksheet.Cells["2", "D"]).Value2 = targespend;
                                 if (!string.IsNullOrEmpty(item.PaymentTermCode))
                                     (range.Worksheet.Cells["2", "E"]).Value2 = item.PaymentTermCode;
                                 if (!string.IsNullOrEmpty(item.incoterms))
@@ -1867,11 +1876,25 @@ namespace SCMAPI.Controllers
                                 //if (!string.IsNullOrEmpty(item.pono))
                                 //    (range.Worksheet.Cells["2", "G"]).Value2 = item.pono;
                                 if (item.poterms != null)
-                                    (range.Worksheet.Cells["2", "I"]).Value2 = item.poterms;
+                                    (range.Worksheet.Cells["2", "J"]).Value2 = item.poterms;
                                 if (!string.IsNullOrEmpty(item.poinsurance))
-                                    (range.Worksheet.Cells["2", "K"]).Value2 = item.poinsurance;
+                                    (range.Worksheet.Cells["2", "L"]).Value2 = item.poinsurance;
                                 if (!string.IsNullOrEmpty(item.Remarks))
-                                    (range.Worksheet.Cells["2", "J"]).Value2 = item.Remarks;
+                                {
+                                    if(item.Remarks=="Material")
+                                        (range.Worksheet.Cells["2", "K"]).Value2 = "Y101";
+                                    else
+                                        (range.Worksheet.Cells["2", "K"]).Value2 = "Y201";
+                                }
+                                    
+                                if (!string.IsNullOrEmpty(item.incotermdescription))
+                                    (range.Worksheet.Cells["2", "M"]).Value2 = item.incotermdescription;
+                                if (!string.IsNullOrEmpty(item.buyergroupmembername))
+                                    (range.Worksheet.Cells["2", "N"]).Value2 = item.buyergroupmembername;
+                                if (item.POID!=0)
+                                    (range.Worksheet.Cells["2", "O"]).Value2 = item.POID;
+                                if (!string.IsNullOrEmpty(item.BuyerGroup))
+                                    (range.Worksheet.Cells["2", "P"]).Value2 = item.BuyerGroup;
 
                                 varienttype = item.Remarks;
                             }
@@ -1895,8 +1918,8 @@ namespace SCMAPI.Controllers
                                     (range.Worksheet.Cells[i, "E"]).Value2 = item.PRLineItemNo;
                                 if (item.UnitPrice >= 0)
                                     (range.Worksheet.Cells[i, "F"]).Value2 = item.UnitPrice;
-                                if (!string.IsNullOrEmpty(item.purchasetype))
-                                    (range.Worksheet.Cells[i, "G"]).Value2 = item.purchasetype;
+                                if (!string.IsNullOrEmpty(item.popurchasetype))
+                                    (range.Worksheet.Cells[i, "G"]).Value2 = item.popurchasetype;
                                 if (!string.IsNullOrEmpty(item.incoterms))
                                     (range.Worksheet.Cells[i, "H"]).Value2 = "Y001";
                                 if (!string.IsNullOrEmpty(item.PriorVendor))
@@ -1917,8 +1940,8 @@ namespace SCMAPI.Controllers
 
                                 if (!string.IsNullOrEmpty(item.ItemDescription))
                                     (range.Worksheet.Cells[i, "Q"]).Value2 = item.ItemDescription;
-
-                                (range.Worksheet.Cells[i, "N"]).Value2 = item.Reqdeliverydate.ToString();
+                                string date = Convert.ToDateTime(item.Reqdeliverydate).Day.ToString() + "." + Convert.ToDateTime(item.Reqdeliverydate).Month.ToString() + "." + Convert.ToDateTime(item.Reqdeliverydate).Year.ToString();
+                                (range.Worksheet.Cells[i, "N"]).Value2 = date;
                                 if (varienttype == "Material")
                                     (range.Worksheet.Cells[i, "H"]).Value2 = "Y001";
                                 else
@@ -2705,6 +2728,12 @@ namespace SCMAPI.Controllers
         public async Task<IHttpActionResult> Updateprnoapproval(List<ItemsViewModel> msa)
         {
             return Ok(await _paBusenessAcess.ApprovePRNos(msa));
+        }
+        [HttpGet]
+        [Route("Getpostatus/{poid}")]
+        public async Task<IHttpActionResult> Getpostatus(int poid)
+        {
+            return Ok(await _paBusenessAcess.Getpostatus(poid));
         }
     }
 }

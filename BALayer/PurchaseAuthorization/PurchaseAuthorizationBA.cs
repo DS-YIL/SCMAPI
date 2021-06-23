@@ -439,7 +439,7 @@ namespace BALayer.PurchaseAuthorization
 			return await _purchaseDataAcess.LoadItemsforpogeneration(paid);
         }
 
-        public async Task<List<LoadItemsByPAID>> LoadItemsforpogenerationbasedonvendor(string VendorId, List<int> PAId)
+        public async Task<List<LoadItemsforpo>> LoadItemsforpogenerationbasedonvendor(string VendorId, List<int> PAId)
         {
 			return await _purchaseDataAcess.LoadItemsforpogenerationbasedonvendor(VendorId,PAId);
         }
@@ -469,5 +469,10 @@ namespace BALayer.PurchaseAuthorization
 		{
 			return await _purchaseDataAcess.ApprovePRNos(msa);
 		}
-	}
+
+        public async Task<List<POCreationProcessTrack>> Getpostatus(int poid)
+        {
+			return await _purchaseDataAcess.Getpostatus(poid);
+		}
+    }
 }

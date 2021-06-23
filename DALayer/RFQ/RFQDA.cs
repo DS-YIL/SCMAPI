@@ -6823,6 +6823,12 @@ namespace DALayer.RFQ
 								};
 								obj.RFQItems_N.Add(rfqitemLocal);
 								obj.SaveChanges();
+								var mprrfqitem = new MPRRfqItem();
+								mprrfqitem.MPRItemDetailsid = data.MPRItemDetailsid;
+								mprrfqitem.RfqItemsid = data.RFQItemsId;
+								mprrfqitem.MPRRevisionId = rfqItemModel[0].MPRRevisionId;
+								obj.MPRRfqItems.Add(mprrfqitem);
+								obj.SaveChanges();
 							}
 							catch (Exception ex)
 							{
